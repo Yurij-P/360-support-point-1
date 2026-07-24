@@ -47,6 +47,82 @@ class SimulationCancelled:
     occurred_at: datetime
 
 
+@dataclass(frozen=True)
+class ScenarioLoaded:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
+@dataclass(frozen=True)
+class ScenarioValidated:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+    error_count: int
+    warning_count: int
+
+
+@dataclass(frozen=True)
+class ScenarioActivated:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
+@dataclass(frozen=True)
+class ScenarioSuspended:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
+@dataclass(frozen=True)
+class ScenarioResumed:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
+@dataclass(frozen=True)
+class ScenarioPhaseChanged:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+    previous_phase: str | None
+    current_phase: str
+
+
+@dataclass(frozen=True)
+class ScenarioCompleted:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
+@dataclass(frozen=True)
+class ScenarioFailed:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
+@dataclass(frozen=True)
+class ScenarioCancelled:
+    simulation_id: UUID
+    scenario_id: UUID
+    scenario_version: int
+    occurred_at: datetime
+
+
 SimulationDomainEvent = (
     SimulationPrepared
     | SimulationStarted
@@ -55,4 +131,16 @@ SimulationDomainEvent = (
     | SimulationTimeAdvanced
     | SimulationCompleted
     | SimulationCancelled
+)
+
+ScenarioDomainEvent = (
+    ScenarioLoaded
+    | ScenarioValidated
+    | ScenarioActivated
+    | ScenarioSuspended
+    | ScenarioResumed
+    | ScenarioPhaseChanged
+    | ScenarioCompleted
+    | ScenarioFailed
+    | ScenarioCancelled
 )

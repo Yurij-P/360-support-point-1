@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from tps360.core.domain.models import Community
@@ -22,6 +25,11 @@ from .events import (
 from .scenario import Scenario
 from .timeline import Timeline, TimelineEvent
 
+if TYPE_CHECKING:
+    from .scenario_definition import ScenarioDefinition
+    from .scenario_runtime import ScenarioRuntime
+    from .scenario_validation import ScenarioValidationResult
+
 
 @dataclass
 class Simulation:
@@ -38,6 +46,7 @@ class Simulation:
     context: SimulationContext
     domain_events: tuple[SimulationDomainEvent, ...] = field(default_factory=tuple)
     audit_trail: tuple[SimulationDomainEvent, ...] = field(default_factory=tuple)
+    scenario_runtime: ScenarioRuntime | None = None
 
     def __post_init__(self) -> None:
         if self.current_time != self.clock.current_time:
@@ -47,13 +56,23 @@ class Simulation:
         if (
             hasattr(self, "status")
             and self.status in {SimulationStatus.COMPLETED, SimulationStatus.CANCELLED}
-            and name in {"context", "clock", "current_time", "status", "domain_events", "audit_trail"}
+            and name
+            in {
+                "context",
+                "clock",
+                "current_time",
+                "status",
+                "domain_events",
+                "audit_trail",
+                "scenario_runtime",
+            }
         ):
             raise DomainRuleViolation("Completed or cancelled simulations cannot be changed.")
         if (
             name == "context"
             and hasattr(self, "context")
-            and self.status in {
+            and self.status
+            in {
                 SimulationStatus.RUNNING,
                 SimulationStatus.PAUSED,
                 SimulationStatus.COMPLETED,
@@ -116,6 +135,71 @@ class Simulation:
             )
         )
         return self.timeline.events_until(self.current_time)
+
+    def load_scenario(self, definition: ScenarioDefinition) -> ScenarioRuntime:
+        """Create an independent scenario runtime for this simulation session."""
+        if self.status in {SimulationStatus.COMPLETED, SimulationStatus.CANCELLED}:
+            raise DomainRuleViolation("Final simulations cannot load scenarios.")
+        if self.scenario_runtime is not None:
+            raise DomainRuleViolation("A simulation session can have only one main scenario runtime.")
+        from .scenario_runtime import ScenarioRuntime
+
+        self.scenario_runtime = ScenarioRuntime.load(self.id, definition, self.current_time)
+        return self.scenario_runtime
+
+    def validate_scenario(
+        self, available_team_roles: tuple[str, ...]
+    ) -> ScenarioValidationResult:
+        if self.scenario_runtime is None:
+            raise DomainRuleViolation("Simulation has no loaded scenario runtime.")
+        from .scenario_validation import ScenarioCompatibilityPolicy
+
+        result = ScenarioCompatibilityPolicy.validate(
+            self.scenario_runtime.definition,
+            self,
+            available_team_roles,
+        )
+        self.scenario_runtime.validate(result, self.current_time)
+        return result
+
+    def activate_scenario(self) -> None:
+        if self.status is not SimulationStatus.READY:
+            raise DomainRuleViolation("Only prepared simulations can activate a scenario.")
+        if self.scenario_runtime is None:
+            raise DomainRuleViolation("Simulation has no loaded scenario runtime.")
+        self.scenario_runtime.activate(self.current_time)
+
+    def suspend_scenario(self) -> None:
+        runtime = self._require_scenario_runtime()
+        runtime.suspend(self.current_time)
+
+    def resume_scenario(self) -> None:
+        runtime = self._require_scenario_runtime()
+        runtime.resume(self.current_time)
+
+    def advance_scenario_phase(self) -> None:
+        runtime = self._require_scenario_runtime()
+        runtime.advance_phase(self.current_time)
+
+    def move_scenario_to_phase(self, phase_name: str) -> None:
+        self._require_scenario_runtime().move_to_phase(phase_name, self.current_time)
+
+    def mark_scenario_completion_criterion(self, criterion: str) -> None:
+        self._require_scenario_runtime().mark_completion_criterion(criterion)
+
+    def complete_scenario(self) -> None:
+        self._require_scenario_runtime().complete(self.current_time)
+
+    def fail_scenario(self) -> None:
+        self._require_scenario_runtime().fail(self.current_time)
+
+    def cancel_scenario(self) -> None:
+        self._require_scenario_runtime().cancel(self.current_time)
+
+    def _require_scenario_runtime(self) -> ScenarioRuntime:
+        if self.scenario_runtime is None:
+            raise DomainRuleViolation("Simulation has no loaded scenario runtime.")
+        return self.scenario_runtime
 
     def _record(self, event: SimulationDomainEvent) -> None:
         self.domain_events = (*self.domain_events, event)
