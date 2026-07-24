@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Self
 from uuid import UUID, uuid4
 
 
@@ -7,7 +8,7 @@ class _Identifier:
     value: UUID
 
     @classmethod
-    def new(cls):
+    def new(cls) -> Self:
         return cls(uuid4())
 
     def __str__(self) -> str:

@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "httpx>=0.27", "mypy>=1.10", "ruff>=0.6"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "httpx>=0.27", "mypy>=1.10", "ruff>=0.6"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -32,6 +32,7 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+exclude = ["*.egg-info", ".pytest_cache", ".mypy_cache", ".ruff_cache", "__pycache__", "htmlcov"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -39,5 +40,5 @@ select = ["E", "F", "I"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["tps360.core", "tps360.api"]
+files = ["src/tps360"]
 exclude = ["src/tps360/tests"]
