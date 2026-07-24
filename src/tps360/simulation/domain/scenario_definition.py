@@ -5,17 +5,9 @@ from tps360.core.exceptions import DomainRuleViolation
 from tps360.threats.domain import ThreatType
 
 from .enums import ScenarioDifficulty, ScenarioType
+from .scenario_metadata import ScenarioMetadata
+from .scheduled_event import ScheduledEvent
 from .timeline import TimelineEvent
-
-
-@dataclass(frozen=True)
-class ScenarioMetadata:
-    author: str
-    source: str
-
-    def __post_init__(self) -> None:
-        if not self.author.strip() or not self.source.strip():
-            raise DomainRuleViolation("Scenario metadata author and source must not be empty.")
 
 
 @dataclass(frozen=True)
@@ -60,6 +52,7 @@ class ScenarioDefinition:
     required_infrastructure: tuple[str, ...] = ()
     required_resource_ids: tuple[UUID, ...] = ()
     supported_threat_types: tuple[ThreatType, ...] = ()
+    scheduled_events: tuple[ScheduledEvent, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.name.strip() or not self.description.strip():
@@ -81,6 +74,10 @@ class ScenarioDefinition:
         self._validate_unique_ids(event_ids, "Planned event IDs")
         if tuple(sorted(self.planned_events, key=lambda event: event.timestamp)) != self.planned_events:
             raise DomainRuleViolation("Planned events must be ordered by timestamp.")
+        scheduled_event_ids = tuple(event.id for event in self.scheduled_events)
+        self._validate_unique_ids(scheduled_event_ids, "Scheduled event IDs")
+        if any(event.scenario_id != self.id for event in self.scheduled_events):
+            raise DomainRuleViolation("Scheduled events must belong to the scenario definition.")
         if len(set(self.supported_threat_types)) != len(self.supported_threat_types):
             raise DomainRuleViolation("Supported threat types must not contain duplicates.")
 

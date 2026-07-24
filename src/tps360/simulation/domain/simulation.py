@@ -11,7 +11,7 @@ from tps360.threats.domain import Threat
 
 from .clock import SimulationClock
 from .context import SimulationContext
-from .enums import SimulationStatus
+from .enums import ScenarioRuntimeStatus, SimulationStatus
 from .events import (
     SimulationCancelled,
     SimulationCompleted,
@@ -26,6 +26,7 @@ from .scenario import Scenario
 from .timeline import Timeline, TimelineEvent
 
 if TYPE_CHECKING:
+    from .event_scheduler import EventRuntime, EventScheduler, SchedulerState
     from .scenario_definition import ScenarioDefinition
     from .scenario_runtime import ScenarioRuntime
     from .scenario_validation import ScenarioValidationResult
@@ -47,6 +48,7 @@ class Simulation:
     domain_events: tuple[SimulationDomainEvent, ...] = field(default_factory=tuple)
     audit_trail: tuple[SimulationDomainEvent, ...] = field(default_factory=tuple)
     scenario_runtime: ScenarioRuntime | None = None
+    event_scheduler: EventScheduler | None = None
 
     def __post_init__(self) -> None:
         if self.current_time != self.clock.current_time:
@@ -65,6 +67,7 @@ class Simulation:
                 "domain_events",
                 "audit_trail",
                 "scenario_runtime",
+                "event_scheduler",
             }
         ):
             raise DomainRuleViolation("Completed or cancelled simulations cannot be changed.")
@@ -134,6 +137,14 @@ class Simulation:
                 elapsed_simulation_minutes=elapsed_minutes,
             )
         )
+        if (
+            self.event_scheduler is not None
+            and self.scenario_runtime is not None
+            and self.scenario_runtime.status is ScenarioRuntimeStatus.ACTIVE
+        ):
+            from .event_scheduler import SchedulerState
+
+            self.event_scheduler.refresh(self, self.scenario_runtime, SchedulerState())
         return self.timeline.events_until(self.current_time)
 
     def load_scenario(self, definition: ScenarioDefinition) -> ScenarioRuntime:
@@ -196,6 +207,46 @@ class Simulation:
     def cancel_scenario(self) -> None:
         self._require_scenario_runtime().cancel(self.current_time)
 
+    def load_event_scheduler(self) -> EventScheduler:
+        runtime = self._require_scenario_runtime()
+        if runtime.status is not ScenarioRuntimeStatus.ACTIVE:
+            raise DomainRuleViolation("Event scheduler requires an active scenario runtime.")
+        if self.event_scheduler is not None:
+            raise DomainRuleViolation("Simulation already has an event scheduler.")
+        from .event_scheduler import EventScheduler
+
+        self.event_scheduler = EventScheduler.load(
+            self.id,
+            runtime.definition.id,
+            runtime.definition.scheduled_events,
+            self.current_time,
+        )
+        return self.event_scheduler
+
+    def refresh_scheduled_events(self, state: SchedulerState) -> tuple[EventRuntime, ...]:
+        return self._require_event_scheduler().refresh(self, self._require_scenario_runtime(), state)
+
+    def manually_activate_event(self, event_id: UUID, state: SchedulerState) -> EventRuntime:
+        return self._require_event_scheduler().manual_activate(
+            self,
+            self._require_scenario_runtime(),
+            event_id,
+            state,
+        )
+
+    def resolve_scheduled_event(self, event_id: UUID) -> EventRuntime | None:
+        return self._require_event_scheduler().resolve(event_id, self.current_time)
+
+    def fail_scheduled_event(self, event_id: UUID) -> None:
+        self._require_event_scheduler().fail(event_id, self.current_time)
+
+    def cancel_scheduled_event(self, event_id: UUID) -> None:
+        self._require_event_scheduler().cancel(event_id, self.current_time)
+
+    def _require_event_scheduler(self) -> EventScheduler:
+        if self.event_scheduler is None:
+            raise DomainRuleViolation("Simulation has no loaded event scheduler.")
+        return self.event_scheduler
     def _require_scenario_runtime(self) -> ScenarioRuntime:
         if self.scenario_runtime is None:
             raise DomainRuleViolation("Simulation has no loaded scenario runtime.")
