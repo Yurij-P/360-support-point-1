@@ -1,6 +1,6 @@
 from uuid import UUID
-from platform.core.domain.models import Community
-from platform.core.exceptions import DomainRuleViolation, NotFoundError
+from tps360.core.domain.models import Community
+from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 
 class CommunityRepository:
     def __init__(self) -> None: self.items: dict[UUID, Community] = {}

@@ -1,8 +1,8 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException
-from platform.api.dependencies import scenarios
-from platform.core.domain.models import Scenario
-from platform.core.exceptions import NotFoundError
+from tps360.api.dependencies import scenarios
+from tps360.core.domain.models import Scenario
+from tps360.core.exceptions import NotFoundError
 router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 @router.post("")
 def create(item: Scenario) -> Scenario: return scenarios.add(item)

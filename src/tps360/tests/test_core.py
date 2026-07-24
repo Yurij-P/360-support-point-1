@@ -1,11 +1,11 @@
 from datetime import date
 from uuid import uuid4
 import pytest
-from platform.core.domain.enums import HazardCategory, LifecycleStatus
-from platform.core.domain.models import Community, Decision, Evaluation, Hazard, ImprovementPlan, Inject, Risk
-from platform.core.exceptions import DomainRuleViolation
-from platform.core.services import EvaluationService, ImprovementService, PreparednessService, RiskService, SimulationService
-from platform.core.value_objects import Score
+from tps360.core.domain.enums import HazardCategory, LifecycleStatus
+from tps360.core.domain.models import Community, Decision, Evaluation, Hazard, ImprovementPlan, Inject, Risk
+from tps360.core.exceptions import DomainRuleViolation
+from tps360.core.services import EvaluationService, ImprovementService, PreparednessService, RiskService, SimulationService
+from tps360.core.value_objects import Score
 
 @pytest.mark.parametrize("value", [-1, 101, 200])
 def test_score_rejects_bounds(value):

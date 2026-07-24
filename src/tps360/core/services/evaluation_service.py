@@ -1,4 +1,4 @@
-from platform.core.domain.models import Evaluation
+from tps360.core.domain.models import Evaluation
 
 
 class EvaluationService:

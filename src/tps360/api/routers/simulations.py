@@ -1,9 +1,9 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException
-from platform.api.dependencies import simulations
-from platform.core.domain.models import Decision, Inject, Simulation
-from platform.core.exceptions import DomainRuleViolation, NotFoundError
-from platform.core.services import SimulationService
+from tps360.api.dependencies import simulations
+from tps360.core.domain.models import Decision, Inject, Simulation
+from tps360.core.exceptions import DomainRuleViolation, NotFoundError
+from tps360.core.services import SimulationService
 router=APIRouter(prefix="/simulations", tags=["simulations"]); service=SimulationService()
 def item(sid: UUID) -> Simulation:
     try: return simulations.get(sid)

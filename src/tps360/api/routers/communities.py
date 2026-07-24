@@ -1,8 +1,8 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException
-from platform.core.domain.models import Community
-from platform.core.exceptions import DomainRuleViolation, NotFoundError
-from platform.api.dependencies import communities
+from tps360.core.domain.models import Community
+from tps360.core.exceptions import DomainRuleViolation, NotFoundError
+from tps360.api.dependencies import communities
 router = APIRouter(prefix="/communities", tags=["communities"])
 @router.post("")
 def create(item: Community) -> Community:

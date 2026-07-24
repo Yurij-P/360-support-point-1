@@ -1,4 +1,4 @@
-from platform.core.domain.models import Risk
+from tps360.core.domain.models import Risk
 
 
 class RiskService:

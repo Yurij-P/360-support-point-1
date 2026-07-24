@@ -1,7 +1,7 @@
 from uuid import UUID
 from fastapi import APIRouter
-from platform.core.domain.models import Risk
-from platform.core.services import RiskService
+from tps360.core.domain.models import Risk
+from tps360.core.services import RiskService
 router = APIRouter(prefix="/communities/{community_id}/risks", tags=["risks"])
 @router.post("")
 def create(community_id: UUID, risk: Risk) -> Risk:

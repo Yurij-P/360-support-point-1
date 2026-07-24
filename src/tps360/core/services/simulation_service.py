@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from platform.core.domain.enums import LifecycleStatus
-from platform.core.domain.models import Decision, Inject, Simulation
-from platform.core.exceptions import DomainRuleViolation
+from tps360.core.domain.enums import LifecycleStatus
+from tps360.core.domain.models import Decision, Inject, Simulation
+from tps360.core.exceptions import DomainRuleViolation
 
 
 class SimulationService:

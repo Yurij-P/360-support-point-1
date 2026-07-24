@@ -1,4 +1,4 @@
-from platform.core.domain.enums import MaturityLevel
+from tps360.core.domain.enums import MaturityLevel
 
 
 class PreparednessService:

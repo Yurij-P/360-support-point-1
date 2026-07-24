@@ -18,11 +18,16 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "httpx>=0.27", "mypy>=1.10", "ruff>=0.6"]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.setuptools.packages.find]
-include = ["platform*"]
+where = ["src"]
+include = ["tps360*"]
 
 [tool.pytest.ini_options]
-testpaths = ["platform/tests"]
+testpaths = ["src/tps360/tests"]
+pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -34,5 +39,5 @@ select = ["E", "F", "I"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["platform.core", "platform.api"]
-exclude = ["platform/tests"]
+packages = ["tps360.core", "tps360.api"]
+exclude = ["src/tps360/tests"]

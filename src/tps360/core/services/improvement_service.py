@@ -1,7 +1,7 @@
 from datetime import date
 from uuid import UUID
 
-from platform.core.domain.models import ImprovementAction, ImprovementPlan
+from tps360.core.domain.models import ImprovementAction, ImprovementPlan
 
 
 class ImprovementService:
