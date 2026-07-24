@@ -26,6 +26,12 @@ from .scenario import Scenario
 from .timeline import Timeline, TimelineEvent
 
 if TYPE_CHECKING:
+    from .decision_engine import (
+        DecisionEngine,
+        DecisionOutcome,
+        DecisionRequest,
+        DecisionSubmission,
+    )
     from .event_scheduler import EventRuntime, EventScheduler, SchedulerState
     from .scenario_definition import ScenarioDefinition
     from .scenario_runtime import ScenarioRuntime
@@ -49,6 +55,7 @@ class Simulation:
     audit_trail: tuple[SimulationDomainEvent, ...] = field(default_factory=tuple)
     scenario_runtime: ScenarioRuntime | None = None
     event_scheduler: EventScheduler | None = None
+    decision_engine: DecisionEngine | None = None
 
     def __post_init__(self) -> None:
         if self.current_time != self.clock.current_time:
@@ -68,6 +75,7 @@ class Simulation:
                 "audit_trail",
                 "scenario_runtime",
                 "event_scheduler",
+                "decision_engine",
             }
         ):
             raise DomainRuleViolation("Completed or cancelled simulations cannot be changed.")
@@ -243,6 +251,36 @@ class Simulation:
     def cancel_scheduled_event(self, event_id: UUID) -> None:
         self._require_event_scheduler().cancel(event_id, self.current_time)
 
+    def load_decision_engine(self) -> DecisionEngine:
+        runtime = self._require_scenario_runtime()
+        if runtime.status is not ScenarioRuntimeStatus.ACTIVE:
+            raise DomainRuleViolation("Decision engine requires an active scenario runtime.")
+        if self.decision_engine is not None:
+            raise DomainRuleViolation("Simulation already has a decision engine.")
+        from .decision_engine import DecisionEngine
+
+        self.decision_engine = DecisionEngine(self.id, runtime.definition.id)
+        return self.decision_engine
+
+    def create_decision_request(self, request: DecisionRequest) -> object:
+        return self._require_decision_engine().create(self, request)
+
+    def open_decision_request(self, request_id: UUID) -> None:
+        self._require_decision_engine().open(request_id, self.current_time)
+
+    def submit_decision(self, submission: DecisionSubmission) -> None:
+        self._require_decision_engine().submit(self, submission)
+
+    def start_decision_review(self, request_id: UUID) -> None:
+        self._require_decision_engine().start_review(request_id, self.current_time)
+
+    def approve_decision(self, request_id: UUID, rationale: str, correlation_id: UUID, causation_id: UUID | None = None) -> DecisionOutcome:
+        return self._require_decision_engine().approve(request_id, self.current_time, rationale, correlation_id, causation_id)
+
+    def _require_decision_engine(self) -> DecisionEngine:
+        if self.decision_engine is None:
+            raise DomainRuleViolation("Simulation has no loaded decision engine.")
+        return self.decision_engine
     def _require_event_scheduler(self) -> EventScheduler:
         if self.event_scheduler is None:
             raise DomainRuleViolation("Simulation has no loaded event scheduler.")

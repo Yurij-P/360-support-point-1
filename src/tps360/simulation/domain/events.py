@@ -241,3 +241,78 @@ class RecurringEventOccurrenceCreated:
     occurrence_index: int
     occurred_at: datetime
     reason: str
+
+@dataclass(frozen=True)
+class DecisionRequestCreated:
+    simulation_id: UUID
+    scenario_id: UUID
+    request_id: UUID
+    request_version: int
+    occurred_at: datetime
+    reason: str
+
+
+@dataclass(frozen=True)
+class DecisionRequestOpened(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionSubmitted(DecisionRequestCreated):
+    submission_id: UUID
+
+
+@dataclass(frozen=True)
+class DecisionSubmissionValidated(DecisionSubmitted):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionSubmissionWithdrawn(DecisionSubmitted):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionReviewStarted(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionApprovalRecorded(DecisionRequestCreated):
+    role_id: UUID
+
+
+@dataclass(frozen=True)
+class DecisionRejectionRecorded(DecisionApprovalRecorded):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionApproved(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionRejected(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionExecuted(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionExpired(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionCancelled(DecisionRequestCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class DecisionOutcomeCreated(DecisionRequestCreated):
+    correlation_id: UUID
+    causation_id: UUID | None

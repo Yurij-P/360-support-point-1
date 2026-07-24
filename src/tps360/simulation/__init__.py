@@ -27,3 +27,9 @@ __all__ = [
     "Timeline",
     "TimelineEvent",
 ]
+from .domain import DecisionEngine as DecisionEngine
+from .domain import DecisionOutcome as DecisionOutcome
+from .domain import DecisionRequest as DecisionRequest
+from .domain import DecisionSubmission as DecisionSubmission
+
+__all__ += ["DecisionEngine", "DecisionOutcome", "DecisionRequest", "DecisionSubmission"]

@@ -80,3 +80,44 @@ class ActivationConditionType(StrEnum):
     TERRITORY_AVAILABLE = "territory_available"
     INFRASTRUCTURE_AVAILABLE = "infrastructure_available"
     RESOURCE_AVAILABLE = "resource_available"
+
+class DecisionType(StrEnum):
+    SINGLE_CHOICE = "single_choice"
+    MULTIPLE_CHOICE = "multiple_choice"
+    FREE_TEXT = "free_text"
+    RESOURCE_ALLOCATION = "resource_allocation"
+    PRIORITIZATION = "prioritization"
+    APPROVAL = "approval"
+    COORDINATED = "coordinated"
+
+
+class DecisionPriority(StrEnum):
+    CRITICAL = "critical"
+    HIGH = "high"
+    NORMAL = "normal"
+    LOW = "low"
+
+
+class DecisionRequestStatus(StrEnum):
+    DRAFT = "draft"
+    OPEN = "open"
+    UNDER_REVIEW = "under_review"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXECUTED = "executed"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+
+class DecisionSubmissionStatus(StrEnum):
+    SUBMITTED = "submitted"
+    VALID = "valid"
+    INVALID = "invalid"
+    WITHDRAWN = "withdrawn"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+
+
+class ApprovalRule(StrEnum):
+    ALL = "all"
+    ANY = "any"
