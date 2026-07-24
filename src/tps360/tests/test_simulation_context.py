@@ -148,5 +148,7 @@ def test_simulation_does_not_start_with_low_data_quality() -> None:
         context=context,
     )
 
+    simulation.prepare()
+
     with pytest.raises(DomainRuleViolation):
         simulation.start()

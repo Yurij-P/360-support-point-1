@@ -172,7 +172,7 @@ def test_clock_rejects_time_before_start() -> None:
 
 
 def test_clock_advances_time() -> None:
-    assert build_clock().advance(15) == START + timedelta(minutes=15)
+    assert build_clock().advance(15).current_time == START + timedelta(minutes=15)
 
 
 def test_clock_rejects_negative_advance() -> None:
@@ -181,11 +181,9 @@ def test_clock_rejects_negative_advance() -> None:
 
 
 def test_clock_resets_time() -> None:
-    clock = build_clock()
-    clock.advance(15)
+    clock = build_clock().advance(15)
 
-    assert clock.reset() == START
-
+    assert clock.reset().current_time == START
 
 def test_valid_simulation() -> None:
     assert build_simulation().status is SimulationStatus.DRAFT
@@ -199,10 +197,10 @@ def test_simulation_requires_matching_clock_time() -> None:
 def test_simulation_starts() -> None:
     simulation = build_simulation()
 
+    simulation.prepare()
     simulation.start()
 
     assert simulation.status is SimulationStatus.RUNNING
-
 
 def test_only_draft_simulation_starts() -> None:
     with pytest.raises(DomainRuleViolation):
@@ -238,10 +236,11 @@ def test_only_paused_simulation_resumes() -> None:
 def test_simulation_completes() -> None:
     simulation = build_simulation()
 
+    simulation.prepare()
+    simulation.start()
     simulation.complete()
 
     assert simulation.status is SimulationStatus.COMPLETED
-
 
 def test_completed_simulation_cannot_complete_again() -> None:
     with pytest.raises(DomainRuleViolation):
