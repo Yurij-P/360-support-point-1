@@ -1,0 +1,118 @@
+from enum import StrEnum
+
+
+class ProfileStatus(StrEnum):
+    DRAFT = "draft"
+    UNDER_REVIEW = "under_review"
+    ACTIVE = "active"
+    ARCHIVED = "archived"
+
+
+class VerificationStatus(StrEnum):
+    UNVERIFIED = "unverified"
+    PARTIALLY_VERIFIED = "partially_verified"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+
+
+class OrganizationType(StrEnum):
+    LOCAL_GOVERNMENT = "local_government"
+    EMERGENCY_SERVICE = "emergency_service"
+    HEALTHCARE = "healthcare"
+    EDUCATION = "education"
+    UTILITY = "utility"
+    SOCIAL_SERVICE = "social_service"
+    CIVIL_SOCIETY = "civil_society"
+    VOLUNTEER_GROUP = "volunteer_group"
+    PRIVATE_PROVIDER = "private_provider"
+    OTHER = "other"
+
+
+class FacilityType(StrEnum):
+    ADMINISTRATION = "administration"
+    HEALTHCARE = "healthcare"
+    EDUCATION = "education"
+    SHELTER = "shelter"
+    FIRE_STATION = "fire_station"
+    POLICE_STATION = "police_station"
+    UTILITY = "utility"
+    LOGISTICS = "logistics"
+    WAREHOUSE = "warehouse"
+    TEMPORARY_ACCOMMODATION = "temporary_accommodation"
+    COMMUNICATION = "communication"
+    OTHER = "other"
+
+
+class ResourceType(StrEnum):
+    DIESEL_GENERATOR = "diesel_generator"
+    PETROL_GENERATOR = "petrol_generator"
+    GAS_GENERATOR = "gas_generator"
+    MOBILE_GENERATOR = "mobile_generator"
+    SOLAR_POWER_STATION = "solar_power_station"
+    SOLAR_POWER_STATION_WITH_STORAGE = "solar_power_station_with_storage"
+    BATTERY_ENERGY_STORAGE = "battery_energy_storage"
+    UNINTERRUPTIBLE_POWER_SUPPLY = "uninterruptible_power_supply"
+    PORTABLE_POWER_STATION = "portable_power_station"
+    INVERTER = "inverter"
+    FUEL_RESERVE = "fuel_reserve"
+    CABLE_AND_SWITCHGEAR = "cable_and_switchgear"
+    LIGHTING_TOWER = "lighting_tower"
+    FIRE_ENGINE = "fire_engine"
+    WATER_TANKER = "water_tanker"
+    MOTOR_PUMP = "motor_pump"
+    RESCUE_TOOL = "rescue_tool"
+    PROTECTIVE_EQUIPMENT = "protective_equipment"
+    OBSERVATION_DRONE = "observation_drone"
+    RADIO_STATION = "radio_station"
+    RADIO_REPEATER = "radio_repeater"
+    SATELLITE_TERMINAL = "satellite_terminal"
+    LOUDSPEAKER = "loudspeaker"
+    SIREN = "siren"
+    PORTABLE_WARNING_SYSTEM = "portable_warning_system"
+    POWER_BANK = "power_bank"
+    BUS = "bus"
+    MINIBUS = "minibus"
+    TRUCK = "truck"
+    OFFROAD_VEHICLE = "offroad_vehicle"
+    TRACTOR = "tractor"
+    EXCAVATOR = "excavator"
+    LOADER = "loader"
+    FUEL_TANKER = "fuel_tanker"
+    AMBULANCE = "ambulance"
+    ACCESSIBLE_TRANSPORT = "accessible_transport"
+    BOAT = "boat"
+    MEDICAL_KIT = "medical_kit"
+    OXYGEN_CONCENTRATOR = "oxygen_concentrator"
+    DEFIBRILLATOR = "defibrillator"
+    FIELD_BED = "field_bed"
+    TENT = "tent"
+    HEATER = "heater"
+    WATER_SUPPLY = "water_supply"
+    FOOD_SUPPLY = "food_supply"
+    HYGIENE_SUPPLY = "hygiene_supply"
+    MOBILE_KITCHEN = "mobile_kitchen"
+    HUMAN_RESOURCE = "human_resource"
+    OTHER = "other"
+
+
+class CommunicationChannelType(StrEnum):
+    SIREN = "siren"
+    LOUDSPEAKER = "loudspeaker"
+    SMS = "sms"
+    PHONE = "phone"
+    RADIO = "radio"
+    WEBSITE = "website"
+    SOCIAL_MEDIA = "social_media"
+    MESSENGER = "messenger"
+    DOOR_TO_DOOR = "door_to_door"
+    OTHER = "other"
+
+
+class RiskCategory(StrEnum):
+    NATURAL = "natural"
+    TECHNOLOGICAL = "technological"
+    BIOLOGICAL = "biological"
+    SOCIAL = "social"
+    MILITARY = "military"
+    CYBER = "cyber"
+    COMBINED = "combined"

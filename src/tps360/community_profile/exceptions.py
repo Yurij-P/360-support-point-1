@@ -1,0 +1,2 @@
+class ProfileRuleViolation(ValueError):
+    pass
