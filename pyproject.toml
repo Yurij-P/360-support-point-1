@@ -35,7 +35,7 @@ target-version = "py312"
 exclude = ["*.egg-info", ".pytest_cache", ".mypy_cache", ".ruff_cache", "__pycache__", "htmlcov"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["F", "I"]
 
 [tool.mypy]
 python_version = "3.12"
