@@ -316,3 +316,65 @@ class DecisionCancelled(DecisionRequestCreated):
 class DecisionOutcomeCreated(DecisionRequestCreated):
     correlation_id: UUID
     causation_id: UUID | None
+
+@dataclass(frozen=True)
+class ImpactCreated:
+    simulation_id: UUID
+    scenario_id: UUID
+    impact_id: UUID
+    impact_version: int
+    occurred_at: datetime
+    reason: str
+    correlation_id: UUID
+    causation_id: UUID | None
+
+
+@dataclass(frozen=True)
+class ImpactScheduled(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactReady(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactApplied(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactActivated(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactReversed(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactExpired(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactCancelled(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class ImpactFailed(ImpactCreated):
+    pass
+
+
+@dataclass(frozen=True)
+class SimulationStateChanged(ImpactCreated):
+    state_version_before: int
+    state_version_after: int
+
+
+@dataclass(frozen=True)
+class ImpactConflictDetected(ImpactCreated):
+    pass

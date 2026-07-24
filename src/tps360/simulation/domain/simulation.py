@@ -33,9 +33,11 @@ if TYPE_CHECKING:
         DecisionSubmission,
     )
     from .event_scheduler import EventRuntime, EventScheduler, SchedulerState
+    from .impact_engine import ImpactDefinition, ImpactEngine, ImpactInstance, ImpactResult
     from .scenario_definition import ScenarioDefinition
     from .scenario_runtime import ScenarioRuntime
     from .scenario_validation import ScenarioValidationResult
+    from .simulation_state import SimulationState
 
 
 @dataclass
@@ -56,8 +58,16 @@ class Simulation:
     scenario_runtime: ScenarioRuntime | None = None
     event_scheduler: EventScheduler | None = None
     decision_engine: DecisionEngine | None = None
+    simulation_state: SimulationState | None = None
+    impact_engine: ImpactEngine | None = None
 
     def __post_init__(self) -> None:
+        if self.simulation_state is None:
+            from .simulation_state import SimulationState
+
+            self.simulation_state = SimulationState(self.id)
+        if self.simulation_state.simulation_id != self.id:
+            raise DomainRuleViolation("Simulation state must belong to its simulation.")
         if self.current_time != self.clock.current_time:
             raise DomainRuleViolation("Simulation current time must match its clock.")
 
@@ -76,6 +86,8 @@ class Simulation:
                 "scenario_runtime",
                 "event_scheduler",
                 "decision_engine",
+                "simulation_state",
+                "impact_engine",
             }
         ):
             raise DomainRuleViolation("Completed or cancelled simulations cannot be changed.")
@@ -277,6 +289,46 @@ class Simulation:
     def approve_decision(self, request_id: UUID, rationale: str, correlation_id: UUID, causation_id: UUID | None = None) -> DecisionOutcome:
         return self._require_decision_engine().approve(request_id, self.current_time, rationale, correlation_id, causation_id)
 
+    @property
+    def state(self) -> SimulationState:
+        if self.simulation_state is None:
+            raise DomainRuleViolation("Simulation state is unavailable.")
+        return self.simulation_state
+
+    def replace_simulation_state(self, state: SimulationState) -> None:
+        if self.status is not SimulationStatus.RUNNING or state.simulation_id != self.id:
+            raise DomainRuleViolation("Only a running simulation can replace its own runtime state.")
+        if state.version != self.state.version + 1:
+            raise DomainRuleViolation("Simulation state versions must advance sequentially.")
+        self.simulation_state = state
+
+    def load_impact_engine(self) -> ImpactEngine:
+        runtime = self._require_scenario_runtime()
+        if runtime.status is not ScenarioRuntimeStatus.ACTIVE:
+            raise DomainRuleViolation("Impact engine requires an active scenario runtime.")
+        if self.impact_engine is not None:
+            raise DomainRuleViolation("Simulation already has an impact engine.")
+        from .impact_engine import ImpactEngine
+
+        self.impact_engine = ImpactEngine(self.id, runtime.definition.id)
+        return self.impact_engine
+
+    def create_impact(self, instance_id: UUID, definition: ImpactDefinition, correlation_id: UUID, causation_id: UUID | None = None) -> ImpactInstance:
+        return self._require_impact_engine().create(self, instance_id, definition, correlation_id, causation_id)
+
+    def refresh_impacts(self) -> tuple[ImpactResult, ...]:
+        return self._require_impact_engine().refresh(self)
+
+    def apply_impact(self, instance_id: UUID) -> ImpactResult:
+        return self._require_impact_engine().apply(self, instance_id)
+
+    def reverse_impact(self, instance_id: UUID) -> None:
+        self._require_impact_engine().reverse(self, instance_id)
+
+    def _require_impact_engine(self) -> ImpactEngine:
+        if self.impact_engine is None:
+            raise DomainRuleViolation("Simulation has no loaded impact engine.")
+        return self.impact_engine
     def _require_decision_engine(self) -> DecisionEngine:
         if self.decision_engine is None:
             raise DomainRuleViolation("Simulation has no loaded decision engine.")

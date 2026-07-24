@@ -33,3 +33,9 @@ from .domain import DecisionRequest as DecisionRequest
 from .domain import DecisionSubmission as DecisionSubmission
 
 __all__ += ["DecisionEngine", "DecisionOutcome", "DecisionRequest", "DecisionSubmission"]
+from .domain import ImpactDefinition as ImpactDefinition
+from .domain import ImpactEngine as ImpactEngine
+from .domain import ImpactResult as ImpactResult
+from .domain import SimulationState as SimulationState
+
+__all__ += ["ImpactDefinition", "ImpactEngine", "ImpactResult", "SimulationState"]

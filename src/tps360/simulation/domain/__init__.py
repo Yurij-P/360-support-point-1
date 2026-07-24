@@ -155,3 +155,29 @@ __all__ += [
     "DecisionSubmissionValidated", "DecisionSubmissionWithdrawn", "DecisionSubmitted", "DecisionType",
     "ResourceAllocation",
 ]
+from .enums import ImpactCategory as ImpactCategory
+from .enums import ImpactConflictPolicy as ImpactConflictPolicy
+from .enums import ImpactOperation as ImpactOperation
+from .enums import ImpactSourceType as ImpactSourceType
+from .enums import ImpactStatus as ImpactStatus
+from .enums import ImpactTargetType as ImpactTargetType
+from .impact_engine import AppliedChange as AppliedChange
+from .impact_engine import ImpactChange as ImpactChange
+from .impact_engine import ImpactCondition as ImpactCondition
+from .impact_engine import ImpactDefinition as ImpactDefinition
+from .impact_engine import ImpactDependency as ImpactDependency
+from .impact_engine import ImpactEngine as ImpactEngine
+from .impact_engine import ImpactInstance as ImpactInstance
+from .impact_engine import ImpactResult as ImpactResult
+from .impact_engine import ImpactTarget as ImpactTarget
+from .impact_engine import ImpactValidationResult as ImpactValidationResult
+from .simulation_state import SimulationState as SimulationState
+from .simulation_state import StateKey as StateKey
+from .simulation_state import StateValue as StateValue
+
+__all__ += [
+    "AppliedChange", "ImpactCategory", "ImpactChange", "ImpactCondition", "ImpactConflictPolicy",
+    "ImpactDefinition", "ImpactDependency", "ImpactEngine", "ImpactInstance", "ImpactOperation",
+    "ImpactResult", "ImpactSourceType", "ImpactStatus", "ImpactTarget", "ImpactTargetType",
+    "ImpactValidationResult", "SimulationState", "StateKey", "StateValue",
+]

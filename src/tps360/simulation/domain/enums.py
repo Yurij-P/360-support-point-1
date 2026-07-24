@@ -121,3 +121,70 @@ class DecisionSubmissionStatus(StrEnum):
 class ApprovalRule(StrEnum):
     ALL = "all"
     ANY = "any"
+
+class ImpactSourceType(StrEnum):
+    EVENT = "event"
+    DECISION = "decision"
+    COMBINED = "combined"
+    SYSTEM = "system"
+    REVERSAL = "reversal"
+
+
+class ImpactCategory(StrEnum):
+    POPULATION = "population"
+    TERRITORY = "territory"
+    INFRASTRUCTURE = "infrastructure"
+    RESOURCE = "resource"
+    THREAT = "threat"
+    SERVICE_CAPACITY = "service_capacity"
+    COMMUNICATION = "communication"
+    EVACUATION = "evacuation"
+    HEALTH_AND_SAFETY = "health_and_safety"
+    CUSTOM = "custom"
+
+
+class ImpactTargetType(StrEnum):
+    SIMULATION = "simulation"
+    TERRITORY = "territory"
+    SETTLEMENT = "settlement"
+    POPULATION_GROUP = "population_group"
+    INFRASTRUCTURE = "infrastructure"
+    RESOURCE = "resource"
+    THREAT = "threat"
+    SERVICE = "service"
+    CAPABILITY = "capability"
+
+
+class ImpactOperation(StrEnum):
+    SET = "set"
+    INCREASE = "increase"
+    DECREASE = "decrease"
+    MULTIPLY = "multiply"
+    ACTIVATE = "activate"
+    DEACTIVATE = "deactivate"
+    DAMAGE = "damage"
+    RESTORE = "restore"
+    CONSUME = "consume"
+    REPLENISH = "replenish"
+    LOCK = "lock"
+    UNLOCK = "unlock"
+
+
+class ImpactStatus(StrEnum):
+    PENDING = "pending"
+    SCHEDULED = "scheduled"
+    READY = "ready"
+    APPLIED = "applied"
+    ACTIVE = "active"
+    REVERSED = "reversed"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+
+
+class ImpactConflictPolicy(StrEnum):
+    REJECT = "reject"
+    HIGHEST_PRIORITY = "highest_priority"
+    SEQUENTIAL = "sequential"
+    MERGE_ADDITIVE = "merge_additive"
+    LAST_EXPLICIT_SET = "last_explicit_set"
