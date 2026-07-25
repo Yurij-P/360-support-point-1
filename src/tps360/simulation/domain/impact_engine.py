@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
@@ -8,18 +8,29 @@ from uuid import UUID
 
 from tps360.core.exceptions import DomainRuleViolation
 
-from .enums import ImpactCategory, ImpactOperation, ImpactStatus
+from .enums import (
+    DependencyRule,
+    ImpactCategory,
+    ImpactConflictPolicy,
+    ImpactOperation,
+    ImpactStatus,
+)
 from .events import (
+    ImpactActivated,
     ImpactApplied,
     ImpactCancelled,
+    ImpactConflictDetected,
     ImpactCreated,
+    ImpactExpired,
     ImpactFailed,
     ImpactReady,
+    ImpactReversed,
     ImpactScheduled,
     SimulationStateChanged,
 )
 from .impact_contracts import (
     ImpactDefinitionId,
+    ImpactDependency,
     ImpactInstanceId,
     ImpactSourceReference,
     TypedImpactTarget,
@@ -82,6 +93,9 @@ class ImpactDefinition:
     duration_minutes: int | None = None
     temporary: bool = False
     conditions: tuple[ImpactCondition, ...] = ()
+    dependencies: tuple[ImpactDependency, ...] = ()
+    dependency_rule: DependencyRule = DependencyRule.ALL
+    conflict_policy: ImpactConflictPolicy = ImpactConflictPolicy.REJECT
     priority: int = 0
     version: int = 1
 
@@ -94,6 +108,10 @@ class ImpactDefinition:
             raise DomainRuleViolation("Temporary impact duration is invalid.")
         if any(c.target.session_id != self.source.session_id or c.target.scenario_id != self.scenario_id for c in self.changes):
             raise DomainRuleViolation("Impact change target scope is invalid.")
+        if self.id in {dependency.definition_id for dependency in self.dependencies}:
+            raise DomainRuleViolation("An impact definition cannot depend on itself.")
+        if len({dependency.definition_id for dependency in self.dependencies}) != len(self.dependencies):
+            raise DomainRuleViolation("Impact dependencies must be unique.")
 
 
 @dataclass(frozen=True)
@@ -159,6 +177,8 @@ class ImpactEngine:
                 raise DomainRuleViolation("Impact target scope is invalid.")
             if change.target.target_type.value == "resource" and (change.target.target_id is None or not simulation.context.includes_resource(change.target.target_id)):
                 raise DomainRuleViolation("Impact target resource is unavailable in this simulation scope.")
+        if self._has_dependency_cycle(definition):
+            raise DomainRuleViolation("Impact dependency graph contains a cycle.")
         item = ImpactInstance(ImpactInstanceId(instance_id), definition, self.simulation_id, simulation.current_time + timedelta(minutes=definition.delay_minutes), correlation_id, causation_id)
         item.transition(ImpactStatus.SCHEDULED if definition.delay_minutes else ImpactStatus.READY)
         self.instances = (*self.instances, item); self._record(item, ImpactCreated(self.simulation_id, self.scenario_id, item.id, definition.version, simulation.current_time, "created", correlation_id, causation_id))
@@ -171,14 +191,21 @@ class ImpactEngine:
             if item.status is ImpactStatus.SCHEDULED and simulation.current_time >= item.scheduled_at:
                 item.transition(ImpactStatus.READY); self._record(item, ImpactReady(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "ready", item.correlation_id, item.causation_id))
             if item.status is ImpactStatus.READY: results.append(self.apply(simulation, item.id))
-            elif item.status is ImpactStatus.ACTIVE and item.definition.duration_minutes is not None and simulation.current_time >= item.scheduled_at + timedelta(minutes=item.definition.duration_minutes): item.transition(ImpactStatus.EXPIRED)
+            elif item.status is ImpactStatus.ACTIVE and item.definition.duration_minutes is not None and simulation.current_time >= item.scheduled_at + timedelta(minutes=item.definition.duration_minutes): self._reverse(simulation, item, expired=True)
         return tuple(results)
 
     def apply(self, simulation: Simulation, instance_id: UUID) -> ImpactResult:
         self._ensure(simulation); item = self._item(instance_id)
         if item.status is not ImpactStatus.READY: raise DomainRuleViolation("Only READY impacts can be applied.")
+        if not self._dependencies_satisfied(item):
+            item.transition(ImpactStatus.FAILED); self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "dependencies", item.correlation_id, item.causation_id)); raise DomainRuleViolation("Required impact dependencies are not satisfied.")
         if not all(simulation.state.get(c.target.state_key) == c.expected_value for c in item.definition.conditions):
             item.transition(ImpactStatus.FAILED); self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "conditions", item.correlation_id, item.causation_id)); raise DomainRuleViolation("Impact conditions are not satisfied.")
+        conflicts = self._conflicts(item)
+        if conflicts and not self._conflict_permitted(item, conflicts):
+            self._record_conflict(item, conflicts); item.transition(ImpactStatus.FAILED)
+            self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "conflict", item.correlation_id, item.causation_id))
+            raise DomainRuleViolation("Impact conflict policy does not permit application.")
         before = simulation.state
         try: applied, skipped, values = self._calculate(before, item.definition.changes)
         except DomainRuleViolation as error:
@@ -186,8 +213,11 @@ class ImpactEngine:
         after = before if not applied else before.with_values(values)
         if after is not before: simulation.replace_simulation_state(after)
         result = ImpactResult(item.id, self.simulation_id, self.scenario_id, item.definition.source, ImpactStatus.APPLIED, applied, skipped, tuple(x.reason for x in skipped), simulation.current_time, before.version, after.version, item.correlation_id, item.causation_id)
-        item.applied_changes, item.result = applied, result; item.transition(ImpactStatus.ACTIVE if item.definition.temporary else ImpactStatus.APPLIED)
+        item.applied_changes, item.result = applied, result; item.transition(ImpactStatus.APPLIED);
+        if item.definition.temporary: item.transition(ImpactStatus.ACTIVE)
         if after is not before: self._record(item, ImpactApplied(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "applied", item.correlation_id, item.causation_id)); self._record(item, SimulationStateChanged(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "state changed", item.correlation_id, item.causation_id, before.version, after.version))
+        if item.definition.temporary:
+            self._record(item, ImpactActivated(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "activated", item.correlation_id, item.causation_id))
         return result
 
     def cancel(self, instance_id: ImpactInstanceId, occurred_at: datetime) -> None:
@@ -228,6 +258,45 @@ class ImpactEngine:
         item = next((x for x in self.instances if x.id == instance_id), None)
         if item is None: raise DomainRuleViolation("Impact instance is unavailable.")
         return item
+    def _has_dependency_cycle(self, candidate: ImpactDefinition) -> bool:
+        definitions = {item.definition.id: item.definition for item in self.instances}; definitions[candidate.id] = candidate
+        visiting: set[ImpactDefinitionId] = set(); visited: set[ImpactDefinitionId] = set()
+        def visit(definition_id: ImpactDefinitionId) -> bool:
+            if definition_id in visiting: return True
+            if definition_id in visited: return False
+            visited.add(definition_id); visiting.add(definition_id)
+            definition = definitions.get(definition_id)
+            cyclic = definition is not None and any(visit(edge.definition_id) for edge in definition.dependencies if edge.definition_id in definitions)
+            visiting.remove(definition_id)
+            return cyclic
+        return any(visit(definition_id) for definition_id in definitions)
+
+    def _dependencies_satisfied(self, item: ImpactInstance) -> bool:
+        required = tuple(edge for edge in item.definition.dependencies if edge.required)
+        if not required: return True
+        satisfied = tuple(any(other.definition.id == edge.definition_id and other.status in {ImpactStatus.APPLIED, ImpactStatus.ACTIVE} for other in self.instances) for edge in required)
+        return all(satisfied) if item.definition.dependency_rule is DependencyRule.ALL else any(satisfied)
+
+    def _conflicts(self, item: ImpactInstance) -> tuple[ImpactInstance, ...]:
+        keys = {change.target.state_key for change in item.definition.changes}
+        return tuple(other for other in self.instances if other.id != item.id and other.status in {ImpactStatus.APPLIED, ImpactStatus.ACTIVE} and keys & {change.target.state_key for change in other.applied_changes})
+
+    def _conflict_permitted(self, item: ImpactInstance, conflicts: tuple[ImpactInstance, ...]) -> bool:
+        policy = item.definition.conflict_policy
+        if policy is ImpactConflictPolicy.SEQUENTIAL: return True
+        if policy is ImpactConflictPolicy.HIGHEST_PRIORITY: return all(item.definition.priority > other.definition.priority for other in conflicts)
+        shared = {change.target.state_key for change in item.definition.changes} & {change.target.state_key for other in conflicts for change in other.applied_changes}
+        incoming = tuple(change for change in item.definition.changes if change.target.state_key in shared)
+        if policy is ImpactConflictPolicy.MERGE_ADDITIVE:
+            return all(change.operation in {ImpactOperation.INCREASE, ImpactOperation.ADD, ImpactOperation.RESTORE, ImpactOperation.REPLENISH} for change in incoming)
+        if policy is ImpactConflictPolicy.LAST_EXPLICIT_SET: return bool(incoming) and all(change.operation is ImpactOperation.SET for change in incoming)
+        return False
+
+    def _record_conflict(self, item: ImpactInstance, conflicts: tuple[ImpactInstance, ...]) -> None:
+        incoming_keys = {change.target.state_key for change in item.definition.changes}
+        keys = tuple(sorted((key for other in conflicts for key in incoming_keys & {change.target.state_key for change in other.applied_changes}), key=lambda key: (key.target_type.value, str(key.target_id), key.attribute)))
+        self._record(item, ImpactConflictDetected(self.simulation_id, self.scenario_id, item.id, item.definition.version, item.scheduled_at, "conflict", item.correlation_id, item.causation_id, conflicting_impact_ids=tuple(other.id for other in conflicts), state_keys=keys, policy=item.definition.conflict_policy))
+
     def _ensure(self, simulation: Simulation) -> None:
         if simulation.id != self.simulation_id: raise DomainRuleViolation("Impact engine belongs to another simulation.")
     def _record(self, item: ImpactInstance, event: object) -> None:
@@ -236,7 +305,20 @@ class ImpactEngine:
         item.audit_trail = (*item.audit_trail, event); self.audit_trail = (*self.audit_trail, event)
 
     def reverse(self, simulation: Simulation, instance_id: UUID) -> None:
-        """Safe reversal remains a separately designed future stage."""
-        self._ensure(simulation)
-        self._item(instance_id)
-        raise DomainRuleViolation("Safe impact reversal is not implemented.")
+        self._ensure(simulation); self._reverse(simulation, self._item(instance_id), expired=False)
+
+    def _reverse(self, simulation: Simulation, item: ImpactInstance, *, expired: bool) -> None:
+        if item.status is not ImpactStatus.ACTIVE or not item.definition.temporary: raise DomainRuleViolation("Only active temporary impacts can be reversed.")
+        before = simulation.state
+        if any(before.get(change.target.state_key) != change.new_value for change in item.applied_changes): raise DomainRuleViolation("Impact state changed after application; reversal is unsafe.")
+        values = {value.key: value.value for value in before.values}
+        for change in item.applied_changes:
+            if change.previous_value is None: del values[change.target.state_key]
+            else: values[change.target.state_key] = change.previous_value
+        ordered = tuple(sorted((StateValue(key, value) for key, value in values.items()), key=lambda value: (value.key.target_type.value, str(value.key.target_id), value.key.attribute)))
+        after = before.with_values(ordered) if item.applied_changes else before
+        if after is not before:
+            simulation.replace_simulation_state(after); self._record(item, SimulationStateChanged(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "reversed state", item.correlation_id, item.causation_id, before.version, after.version))
+        item.transition(ImpactStatus.EXPIRED if expired else ImpactStatus.REVERSED)
+        self._record(item, ImpactReversed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "expired reversal" if expired else "reversed", item.correlation_id, item.causation_id))
+        if expired: self._record(item, ImpactExpired(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "expired", item.correlation_id, item.causation_id))

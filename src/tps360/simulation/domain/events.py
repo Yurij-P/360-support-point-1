@@ -1,8 +1,10 @@
-﻿from dataclasses import dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
 
-from .impact_contracts import ImpactSourceReference, TypedImpactTarget
+from .enums import ImpactConflictPolicy
+from .impact_contracts import ImpactInstanceId, ImpactSourceReference, TypedImpactTarget
+from .simulation_state import StateKey
 
 
 @dataclass(frozen=True)
@@ -381,7 +383,9 @@ class SimulationStateChanged(ImpactCreated):
 
 @dataclass(frozen=True)
 class ImpactConflictDetected(ImpactCreated):
-    pass
+    conflicting_impact_ids: tuple[ImpactInstanceId, ...] = ()
+    state_keys: tuple[StateKey, ...] = ()
+    policy: ImpactConflictPolicy = ImpactConflictPolicy.REJECT
 # Impact lifecycle events are intentionally separate from the historical simulation-only union.
 ImpactDomainEvent = (
     ImpactCreated

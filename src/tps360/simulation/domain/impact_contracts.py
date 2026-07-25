@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
@@ -26,6 +26,14 @@ class ImpactAttribute(StrEnum):
     LEVEL = "level"
     POPULATION = "population"
     DAMAGE = "damage"
+
+
+@dataclass(frozen=True)
+class ImpactDependency:
+    """A typed edge in an impact-definition dependency graph."""
+
+    definition_id: ImpactDefinitionId
+    required: bool = True
 
 
 _ALLOWED: dict[ImpactTargetType, frozenset[ImpactAttribute]] = {

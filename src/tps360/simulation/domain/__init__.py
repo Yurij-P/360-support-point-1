@@ -1,4 +1,4 @@
-﻿from .clock import SimulationClock as SimulationClock
+from .clock import SimulationClock as SimulationClock
 from .context import SimulationContext as SimulationContext
 from .enums import ActivationConditionType as ActivationConditionType
 from .enums import DependencyRule as DependencyRule
@@ -168,6 +168,7 @@ from .impact_engine import ImpactDefinition as ImpactDefinition
 from .impact_engine import ImpactEngine as ImpactEngine
 from .impact_engine import ImpactInstance as ImpactInstance
 from .impact_engine import ImpactResult as ImpactResult
+from .impact_engine import SkippedChange as SkippedChange
 from .simulation_state import SimulationState as SimulationState
 from .simulation_state import StateKey as StateKey
 from .simulation_state import StateValue as StateValue
@@ -183,19 +184,21 @@ from .impact_contracts import EventId as EventId
 from .impact_contracts import EventOccurrenceId as EventOccurrenceId
 from .impact_contracts import ImpactAttribute as ImpactAttribute
 from .impact_contracts import ImpactDefinitionId as ImpactDefinitionId
+from .impact_contracts import ImpactDependency as ImpactDependency
 from .impact_contracts import ImpactInstanceId as ImpactInstanceId
 from .impact_contracts import ImpactSourceReference as ImpactSourceReference
 from .impact_contracts import TypedImpactTarget as TypedImpactTarget
 
 __all__ += [
     "DecisionOutcomeId", "EventId", "EventOccurrenceId", "ImpactAttribute",
-    "ImpactDefinitionId", "ImpactInstanceId", "ImpactSourceReference", "TypedImpactTarget", "SkippedChange",
+    "ImpactDefinitionId", "ImpactDependency", "ImpactInstanceId", "ImpactSourceReference", "TypedImpactTarget", "SkippedChange",
 ]
 
 
 from .events import ImpactActivated as ImpactActivated
 from .events import ImpactApplied as ImpactApplied
 from .events import ImpactCancelled as ImpactCancelled
+from .events import ImpactConflictDetected as ImpactConflictDetected
 from .events import ImpactCreated as ImpactCreated
 from .events import ImpactDomainEvent as ImpactDomainEvent
 from .events import ImpactExpired as ImpactExpired
@@ -206,7 +209,7 @@ from .events import ImpactScheduled as ImpactScheduled
 from .events import SimulationStateChanged as SimulationStateChanged
 
 __all__ += [
-    "ImpactActivated", "ImpactApplied", "ImpactCancelled", "ImpactCreated", "ImpactDomainEvent",
+    "ImpactActivated", "ImpactApplied", "ImpactCancelled", "ImpactConflictDetected", "ImpactCreated", "ImpactDomainEvent",
     "ImpactExpired", "ImpactFailed", "ImpactReady", "ImpactReversed", "ImpactScheduled",
     "SimulationStateChanged",
 ]

@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -8,6 +8,7 @@ from tps360.simulation.domain import (
     ImpactAttribute,
     ImpactCategory,
     ImpactChange,
+    ImpactConflictPolicy,
     ImpactDefinition,
     ImpactDefinitionId,
     ImpactInstanceId,
@@ -212,3 +213,123 @@ def test_missing_resource_rejects_before_state_or_events() -> None:
     engine = ImpactEngine(SESSION, SCENARIO)
     with pytest.raises(DomainRuleViolation): engine.create(simulation, uuid4(), definition(ImpactChange(missing, ImpactOperation.ADD, 1.0, "units")), uuid4())
     assert simulation.state.version == 2 and not engine.audit_trail
+
+
+def test_required_all_dependencies_block_runtime_application() -> None:
+    from tps360.simulation.domain import DependencyRule, ImpactDependency, ImpactEngine
+    prerequisite_id = ImpactDefinitionId(uuid4())
+    dependent = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), dependencies=(ImpactDependency(prerequisite_id),), dependency_rule=DependencyRule.ALL)
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    item = engine.create(simulation, uuid4(), dependent, uuid4())
+    with pytest.raises(DomainRuleViolation, match="dependencies"):
+        engine.apply(simulation, item.id)
+    assert item.status is ImpactStatus.FAILED and simulation.state.version == 0
+
+
+def test_optional_dependency_does_not_block_application() -> None:
+    from tps360.simulation.domain import ImpactDependency, ImpactEngine
+    dependent = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), dependencies=(ImpactDependency(ImpactDefinitionId(uuid4()), required=False),))
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    item = ImpactEngine(SESSION, SCENARIO).create(simulation, uuid4(), dependent, uuid4())
+    assert item.status is ImpactStatus.READY
+
+
+def test_any_dependency_allows_one_applied_prerequisite() -> None:
+    from tps360.simulation.domain import DependencyRule, ImpactDependency, ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    first = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"))
+    first_item = engine.create(simulation, uuid4(), first, uuid4()); engine.apply(simulation, first_item.id)
+    dependent = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), dependencies=(ImpactDependency(first.id), ImpactDependency(ImpactDefinitionId(uuid4()))), dependency_rule=DependencyRule.ANY, conflict_policy=ImpactConflictPolicy.SEQUENTIAL)
+    item = engine.create(simulation, uuid4(), dependent, uuid4())
+    assert engine.apply(simulation, item.id).status is ImpactStatus.APPLIED
+
+
+def test_dependency_cycle_is_rejected_when_graph_closes() -> None:
+    from tps360.simulation.domain import ImpactDependency, ImpactEngine
+    first_id, second_id = ImpactDefinitionId(uuid4()), ImpactDefinitionId(uuid4())
+    simulation = _Simulation(SimulationState(SESSION))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), id=first_id, dependencies=(ImpactDependency(second_id),)), uuid4())
+    with pytest.raises(DomainRuleViolation, match="cycle"):
+        engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), id=second_id, dependencies=(ImpactDependency(first_id),)), uuid4())
+
+
+def test_reject_policy_records_typed_conflict_event_for_same_state_key() -> None:
+    from tps360.simulation.domain import ImpactConflictDetected, ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    initial = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units")), uuid4()); engine.apply(simulation, initial.id)
+    conflicting = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units")), uuid4())
+    with pytest.raises(DomainRuleViolation, match="conflict"): engine.apply(simulation, conflicting.id)
+    event = next(event for event in conflicting.audit_trail if isinstance(event, ImpactConflictDetected))
+    assert event.conflicting_impact_ids == (initial.id,) and event.state_keys == (target().state_key,)
+
+
+@pytest.mark.parametrize(
+    ("policy", "operation", "priority", "allowed"),
+    [
+        (ImpactConflictPolicy.HIGHEST_PRIORITY, ImpactOperation.ADD, 1, True),
+        (ImpactConflictPolicy.MERGE_ADDITIVE, ImpactOperation.ADD, 0, True),
+        (ImpactConflictPolicy.LAST_EXPLICIT_SET, ImpactOperation.SET, 0, True),
+        (ImpactConflictPolicy.SEQUENTIAL, ImpactOperation.SUBTRACT, 0, True),
+    ],
+)
+def test_explicit_conflict_resolution_policies(policy: ImpactConflictPolicy, operation: ImpactOperation, priority: int, allowed: bool) -> None:
+    from tps360.simulation.domain import ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 5.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    base = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), priority=0), uuid4()); engine.apply(simulation, base.id)
+    candidate = engine.create(simulation, uuid4(), definition(ImpactChange(target(), operation, 1.0, "units"), priority=priority, conflict_policy=policy), uuid4())
+    if allowed: assert engine.apply(simulation, candidate.id).status is ImpactStatus.APPLIED
+
+
+def test_temporary_impact_lifecycle_activates_and_safely_reverses_atomically() -> None:
+    from tps360.simulation.domain import ImpactActivated, ImpactEngine, ImpactReversed
+    simulation = _Simulation(SimulationState(SESSION, 3, (StateValue(target().state_key, 4.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    temporary = definition(ImpactChange(target(), ImpactOperation.ADD, 2.0, "units"), temporary=True, duration_minutes=5)
+    item = engine.create(simulation, uuid4(), temporary, uuid4()); engine.apply(simulation, item.id)
+    assert item.status is ImpactStatus.ACTIVE and any(isinstance(event, ImpactActivated) for event in item.audit_trail)
+    engine.reverse(simulation, item.id)
+    assert item.status is ImpactStatus.REVERSED and simulation.state.get(target().state_key) == 4.0 and any(isinstance(event, ImpactReversed) for event in item.audit_trail)
+
+
+def test_reversal_refuses_when_post_impact_state_changed() -> None:
+    from tps360.simulation.domain import ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 4.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    item = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 2.0, "units"), temporary=True, duration_minutes=5), uuid4()); engine.apply(simulation, item.id)
+    simulation.replace_simulation_state(SimulationState(SESSION, simulation.state.version + 1, (StateValue(target().state_key, 9.0),)))
+    with pytest.raises(DomainRuleViolation, match="unsafe"): engine.reverse(simulation, item.id)
+    assert item.status is ImpactStatus.ACTIVE and simulation.state.get(target().state_key) == 9.0
+
+
+def test_expiration_reverses_state_and_records_expired_event() -> None:
+    from tps360.simulation.domain import ImpactEngine, ImpactExpired
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 4.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    item = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 2.0, "units"), temporary=True, duration_minutes=1), uuid4()); engine.apply(simulation, item.id)
+    simulation.current_time = NOW.replace(minute=1); engine.refresh(simulation)
+    assert item.status is ImpactStatus.EXPIRED and simulation.state.get(target().state_key) == 4.0 and any(isinstance(event, ImpactExpired) for event in item.audit_trail)
+
+
+def test_all_dependencies_require_every_applied_prerequisite() -> None:
+    from tps360.simulation.domain import DependencyRule, ImpactDependency, ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    satisfied = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"))
+    satisfied_item = engine.create(simulation, uuid4(), satisfied, uuid4()); engine.apply(simulation, satisfied_item.id)
+    dependent = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), dependencies=(ImpactDependency(satisfied.id), ImpactDependency(ImpactDefinitionId(uuid4()))), dependency_rule=DependencyRule.ALL, conflict_policy=ImpactConflictPolicy.SEQUENTIAL)
+    item = engine.create(simulation, uuid4(), dependent, uuid4())
+    with pytest.raises(DomainRuleViolation, match="dependencies"): engine.apply(simulation, item.id)
+
+
+def test_optional_missing_dependency_allows_runtime_application() -> None:
+    from tps360.simulation.domain import ImpactDependency, ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    dependent = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), dependencies=(ImpactDependency(ImpactDefinitionId(uuid4()), required=False),))
+    item = engine.create(simulation, uuid4(), dependent, uuid4())
+    assert engine.apply(simulation, item.id).status is ImpactStatus.APPLIED

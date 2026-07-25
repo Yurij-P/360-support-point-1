@@ -104,3 +104,12 @@
 - **Основний commit:** `a1afde4367040ecf34a2a904e71d087c36e61439`.
 - **Push:** успішно виконано до `origin/main`; local HEAD дорівнював `origin/main`.
 - **Перевірки:** Impact contracts/engine `40 passed`; full suite `334 passed`; Ruff, MyPy, `git diff --check` passed.
+
+## Cycle 2 — Impact dependencies, conflicts, and safe reversal
+
+- **Дата і час:** 2026-07-25 (Europe/Kyiv).
+- **Репозиторій / checkpoint:** `Yurij-P/360-support-point-1`, `main` / `e458c4450b711d242d543a786616b11b24063fe5`.
+- **Мета циклу:** Реалізувати окремий доменний цикл dependencies (required/optional, ALL/ANY, graph cycle detection), conflict detection/resolution та безпечного atomic reversal тимчасових impacts, без змін вебінтерфейсу.
+- **Фактично виконані зміни:** Додано immutable typed `ImpactDependency`; `ImpactDefinition` тепер має dependency rule та explicit conflict policy. `ImpactEngine` валідовує цикли при замиканні графа, перевіряє required dependencies безпосередньо перед apply, виявляє collision за `TypedImpactTarget.state_key`, і застосовує documented policies `REJECT`, `HIGHEST_PRIORITY`, `SEQUENTIAL`, `MERGE_ADDITIVE`, `LAST_EXPLICIT_SET`. Додано immutable typed `ImpactConflictDetected` payload. Temporary impact проходить `READY → APPLIED → ACTIVE`, emit-ить `ImpactActivated`; reversal атомарно повертає exact previous values лише якщо всі affected state keys досі мають impact-produced values, та emit-ить `ImpactReversed`. Expiry виконує той самий safe reversal та emit-ить `ImpactExpired`.
+- **Тести:** Додано окремі behavioral tests для required/optional dependencies, ALL/ANY, cycle detection, runtime dependency enforcement, state-key conflict event, кожної allowed resolution policy, lifecycle/activation, safe reversal, reversal refusal after external state change та expiration; додано contract test immutable typed dependency/conflict event.
+- **Commit / push:** не виконувались за вимогою.
