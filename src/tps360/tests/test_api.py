@@ -7,6 +7,16 @@ from tps360.api.main import app
 client = TestClient(app)
 
 
+def role_profile(role_id: str) -> dict[str, object]:
+    return {
+        "role_id": role_id,
+        "title": "Test role",
+        "category": "Test category",
+        "briefing": "Test briefing",
+    }
+
+
+
 def test_health():
     assert client.get("/health").json() == {"status": "ok"}
 
@@ -15,9 +25,9 @@ def test_create_community():
     response = client.post(
         "/communities",
         json={
-            "name": "Громада",
+            "name": "Р В РІР‚СљР РЋР вЂљР В РЎвЂўР В РЎВР В Р’В°Р В РўвЂР В Р’В°",
             "code": "API-1",
-            "oblast": "Київська",
+            "oblast": "Р В РЎв„ўР В РЎвЂР РЋРІР‚вЂќР В Р вЂ Р РЋР С“Р РЋР Р‰Р В РЎвЂќР В Р’В°",
             "population": 1,
             "area_km2": 1,
         },
@@ -26,12 +36,14 @@ def test_create_community():
 
 
 def test_facilitated_session_startup_flow():
+    role_id = str(uuid4())
     created = client.post(
         "/sessions",
         json={
             "community_id": str(uuid4()),
-            "facilitator_name": "Фасилітатор",
+            "facilitator_name": "Р В Р’В¤Р В Р’В°Р РЋР С“Р В РЎвЂР В Р’В»Р РЋРІР‚вЂњР РЋРІР‚С™Р В Р’В°Р РЋРІР‚С™Р В РЎвЂўР РЋР вЂљ",
             "player_capacity": 2,
+            "role_profiles": [role_profile(role_id)],
         },
     )
     assert created.status_code == 200
@@ -42,7 +54,7 @@ def test_facilitated_session_startup_flow():
 
     joined = client.post(
         f"/sessions/{session_id}/participants",
-        json={"display_name": "Гравець 1"},
+        json={"display_name": "Р В РІР‚СљР РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’ВµР РЋРІР‚В Р РЋР Р‰ 1"},
     )
     assert joined.status_code == 200
     participant_id = joined.json()["id"]
@@ -54,7 +66,7 @@ def test_facilitated_session_startup_flow():
 
     assigned = client.put(
         f"/sessions/{session_id}/participants/{participant_id}/role",
-        json={"role_id": str(uuid4())},
+        json={"role_id": role_id},
         headers=facilitator_headers,
     )
     assert assigned.status_code == 200
@@ -67,12 +79,14 @@ def test_facilitated_session_startup_flow():
 
 
 def test_assigning_role_to_unknown_participant_returns_not_found():
+    role_id = str(uuid4())
     created = client.post(
         "/sessions",
         json={
             "community_id": str(uuid4()),
-            "facilitator_name": "Фасилітатор",
+            "facilitator_name": "Р В Р’В¤Р В Р’В°Р РЋР С“Р В РЎвЂР В Р’В»Р РЋРІР‚вЂњР РЋРІР‚С™Р В Р’В°Р РЋРІР‚С™Р В РЎвЂўР РЋР вЂљ",
             "player_capacity": 1,
+            "role_profiles": [role_profile(role_id)],
         },
     )
     session_id = created.json()["id"]
@@ -82,7 +96,7 @@ def test_assigning_role_to_unknown_participant_returns_not_found():
 
     response = client.put(
         f"/sessions/{session_id}/participants/{uuid4()}/role",
-        json={"role_id": str(uuid4())},
+        json={"role_id": role_id},
         headers=facilitator_headers,
     )
 
@@ -90,12 +104,14 @@ def test_assigning_role_to_unknown_participant_returns_not_found():
 
 
 def test_session_cannot_be_started_twice():
+    role_id = str(uuid4())
     created = client.post(
         "/sessions",
         json={
             "community_id": str(uuid4()),
-            "facilitator_name": "Фасилітатор",
+            "facilitator_name": "Р В Р’В¤Р В Р’В°Р РЋР С“Р В РЎвЂР В Р’В»Р РЋРІР‚вЂњР РЋРІР‚С™Р В Р’В°Р РЋРІР‚С™Р В РЎвЂўР РЋР вЂљ",
             "player_capacity": 1,
+            "role_profiles": [role_profile(role_id)],
         },
     )
     session_id = created.json()["id"]
@@ -104,11 +120,11 @@ def test_session_cannot_be_started_twice():
     }
     joined = client.post(
         f"/sessions/{session_id}/participants",
-        json={"display_name": "Гравець 1"},
+        json={"display_name": "Р В РІР‚СљР РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’ВµР РЋРІР‚В Р РЋР Р‰ 1"},
     )
     client.put(
         f"/sessions/{session_id}/participants/{joined.json()['id']}/role",
-        json={"role_id": str(uuid4())},
+        json={"role_id": role_id},
         headers=facilitator_headers,
     )
     assert (
@@ -124,19 +140,21 @@ def test_session_cannot_be_started_twice():
 
 
 def test_facilitator_actions_require_the_generated_token():
+    role_id = str(uuid4())
     created = client.post(
         "/sessions",
         json={
             "community_id": str(uuid4()),
-            "facilitator_name": "Фасилітатор",
+            "facilitator_name": "Р В Р’В¤Р В Р’В°Р РЋР С“Р В РЎвЂР В Р’В»Р РЋРІР‚вЂњР РЋРІР‚С™Р В Р’В°Р РЋРІР‚С™Р В РЎвЂўР РЋР вЂљ",
             "player_capacity": 1,
+            "role_profiles": [role_profile(role_id)],
         },
     )
     session_id = created.json()["id"]
     token = created.json()["facilitator_token"]
     joined = client.post(
         f"/sessions/{session_id}/participants",
-        json={"display_name": "Гравець 1"},
+        json={"display_name": "Р В РІР‚СљР РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’ВµР РЋРІР‚В Р РЋР Р‰ 1"},
     )
     role_url = f"/sessions/{session_id}/participants/{joined.json()['id']}/role"
 
@@ -148,7 +166,7 @@ def test_facilitator_actions_require_the_generated_token():
     )
     authorized = client.put(
         role_url,
-        json={"role_id": str(uuid4())},
+        json={"role_id": role_id},
         headers={"X-Facilitator-Token": token},
     )
 
@@ -158,16 +176,22 @@ def test_facilitator_actions_require_the_generated_token():
 
 
 def test_facilitator_token_is_returned_once_and_not_exposed_by_session_reads():
+    role_id = str(uuid4())
     created = client.post(
         "/sessions",
         json={
             "community_id": str(uuid4()),
-            "facilitator_name": "Фасилітатор",
+            "facilitator_name": "Р В Р’В¤Р В Р’В°Р РЋР С“Р В РЎвЂР В Р’В»Р РЋРІР‚вЂњР РЋРІР‚С™Р В Р’В°Р РЋРІР‚С™Р В РЎвЂўР РЋР вЂљ",
             "player_capacity": 1,
+            "role_profiles": [role_profile(role_id)],
         },
     )
 
-    fetched = client.get(f"/sessions/{created.json()['id']}")
+    session_id = created.json()["id"]
+    fetched = client.get(
+        f"/sessions/{session_id}",
+        headers={"X-Facilitator-Token": created.json()["facilitator_token"]},
+    )
 
     assert created.json()["facilitator_token"]
     assert "facilitator_token" not in fetched.json()

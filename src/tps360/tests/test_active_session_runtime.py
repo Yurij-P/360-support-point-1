@@ -7,6 +7,7 @@ from tps360.api.main import app
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.simulation.domain.session import (
     FacilitatedSession,
+    RoleProfile,
     SessionJournalEntryType,
     SessionStatus,
 )
@@ -15,6 +16,7 @@ client = TestClient(app)
 
 
 def make_active_session() -> tuple[FacilitatedSession, UUID, UUID]:
+    role_id = uuid4()
     session = FacilitatedSession(
         community_id=uuid4(),
         facilitator_name="Facilitator",
@@ -22,21 +24,35 @@ def make_active_session() -> tuple[FacilitatedSession, UUID, UUID]:
         facilitator_token_digest=FacilitatedSession.digest_facilitator_token(
             "facilitator-token"
         ),
+        role_profiles=[
+            RoleProfile(
+                role_id=role_id,
+                title="Test role",
+                category="Test category",
+                briefing="Test briefing",
+            )
+        ],
     )
     participant = session.join("Player 1")
-    role_id = uuid4()
     session.assign_role(participant.id, role_id)
     session.start()
     return session, participant.id, role_id
 
 
 def start_api_session() -> tuple[str, dict[str, str], str, str]:
+    role_id = str(uuid4())
     created = client.post(
         "/sessions",
         json={
             "community_id": str(uuid4()),
             "facilitator_name": "Facilitator",
             "player_capacity": 1,
+            "role_profiles": [{
+                "role_id": role_id,
+                "title": "Test role",
+                "category": "Test category",
+                "briefing": "Test briefing",
+            }],
         },
     )
     assert created.status_code == 200
@@ -48,7 +64,6 @@ def start_api_session() -> tuple[str, dict[str, str], str, str]:
     )
     assert joined.status_code == 200
     participant_id = joined.json()["id"]
-    role_id = str(uuid4())
     assigned = client.put(
         f"/sessions/{session_id}/participants/{participant_id}/role",
         json={"role_id": role_id},
