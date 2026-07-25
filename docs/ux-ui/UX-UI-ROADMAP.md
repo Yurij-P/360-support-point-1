@@ -1,6 +1,13 @@
-﻿# TPS360 UX/UI Roadmap
+# TPS360 UX/UI Roadmap
 
 Status: draft plan. Scope: UX/UI sequencing only; no implementation.
+
+
+## Wireframes v1.1 status
+
+- Community-first wireframes v1.1: APPROVED.
+- High-fidelity UI: NOT STARTED.
+- Frontend implementation: NOT STARTED.
 
 ## Guiding constraint
 

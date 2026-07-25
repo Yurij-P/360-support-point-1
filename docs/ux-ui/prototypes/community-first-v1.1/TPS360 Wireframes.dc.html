@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+body{margin:0;background:#f2f2f0;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#1b1b1a;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2a5f8f}a:hover{color:#1c4266}
+:focus-visible{outline:2px solid #2a5f8f;outline-offset:2px}
+button{font-family:inherit}
+@keyframes shim{0%{opacity:.45}50%{opacity:.9}100%{opacity:.45}}
+</style>
+</helmet>
+
+<div style="min-height:100vh">
+
+<header style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #d5d5d1;padding:14px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <span style="font:600 15px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif">Точка підтримки 360 · TPS360</span>
+    <span style="font:400 11px/1.2 Consolas,SFMono-Regular,monospace;color:#7a7a74;letter-spacing:.04em">ЕТАП 1 — UX WIREFRAMES · LOW FIDELITY</span>
+  </div>
+  <nav style="display:flex;gap:6px;flex-wrap:wrap" aria-label="Розділи документа">
+    <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="4">
+      <button type="button" onClick="{{ tab.go }}" aria-current="{{ tab.current }}" style="min-height:38px;padding:0 14px;border-radius:5px;border:1px solid #cfcfca;background:{{ tab.bg }};color:{{ tab.fg }};font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">{{ tab.label }}</button>
+    </sc-for>
+  </nav>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+    <span style="font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#7a7a74">РОЗМІР ЕКРАНА</span>
+    <div style="display:flex;border:1px solid #cfcfca;border-radius:5px;overflow:hidden">
+      <sc-for list="{{ devices }}" as="d" hint-placeholder-count="2">
+        <button type="button" onClick="{{ d.go }}" aria-pressed="{{ d.on }}" style="min-height:38px;padding:0 12px;border:0;border-left:1px solid #eceae6;background:{{ d.bg }};color:{{ d.fg }};font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">{{ d.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ ПРОТОТИП ══════════ -->
+<sc-if value="{{ isProto }}" hint-placeholder-val="{{ true }}">
+<div style="padding:22px 28px 60px">
+
+  <div style="max-width:1340px;margin:0 auto 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <ol style="list-style:none;margin:0;padding:0;display:flex;gap:8px;flex-wrap:wrap">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+        <li style="display:flex;align-items:center;gap:8px">
+          <button type="button" onClick="{{ st.go }}" style="min-height:40px;display:flex;align-items:center;gap:8px;padding:0 13px;border-radius:5px;border:1px solid {{ st.border }};background:{{ st.bg }};color:{{ st.fg }};font:{{ st.font }};cursor:pointer">
+            <span style="font-family:Consolas,SFMono-Regular,monospace">{{ st.glyph }}</span>{{ st.n }}. {{ st.label }}
+          </button>
+          <sc-if value="{{ st.notLast }}"><span aria-hidden="true" style="color:#b5b5af">›</span></sc-if>
+        </li>
+      </sc-for>
+    </ol>
+    <span style="font:400 11px/1.4 Consolas,SFMono-Regular,monospace;color:#7a7a74;margin-left:auto">КЛІКАБЕЛЬНИЙ ПОТІК: 6 ЕКРАНІВ</span>
+  </div>
+
+  <div style="max-width:1340px;margin:0 auto;background:#fff;border:1px solid #cfcfca;border-radius:8px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:#e9e9e5;border-bottom:1px solid #d5d5d1">
+      <span style="font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">{{ frameLabel }}</span>
+      <span style="font:400 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">prototype.local{{ routePath }}</span>
+    </div>
+    <div style="overflow-x:auto;padding:20px;background:#f7f7f5">
+    <div style="{{ frameStyle }}">
+
+      <!-- ── спільний каркас застосунку ── -->
+      <div style="display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid #dcdcd8;background:#fff">
+        <span style="font:600 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif">TPS360</span>
+        <nav style="display:flex;gap:4px;flex-wrap:wrap" aria-label="Основна навігація">
+          <sc-for list="{{ globalNav }}" as="g" hint-placeholder-count="5">
+            <span style="padding:8px 11px;border-radius:5px;background:{{ g.bg }};font:{{ g.font }};color:{{ g.fg }};min-height:40px;display:flex;align-items:center">{{ g.label }}</span>
+          </sc-for>
+        </nav>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <span style="font:400 11px/1 Consolas,SFMono-Regular,monospace;color:#7a7a74">РОЛЬ: ФАСИЛІТАТОР</span>
+          <span style="width:32px;height:32px;border-radius:50%;background:#e4e4e0;border:1px solid #d0d0cb"></span>
+        </div>
+      </div>
+
+      <!-- контекстна смуга вибору -->
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 20px;border-bottom:1px solid #e2e2de;background:#fafaf8;flex-wrap:wrap">
+        <span style="font:400 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">КОНТЕКСТ:</span>
+        <sc-for list="{{ contextChips }}" as="c" hint-placeholder-count="3">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid #d8d8d3;border-radius:4px;background:#fff;font:400 12px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ c.fg }}"><span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ c.k }}</span>{{ c.v }}</span>
+        </sc-for>
+      </div>
+
+      <!-- ═══ 1. КАТАЛОГ ГРОМАД ═══ -->
+      <sc-if value="{{ onS1 }}" hint-placeholder-val="{{ true }}">
+      <main style="padding:24px 20px 28px">
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px">
+          <div style="flex:1 1 420px;min-width:280px">
+            <h1 style="font:600 24px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 6px">Каталог громад</h1>
+            <p style="font:400 14px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin:0;max-width:62ch;text-wrap:pretty">Виберіть територіальну громаду, для якої готуватиметься симуляційна сесія. Профіль громади визначає доступні загрози та релевантні сценарії.</p>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:4px;background:#efeeea;border:1px dashed #b9b9b2;font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">MOCK DATA · СПИСОК ГРОМАД</span>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:14px;border:1px solid #dcdcd8;border-radius:6px;background:#fbfbf9;margin-bottom:14px">
+          <label style="flex:1 1 300px;display:flex;flex-direction:column;gap:5px;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">Пошук громади
+            <span style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#9a9a94"><span aria-hidden="true">⌕</span>Назва громади, ОТГ або населений пункт</span>
+          </label>
+          <label style="flex:0 1 190px;display:flex;flex-direction:column;gap:5px;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">Область
+            <span style="display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif">Миколаївська<span aria-hidden="true" style="color:#8a8a84">▾</span></span>
+          </label>
+          <label style="flex:0 1 190px;display:flex;flex-direction:column;gap:5px;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">Статус даних
+            <span style="display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif">Усі статуси<span aria-hidden="true" style="color:#8a8a84">▾</span></span>
+          </label>
+          <button type="button" style="min-height:44px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Скинути</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+          <span style="font:400 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f">Знайдено 6 громад · сортування: повнота даних</span>
+          <span style="font:400 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities?search&amp;oblast&amp;status</span>
+        </div>
+
+        <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:{{ catalogCols }};gap:14px">
+          <sc-for list="{{ comms }}" as="c" hint-placeholder-count="6">
+            <li style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <div style="flex:1">
+                  <h2 style="font:600 16px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 3px">{{ c.name }}</h2>
+                  <span style="font:400 12px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66">{{ c.oblast }} · {{ c.code }}</span>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid {{ c.stBorder }};border-radius:4px;background:{{ c.stBg }};font:500 10px/1.2 Consolas,SFMono-Regular,monospace;color:{{ c.stFg }}"><span aria-hidden="true">{{ c.stGlyph }}</span>{{ c.status }}</span>
+              </div>
+              <dl style="margin:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">НАСЕЛЕННЯ</dt><dd style="margin:0;font:500 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ c.pop }}</dd></div>
+                <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">НАС. ПУНКТИ</dt><dd style="margin:0;font:500 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ c.np }}</dd></div>
+                <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">УКРИТТЯ</dt><dd style="margin:0;font:500 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ c.shelters }}</dd></div>
+              </dl>
+              <div>
+                <div style="display:flex;justify-content:space-between;font:400 11px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin-bottom:5px"><span>Повнота даних для симуляції</span><span style="font-family:Consolas,SFMono-Regular,monospace">{{ c.completeness }}%</span></div>
+                <div style="height:8px;border-radius:4px;background:#e8e8e4;overflow:hidden"><div style="height:100%;width:{{ c.completeness }}%;background:#6f6f69"></div></div>
+              </div>
+              <button type="button" onClick="{{ c.open }}" style="min-height:44px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Відкрити громаду</button>
+            </li>
+          </sc-for>
+        </ul>
+      </main>
+      </sc-if>
+
+      <!-- ═══ 2. ПАСПОРТ ГРОМАДИ ═══ -->
+      <sc-if value="{{ onS2 }}">
+      <main style="padding:20px 20px 28px">
+        <button type="button" onClick="{{ toS1 }}" style="min-height:40px;padding:0 10px;margin-bottom:14px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">← Каталог громад</button>
+
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #e2e2de;margin-bottom:18px">
+          <div style="flex:1 1 380px">
+            <span style="font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">ПАСПОРТ ГРОМАДИ</span>
+            <h1 style="font:600 24px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:6px 0 6px">Березнегуватська селищна громада</h1>
+            <p style="font:400 13px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin:0">Миколаївська область · Баштанський район · КОАТУУ 4820955100 · площа 1 128 км²</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #d9c99f;border-radius:4px;background:#fdf6e7;font:500 11px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#7a5a12"><span aria-hidden="true">!</span>Дані оновлено 12.03.2026 · частково неповні</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" onClick="{{ toS3 }}" style="min-height:44px;padding:0 14px;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Геопросторовий огляд</button>
+              <button type="button" onClick="{{ toS4 }}" style="min-height:44px;padding:0 16px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Перейти до загроз →</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ passportCols }};gap:14px;align-items:start">
+          <sc-for list="{{ passport }}" as="b" hint-placeholder-count="6">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">{{ b.title }}</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ b.tagBorder }};background:{{ b.tagBg }};font:500 9px/1.2 Consolas,SFMono-Regular,monospace;color:{{ b.tagFg }}">{{ b.tag }}</span>
+              </header>
+              <dl style="margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4">
+                    <dt style="flex:1;font:400 13px/1.4 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f">{{ r.k }}</dt>
+                    <dd style="margin:0;font:500 13px/1.4 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ r.vFg }};text-align:right">{{ r.v }}</dd>
+                  </div>
+                </sc-for>
+              </dl>
+            </section>
+          </sc-for>
+        </div>
+
+        <section style="margin-top:16px;border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px 16px">
+          <h2 style="font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 8px;color:#5f4708">Неповні або непідтверджені дані (4)</h2>
+          <ul style="margin:0;padding-left:18px;font:400 13px/1.7 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#4a4a44">
+            <li>Кількість місць в укриттях — джерело не підтверджене <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#7a5a12">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED</span></li>
+            <li>Актуальний перелік вразливих груп — потребує підтвердження соцслужбою</li>
+            <li>Технічний стан водогонів — немає даних</li>
+            <li>Методика оцінювання ризиків <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span></li>
+          </ul>
+        </section>
+      </main>
+      </sc-if>
+
+      <!-- ═══ 3. ГЕОПРОСТОРОВИЙ ОГЛЯД ═══ -->
+      <sc-if value="{{ onS3 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px">
+          <button type="button" onClick="{{ toS2 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">← Паспорт громади</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">Геопросторовий огляд · Березнегуватська громада</h1>
+            <p style="font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Територіальний контекст, критичні об’єкти, ресурси та зони ризику</p>
+          </div>
+          <button type="button" onClick="{{ toS4 }}" style="min-height:44px;padding:0 16px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Перейти до загроз →</button>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid #dcdcd8;border-radius:6px;background:#fbfbf9;margin-bottom:12px">
+          <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84;align-self:center;margin-right:4px">ШАРИ КАРТИ</span>
+          <sc-for list="{{ layers }}" as="l" hint-placeholder-count="6">
+            <button type="button" aria-pressed="{{ l.on }}" style="min-height:40px;display:inline-flex;align-items:center;gap:7px;padding:0 11px;border:1px solid {{ l.border }};border-radius:5px;background:{{ l.bg }};font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ l.fg }};cursor:pointer"><span style="font-family:Consolas,SFMono-Regular,monospace">{{ l.glyph }}</span>{{ l.label }} <span style="color:#8a8a84;font-family:Consolas,SFMono-Regular,monospace">{{ l.count }}</span></button>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ geoCols }};gap:14px;align-items:start">
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;overflow:hidden">
+            <div style="position:relative;height:{{ mapH }};background:#f0efec;border-bottom:1px solid #e6e6e2;background-image:linear-gradient(#e6e5e1 1px,transparent 1px),linear-gradient(90deg,#e6e5e1 1px,transparent 1px);background-size:44px 44px">
+              <span style="position:absolute;inset:14px;border:2px dashed #bdbdb6;border-radius:8px"></span>
+              <span style="position:absolute;top:22px;left:50%;transform:translateX(-50%);padding:5px 10px;border-radius:4px;background:#fff;border:1px dashed #b9b9b2;font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">MOCK DATA · СХЕМАТИЧНА КАРТА, НЕ ГЕОДАНІ</span>
+              <sc-for list="{{ pins }}" as="p" hint-placeholder-count="7">
+                <button type="button" onClick="{{ p.pick }}" style="position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;transform:translate(-50%,-50%);min-width:44px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;cursor:pointer">
+                  <span style="width:22px;height:22px;border-radius:{{ p.radius }};border:2px solid {{ p.border }};background:{{ p.bg }};display:flex;align-items:center;justify-content:center;font:600 10px/1 Consolas,SFMono-Regular,monospace;color:#1b1b1a">{{ p.glyph }}</span>
+                  <span style="font:500 10px/1.1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#fffffff2;padding:1px 4px;border-radius:3px;white-space:nowrap">{{ p.label }}</span>
+                </button>
+              </sc-for>
+              <span style="position:absolute;left:22%;top:58%;width:150px;height:100px;border:2px dotted #9a9a93;border-radius:50%;background:#00000008"></span>
+              <span style="position:absolute;left:22%;top:58%;transform:translate(-10px,54px);font:500 10px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#5c5c57">Потенційно небезпечна зона</span>
+              <div style="position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:4px">
+                <span style="width:44px;height:44px;border:1px solid #cfcfca;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font:500 16px/1 Consolas,SFMono-Regular,monospace">+</span>
+                <span style="width:44px;height:44px;border:1px solid #cfcfca;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font:500 16px/1 Consolas,SFMono-Regular,monospace">−</span>
+              </div>
+            </div>
+            <div style="padding:12px 14px;display:flex;gap:16px;flex-wrap:wrap">
+              <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84;align-self:center">ЛЕГЕНДА</span>
+              <sc-for list="{{ legend }}" as="lg" hint-placeholder-count="6">
+                <span style="display:inline-flex;align-items:center;gap:7px;font:400 12px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f"><span style="width:16px;height:16px;border-radius:{{ lg.radius }};border:2px solid {{ lg.border }};background:{{ lg.bg }};display:flex;align-items:center;justify-content:center;font:600 9px/1 Consolas,SFMono-Regular,monospace">{{ lg.glyph }}</span>{{ lg.label }}</span>
+              </sc-for>
+            </div>
+          </section>
+
+          <aside style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+            <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2">
+              <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">ВИБРАНИЙ ОБ’ЄКТ</span>
+              <h2 style="font:600 15px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:6px 0 0">{{ picked.title }}</h2>
+              <span style="font:400 12px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66">{{ picked.kind }}</span>
+            </header>
+            <dl style="margin:0;padding:6px 14px 12px">
+              <sc-for list="{{ picked.rows }}" as="r" hint-placeholder-count="5">
+                <div style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4">
+                  <dt style="flex:1;font:400 12px/1.4 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66">{{ r.k }}</dt>
+                  <dd style="margin:0;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,Arial,sans-serif;text-align:right;color:{{ r.vFg }}">{{ r.v }}</dd>
+                </div>
+              </sc-for>
+            </dl>
+            <div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:8px">
+              <button type="button" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Показати в паспорті громади</button>
+              <span style="font:400 11px/1.5 Consolas,SFMono-Regular,monospace;color:#8a8a84">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities/{id}/geo?layers=</span>
+            </div>
+          </aside>
+        </div>
+
+        <sc-if value="{{ isTablet }}">
+        <p style="margin:12px 0 0;padding:11px 13px;border:1px dashed #b9b9b2;border-radius:6px;background:#fbfbf9;font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f">Планшет: бокова панель переходить під карту, шари згортаються в один список, зона карти зберігає мінімум 420 px висоти, усі елементи керування ≥ 44×44 px.</p>
+        </sc-if>
+      </main>
+      </sc-if>
+
+      <!-- ═══ 4. ЗАГРОЗИ ═══ -->
+      <sc-if value="{{ onS4 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS2 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">← Паспорт громади</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">Загрози, релевантні для громади</h1>
+            <p style="font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Оцінювання ймовірності та впливу — <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span>: методику визначає власник продукту</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ threatCols }};gap:14px;align-items:start">
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ threats }}" as="t" hint-placeholder-count="4">
+              <li>
+                <button type="button" onClick="{{ t.pick }}" aria-pressed="{{ t.on }}" style="width:100%;text-align:left;border:1px solid {{ t.border }};border-left:4px solid {{ t.accent }};border-radius:6px;background:{{ t.bg }};padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:10px">
+                  <span style="display:flex;align-items:flex-start;gap:10px">
+                    <span style="flex:1">
+                      <span style="display:block;font:600 15px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ t.name }}</span>
+                      <span style="display:block;font:400 12px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66;margin-top:3px">Категорія: {{ t.cat }}</span>
+                    </span>
+                    <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ t.tagBorder }};background:{{ t.tagBg }};font:500 9px/1.2 Consolas,SFMono-Regular,monospace;color:{{ t.tagFg }}">{{ t.tag }}</span>
+                  </span>
+                  <span style="display:flex;gap:18px;flex-wrap:wrap">
+                    <span style="font:400 12px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">Імовірність: <b style="font-weight:600">{{ t.prob }}</b></span>
+                    <span style="font:400 12px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">Вплив: <b style="font-weight:600">{{ t.impact }}</b></span>
+                  </span>
+                  <span style="font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;text-wrap:pretty">{{ t.why }}</span>
+                </button>
+              </li>
+            </sc-for>
+          </ul>
+
+          <aside style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;position:relative">
+            <header style="padding:14px;border-bottom:1px solid #e6e6e2">
+              <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">ПРОФІЛЬ ЗАГРОЗИ</span>
+              <h2 style="font:600 17px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:6px 0 0">{{ threat.name }}</h2>
+              <span style="font:400 12px/1.4 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66">{{ threat.cat }} · імовірність {{ threat.prob }} · вплив {{ threat.impact }}</span>
+            </header>
+            <div style="padding:14px;display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ threat.blocks }}" as="bl" hint-placeholder-count="4">
+                <section>
+                  <h3 style="font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin:0 0 7px;letter-spacing:.04em">{{ bl.title }}</h3>
+                  <ul style="margin:0;padding-left:16px;font:400 13px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#33332f">
+                    <sc-for list="{{ bl.items }}" as="it" hint-placeholder-count="3">
+                      <li>{{ it }}</li>
+                    </sc-for>
+                  </ul>
+                </section>
+              </sc-for>
+              <p style="margin:0;padding:11px 13px;border:1px solid #d9c99f;border-radius:5px;background:#fdf6e7;font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#4a4a44"><b style="font-weight:600">Неповні дані:</b> перелік пов’язаних об’єктів заповнено на 60%. Симуляцію можна створити, але частину вводів фасилітатор внесе вручну.</p>
+              <button type="button" onClick="{{ toS5 }}" style="min-height:44px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Вибрати загрозу →</button>
+            </div>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- ═══ 5. СЦЕНАРІЇ ═══ -->
+      <sc-if value="{{ onS5 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS4 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">← Загрози</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">Сценарії для громади</h1>
+            <p style="font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Відповідність контексту: Березнегуватська громада · Пошкодження водопостачання. Алгоритм автопідбору — <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span></p>
+          </div>
+        </div>
+
+        <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:{{ scenarioCols }};gap:14px">
+          <sc-for list="{{ scenarios }}" as="s" hint-placeholder-count="3">
+            <li style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;display:flex;flex-direction:column">
+              <header style="padding:14px;border-bottom:1px solid #e6e6e2;display:flex;gap:10px;align-items:flex-start">
+                <div style="flex:1">
+                  <h2 style="font:600 16px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 4px">{{ s.name }}</h2>
+                  <span style="font:400 12px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66">Тип: {{ s.type }}</span>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid {{ s.stBorder }};border-radius:4px;background:{{ s.stBg }};font:500 10px/1.2 Consolas,SFMono-Regular,monospace;color:{{ s.stFg }}"><span aria-hidden="true">{{ s.stGlyph }}</span>{{ s.readiness }} · MOCK</span>
+              </header>
+              <div style="padding:14px;display:flex;flex-direction:column;gap:12px;flex:1">
+                <dl style="margin:0;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">ТРИВАЛІСТЬ · MOCK</dt><dd style="margin:0;font:500 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ s.dur }}</dd></div>
+                  <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">СКЛАДНІСТЬ · MOCK</dt><dd style="margin:0;font:500 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ s.complexity }}</dd></div>
+                  <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">УЧАСНИКИ · PDR</dt><dd style="margin:0;font:500 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ s.pFg }}">{{ s.participants }}</dd></div>
+                  <div><dt style="font:400 10px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin-bottom:3px">РОЛІ · PDR</dt><dd style="margin:0;font:500 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ s.rFg }}">{{ s.roles }}</dd></div>
+                </dl>
+                <section>
+                  <h3 style="font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin:0 0 6px">НАВЧАЛЬНІ ЦІЛІ</h3>
+                  <ul style="margin:0;padding-left:16px;font:400 13px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif">
+                    <sc-for list="{{ s.goals }}" as="g" hint-placeholder-count="3">
+                      <li>{{ g }}</li>
+                    </sc-for>
+                  </ul>
+                </section>
+                <p style="margin:0;padding:11px 12px;border:1px solid #dcdcd8;border-left:3px solid #6f6f69;border-radius:5px;background:#fafaf8;font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f"><b style="font-weight:600">Чому підходить: </b>{{ s.why }}</p>
+                <button type="button" onClick="{{ s.choose }}" style="margin-top:auto;min-height:44px;border:1px solid {{ s.btnBorder }};border-radius:5px;background:{{ s.btnBg }};color:{{ s.btnFg }};font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:{{ s.cursor }}">{{ s.btnLabel }}</button>
+              </div>
+            </li>
+          </sc-for>
+        </ul>
+      </main>
+      </sc-if>
+
+      <!-- ═══ 6. SIMULATION CONTEXT SNAPSHOT ═══ -->
+      <sc-if value="{{ onS6 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS5 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">← Сценарії</button>
+          <div style="flex:1 1 320px">
+            <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">КОНТРОЛЬНА ТОЧКА ПЕРЕД СТВОРЕННЯМ СЕСІЇ</span>
+            <h1 style="font:600 22px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:6px 0 0">Simulation Context Snapshot</h1>
+            <p style="font:400 13px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin:5px 0 0;max-width:70ch;text-wrap:pretty">Перевірте, які саме дані громади, загрози та сценарію буде зафіксовано в сесії. Після створення сесії снепшот не змінюється.</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ snapCols3 }};gap:14px;margin-bottom:14px">
+          <sc-for list="{{ snapPicks }}" as="p" hint-placeholder-count="3">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px">
+              <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ p.kind }}</span>
+              <h2 style="font:600 15px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:7px 0 4px">{{ p.name }}</h2>
+              <p style="font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66;margin:0 0 10px">{{ p.meta }}</p>
+              <button type="button" onClick="{{ p.change }}" style="min-height:40px;padding:0 11px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Змінити</button>
+            </section>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ snapCols2 }};gap:14px;align-items:start">
+          <sc-for list="{{ snapBlocks }}" as="b" hint-placeholder-count="5">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">{{ b.title }}</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ b.tagBorder }};background:{{ b.tagBg }};font:500 9px/1.2 Consolas,SFMono-Regular,monospace;color:{{ b.tagFg }}">{{ b.tag }}</span>
+              </header>
+              <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="4">
+                  <li style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4;font:400 13px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f"><span style="flex:1">{{ r.k }}</span><span style="font-weight:500;color:{{ r.vFg }};text-align:right">{{ r.v }}</span></li>
+                </sc-for>
+              </ul>
+            </section>
+          </sc-for>
+        </div>
+
+        <section style="margin-top:14px;border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px 16px">
+          <h2 style="font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 8px;color:#5f4708">⚠ Дані, які увійдуть у сесію з обмеженнями (3)</h2>
+          <ul style="margin:0;padding-left:18px;font:400 13px/1.7 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#4a4a44">
+            <li>Місткість укриттів — непідтверджене джерело (оновлено 2024)</li>
+            <li>Пов’язані об’єкти загрози — заповнено 60%</li>
+            <li>Склад ролей учасників — <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span></li>
+          </ul>
+        </section>
+
+        <div style="margin-top:16px;padding:16px;border:1px solid #cfcfca;border-radius:6px;background:#fbfbf9;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <p style="flex:1 1 320px;margin:0;font:400 12px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f">Повернення назад не видаляє снепшот, але зміна громади або загрози скидає вибраний сценарій. Про це попереджає модальне вікно.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" onClick="{{ toS5 }}" style="min-height:44px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Змінити вибір</button>
+            <button type="button" onClick="{{ createSession }}" style="min-height:44px;padding:0 18px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:600 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Створити симуляційну сесію</button>
+          </div>
+        </div>
+
+        <sc-if value="{{ created }}">
+        <section style="margin-top:14px;border:1px solid #a9c3b0;border-radius:6px;background:#eef5f0;padding:16px">
+          <h2 style="font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 6px;color:#22503a">✓ Сесію створено · код приєднання ABX-4471 <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace">MOCK DATA</span></h2>
+          <p style="margin:0;font:400 13px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#3a463d">Наступні екрани потоку (lobby, перевірка готовності, активна симуляція, оцінювання, AAR, звіт) — поза межами першого набору wireframes і потребують погодження цієї логіки.</p>
+        </section>
+        </sc-if>
+      </main>
+      </sc-if>
+
+      <!-- ═══ 7. СЕСІЯ (ЧЕРНЕТКА, ЕТАП 2) ═══ -->
+      <sc-if value="{{ onS7 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS6 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">← Context Snapshot</button>
+          <div style="flex:1 1 320px">
+            <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">КРОК 5 · СЕСІЯ</span>
+            <h1 style="font:600 22px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:6px 0 0">Сесію створено · lobby</h1>
+            <p style="font:400 13px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin:5px 0 0;max-width:70ch;text-wrap:pretty">Лише демонстрація success-переходу після створення сесії. Це не погоджений wireframe: склад lobby, ролі, готовність, раунди та рішення проєктуються на етапі 2 після погодження першого набору.</p>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:4px;background:#f2f2ef;border:1px dashed #b9b9b2;font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">PREVIEW — STAGE 2, NOT APPROVED WIREFRAME</span>
+        </div>
+
+        <section style="border:1px solid #a9c3b0;border-radius:6px;background:#eef5f0;padding:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+          <div style="flex:1 1 300px">
+            <h2 style="font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 6px;color:#22503a">✓ Сесія готова до приєднання учасників</h2>
+            <p style="margin:0;font:400 13px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#3a463d">Снепшот зафіксовано і не змінюється. Учасники приєднуються за кодом на prototype.local/join (адреса демонстраційна)</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="padding:10px 16px;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:600 22px/1 Consolas,SFMono-Regular,monospace;letter-spacing:.08em">ABX-4471</span>
+            <span style="width:64px;height:64px;border:1px dashed #b9b9b2;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font:500 9px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84;text-align:center">QR<br>MOCK</span>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Скопіювати код</button>
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Надіслати запрошення</button>
+            </div>
+          </div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:{{ sessionCols }};gap:14px;align-items:start">
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+            <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+              <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">Учасники в lobby · 4 з 6</h2>
+              <span style="padding:3px 6px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 Consolas,SFMono-Regular,monospace;color:#7a5a12">РОЛІ — PRODUCT DECISION</span>
+            </header>
+            <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+              <sc-for list="{{ lobby }}" as="p" hint-placeholder-count="6">
+                <li style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed #e8e8e4">
+                  <span style="width:32px;height:32px;border-radius:50%;background:#eceae6;border:1px solid #d5d5d1"></span>
+                  <span style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font:500 13px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ p.nameFg }}">{{ p.name }}</span>
+                    <span style="font:400 11.5px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66">{{ p.role }}</span>
+                  </span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid {{ p.stBorder }};border-radius:4px;background:{{ p.stBg }};font:500 10px/1.2 Consolas,SFMono-Regular,monospace;color:{{ p.stFg }}"><span aria-hidden="true">{{ p.stGlyph }}</span>{{ p.status }}</span>
+                </li>
+              </sc-for>
+            </ul>
+            <div style="padding:0 14px 14px;display:flex;gap:10px;flex-wrap:wrap">
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Перевірити готовність</button>
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Призначити роль вручну</button>
+            </div>
+          </section>
+
+          <aside style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">Зафіксований контекст сесії</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid #b9b9b2;background:#f2f2ef;font:500 9px/1.2 Consolas,SFMono-Regular,monospace;color:#5c5c57">SNAPSHOT</span>
+              </header>
+              <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ sessionSnapRows }}" as="r" hint-placeholder-count="5">
+                  <li style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4;font:400 12.5px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f"><span style="flex:1">{{ r.k }}</span><span style="font-weight:500;color:{{ r.vFg }};text-align:right">{{ r.v }}</span></li>
+                </sc-for>
+              </ul>
+              <div style="padding:0 14px 14px">
+                <button type="button" onClick="{{ toS6 }}" style="min-height:40px;padding:0 11px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Відкрити снепшот</button>
+              </div>
+            </section>
+
+            <section style="border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px">
+              <h2 style="font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 8px;color:#5f4708">! Не можна запустити симуляцію</h2>
+              <ul style="margin:0;padding-left:18px;font:400 12.5px/1.7 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#4a4a44">
+                <li>2 учасники ще не підтвердили готовність</li>
+                <li>Роль «Комунікації» не призначено</li>
+              </ul>
+            </section>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <button type="button" disabled="{{ true }}" style="min-height:48px;border:1px solid #c9c9c4;border-radius:5px;background:#efeeea;color:#8a8a84;font:600 14px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:not-allowed">Запустити симуляцію (недоступно)</button>
+              <button type="button" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer">Скасувати сесію</button>
+              <span style="font:400 11px/1.5 Consolas,SFMono-Regular,monospace;color:#8a8a84">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: POST /sessions · GET /sessions/{id}/participants · POST /sessions/{id}/start</span>
+            </div>
+          </aside>
+        </div>
+
+        <p style="margin:14px 0 0;padding:12px 14px;border:1px dashed #b9b9b2;border-radius:6px;background:#fbfbf9;font:400 12.5px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f">Далі в потоці (етап 2, не спроєктовано): активна симуляція з inject-подіями та рішеннями учасників → завершення → оцінювання → AAR/дебрифінг → підсумковий звіт → архів. Механіка раундів, склад ролей і методика оцінювання потребують рішення власника продукту.</p>
+      </main>
+      </sc-if>
+
+    </div>
+    </div>
+  </div>
+
+  <!-- специфікація екрана -->
+  <section style="max-width:1340px;margin:18px auto 0;border:1px solid #cfcfca;border-radius:8px;background:#fff">
+    <header style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #e6e6e2">
+      <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">Специфікація екрана · {{ spec.title }}</h2>
+      <span style="font:500 10px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">РОЛЬ: {{ spec.role }}</span>
+    </header>
+    <div style="padding:16px;display:grid;grid-template-columns:{{ specCols }};gap:16px">
+      <sc-for list="{{ spec.blocks }}" as="b" hint-placeholder-count="6">
+        <section>
+          <h3 style="font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84;margin:0 0 8px;letter-spacing:.04em">{{ b.title }}</h3>
+          <ul style="margin:0;padding-left:16px;font:400 13px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#33332f">
+            <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+              <li>{{ it }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ══════════ FLOW + SITEMAP ══════════ -->
+<sc-if value="{{ isFlow }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 4px">Наскрізний user flow · community-first</h1>
+    <p style="font:400 13px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin:0 0 18px;max-width:80ch">Шлях починається з громади, а не з бібліотеки сценаріїв. Сценарій завжди пов’язаний із контекстом громади та вибраною загрозою. Затінені кроки — поза межами першого набору wireframes.</p>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ flowLanes }}" as="lane" hint-placeholder-count="4">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:13px">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:11px">
+            <h2 style="font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">{{ lane.title }}</h2>
+            <span style="font:400 11px/1.2 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ lane.actor }}</span>
+          </div>
+          <ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch">
+            <sc-for list="{{ lane.nodes }}" as="n" hint-placeholder-count="5">
+              <li style="display:flex;align-items:center;gap:8px">
+                <span style="display:flex;flex-direction:column;gap:4px;min-width:126px;padding:10px 11px;border:1px {{ n.style }} {{ n.border }};border-radius:5px;background:{{ n.bg }}">
+                  <span style="font:500 9px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ n.tag }}</span>
+                  <span style="font:{{ n.font }};color:{{ n.fg }}">{{ n.label }}</span>
+                </span>
+                <sc-if value="{{ n.notLast }}"><span aria-hidden="true" style="color:#b5b5af;font-size:15px">→</span></sc-if>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </sc-for>
+    </div>
+    <p style="margin:16px 0 0;padding:12px 14px;border:1px solid #dcdcd8;border-radius:6px;background:#fafaf8;font:400 12px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f"><b style="font-weight:600">Точки втрати даних: </b>зміна громади скидає загрозу, сценарій і снепшот; зміна загрози скидає сценарій; після створення сесії снепшот заморожується. Кожен такий перехід супроводжується модальним підтвердженням із перерахуванням того, що буде скинуто.</p>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 16px">Sitemap платформи</h1>
+    <div style="display:grid;grid-template-columns:{{ sitemapCols }};gap:14px;align-items:start">
+      <sc-for list="{{ sitemap }}" as="s" hint-placeholder-count="4">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9">
+          <header style="padding:11px 13px;border-bottom:1px solid #e6e6e2;display:flex;gap:8px;align-items:center">
+            <h2 style="flex:1;font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">{{ s.title }}</h2>
+            <span style="font:500 9px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ s.tag }}</span>
+          </header>
+          <ul style="list-style:none;margin:0;padding:8px 13px 12px;display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ s.items }}" as="i" hint-placeholder-count="5">
+              <li style="font:400 12.5px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ i.fg }};padding-left:11px;border-left:2px solid #dcdcd8">{{ i.label }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 6px">Адаптація: desktop / tablet / mobile</h1>
+    <div style="display:grid;grid-template-columns:{{ sitemapCols }};gap:14px;margin-top:12px">
+      <sc-for list="{{ responsive }}" as="r" hint-placeholder-count="3">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:14px">
+          <h2 style="font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 4px">{{ r.title }}</h2>
+          <span style="font:400 11px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ r.w }}</span>
+          <ul style="margin:10px 0 0;padding-left:16px;font:400 12.5px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">
+            <sc-for list="{{ r.items }}" as="i" hint-placeholder-count="4">
+              <li>{{ i }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ══════════ СТАНИ ══════════ -->
+<sc-if value="{{ isStates }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto">
+  <h1 style="font:600 20px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 4px">Системні стани</h1>
+  <p style="font:400 13px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#55554f;margin:0 0 18px;max-width:80ch">Кожен стан має текстову ознаку та іконку-глиф — статус ніколи не передається лише кольором. Повідомлення про помилки розміщуються поруч із відповідним елементом.</p>
+
+  <div style="display:grid;grid-template-columns:{{ stateCols }};gap:14px;margin-bottom:22px">
+    <sc-for list="{{ stateCards }}" as="s" hint-placeholder-count="6">
+      <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;overflow:hidden">
+        <header style="padding:11px 13px;border-bottom:1px solid #e6e6e2;display:flex;gap:8px;align-items:center">
+          <h2 style="flex:1;font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0">{{ s.title }}</h2>
+          <span style="font:500 9px/1 Consolas,SFMono-Regular,monospace;color:#8a8a84">{{ s.where }}</span>
+        </header>
+        <div style="padding:14px;min-height:150px;background:#fbfbf9">
+          <sc-if value="{{ s.isSkeleton }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="height:14px;width:55%;border-radius:3px;background:#e4e4e0;animation:shim 1.4s ease-in-out infinite"></span>
+              <span style="height:56px;border-radius:5px;background:#e8e8e4;animation:shim 1.4s ease-in-out infinite .1s"></span>
+              <span style="height:56px;border-radius:5px;background:#e8e8e4;animation:shim 1.4s ease-in-out infinite .2s"></span>
+              <span style="font:400 11px/1.4 Consolas,SFMono-Regular,monospace;color:#8a8a84">Завантаження… skeleton, без спінера на весь екран</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ s.isMessage }}">
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:12px;border:1px {{ s.borderStyle }} {{ s.border }};border-radius:6px;background:{{ s.bg }}">
+              <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/1.3 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:{{ s.fg }}"><span aria-hidden="true" style="font-family:Consolas,SFMono-Regular,monospace">{{ s.glyph }}</span>{{ s.headline }}</span>
+              <span style="font:400 12.5px/1.55 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#44443f">{{ s.body }}</span>
+              <span style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ s.actions }}" as="a" hint-placeholder-count="2">
+                  <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif">{{ a }}</span>
+                </sc-for>
+              </span>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-for>
+  </div>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h2 style="font:600 15px/1.2 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 12px">Стани по екранах</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font:400 12.5px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;min-width:820px">
+        <thead><tr>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">ЕКРАН</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">LOADING</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">EMPTY</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">ERROR</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">WARNING / НЕПОВНІ ДАНІ</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 Consolas,SFMono-Regular,monospace;color:#5c5c57">SUCCESS</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ stateTable }}" as="r" hint-placeholder-count="6">
+            <tr>
+              <td style="padding:10px;border-bottom:1px solid #ececea;font-weight:600;vertical-align:top">{{ r.screen }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.loading }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.empty }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.error }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.warning }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.success }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ══════════ ДОКУМЕНТАЦІЯ ══════════ -->
+<sc-if value="{{ isDocs }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+  <sc-for list="{{ docTables }}" as="t" hint-placeholder-count="4">
+    <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+      <h1 style="font:600 18px/1.25 system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0 0 4px">{{ t.title }}</h1>
+      <p style="font:400 12.5px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#6b6b66;margin:0 0 14px;max-width:80ch">{{ t.note }}</p>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font:400 12.5px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;min-width:760px">
+          <thead><tr>
+            <sc-for list="{{ t.cols }}" as="c" hint-placeholder-count="4">
+              <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1.2 Consolas,SFMono-Regular,monospace;color:#5c5c57">{{ c }}</th>
+            </sc-for>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="6">
+              <tr>
+                <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
+                  <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#33332f">{{ cell }}</td>
+                </sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/javascript" data-dc-script data-props="{}">
+const D = "#1b1b1a", MUT = "#6b6b66", WARN_FG = "#7a5a12";
+const TAGS = {
+  mock: { tag: "MOCK DATA", tagBg: "#f2f2ef", tagBorder: "#b9b9b2", tagFg: "#5c5c57" },
+  api: { tag: "API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED", tagBg: "#eef2f7", tagBorder: "#a6bcd4", tagFg: "#22456b" },
+  pdr: { tag: "PRODUCT DECISION", tagBg: "#fdf6e7", tagBorder: "#d9c99f", tagFg: WARN_FG }
+};
+
+class Component extends DCLogic {
+  state = {
+    view: "proto", screen: 1, device: "desktop",
+    threatIdx: 0, scenarioIdx: 0, pinIdx: 0, created: false
+  };
+
+  go(view) { return () => this.setState({ view }); }
+  toScreen(n) { return () => this.setState({ screen: n, created: false }); }
+
+  renderVals() {
+    const S = this.state;
+    const view = S.view, tablet = S.device === "tablet";
+    const tabDefs = [["proto", "Прототип · 6 екранів"], ["flow", "User flow + sitemap"], ["states", "Системні стани"], ["docs", "Документація"]];
+
+    const tabs = tabDefs.map(([id, label]) => ({
+      label, go: this.go(id), current: view === id ? "page" : "false",
+      bg: view === id ? D : "#fff", fg: view === id ? "#fff" : "#33332f"
+    }));
+    const devices = [["desktop", "Desktop 1280"], ["tablet", "Tablet 834"]].map(([id, label]) => ({
+      label, on: S.device === id, go: () => this.setState({ device: id }),
+      bg: S.device === id ? "#e4e4e0" : "#fff", fg: "#33332f"
+    }));
+
+    const stepDefs = ["Громада", "Загроза", "Сценарій", "Контекст", "Сесія"];
+    const screenToStep = { 1: 1, 2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5 };
+    const cur = screenToStep[S.screen];
+    const steps = stepDefs.map((label, i) => {
+      const n = i + 1, done = n < cur, active = n === cur;
+      return {
+        n, label, go: n === 1 ? this.toScreen(1) : n === 2 ? this.toScreen(4) : n === 3 ? this.toScreen(5) : n === 4 ? this.toScreen(6) : this.toScreen(7),
+        glyph: done ? "✓" : active ? "●" : "○",
+        border: active ? D : "#cfcfca", bg: active ? "#e9e9e5" : "#fff",
+        fg: n > cur ? "#8a8a84" : "#1b1b1a",
+        font: (active ? "600" : "400") + " 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif",
+        notLast: n < stepDefs.length
+      };
+    });
+
+    const globalNav = ["Громади", "Сценарії", "Активні сесії", "Архів", "Звіти"].map((label, i) => ({
+      label, bg: i === 0 ? "#eceae6" : "transparent",
+      font: (i === 0 ? "600" : "400") + " 13px/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif", fg: i === 0 ? D : "#55554f"
+    }));
+
+    const threats = [
+      { name: "Пошкодження системи водопостачання", cat: "Техногенна · критична інфраструктура", prob: "висока", impact: "значний", why: "Один водозабір обслуговує більшість населених пунктів (MOCK DATA); резервні джерела не підтверджені." },
+      { name: "Тривала відсутність електроенергії (>24 год)", cat: "Техногенна · енергетика", prob: "висока", impact: "значний", why: "Дві підстанції, відсутні дані про генератори в закладах освіти." },
+      { name: "Масовий приїзд ВПО", cat: "Соціальна · переміщення населення", prob: "середня", impact: "помірний", why: "Громада на транзитному напрямку; наявні 3 місця тимчасового розміщення." },
+      { name: "Ландшафтна пожежа у степовій зоні", cat: "Природна", prob: "середня", impact: "помірний", why: "Понад 60% території — сільгоспугіддя; найближча пожежна частина 24 км." }
+    ].map((t, i) => {
+      const on = i === S.threatIdx, tg = i === 0 ? TAGS.mock : i === 3 ? TAGS.pdr : TAGS.mock;
+      return Object.assign({}, t, tg, {
+        on, pick: () => this.setState({ threatIdx: i }),
+        border: on ? D : "#d5d5d1", accent: on ? D : "#c9c9c4",
+        bg: on ? "#fafaf8" : "#fff"
+      });
+    });
+    const t0 = threats[S.threatIdx];
+    const threat = {
+      name: t0.name, cat: t0.cat, prob: t0.prob, impact: t0.impact,
+      blocks: [
+        { title: "ОБҐРУНТУВАННЯ РЕЛЕВАНТНОСТІ", items: [t0.why, "Джерело: паспорт громади, розділ «Критична інфраструктура» (12.03.2026)"] },
+        { title: "УРАЗЛИВІ ТЕРИТОРІЇ", items: ["смт Березнегувате (центр)", "с. Мурахівка, с. Пришиб — віддалені", "3 населені пункти без даних"] },
+        { title: "УРАЗЛИВІ ГРУПИ", items: ["Особи з інвалідністю — 412", "Люди 65+ — 2 140", "Діти до 6 років — 780", "Маломобільні одинокі — немає даних"] },
+        { title: "ПОВ’ЯЗАНІ ОБ’ЄКТИ", items: ["Водозабір «Центральний»", "Насосна станція №2", "Опорна лікарня", "Ліцей №1 (пункт незламності)"] }
+      ]
+    };
+
+    const scenarios = [
+      { name: "Аварія на водозаборі: перші 24 години", type: "Техногенна кризова ситуація", dur: "90–120 хв", complexity: "середня", participants: "6–10", roles: "визначені: 5", readiness: "Готовий", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a", goals: ["Координація між ОМС, водоканалом і соцслужбою", "Пріоритезація підвозу води для вразливих груп", "Комунікація з населенням"], why: "Прямо відповідає вибраній загрозі; використовує наявні дані про водозабір, укриття та вразливі групи." },
+        { name: "Втрата водо- та електропостачання одночасно", type: "Комбінована кризова ситуація", dur: "120–150 хв", complexity: "висока", participants: "не визначено", roles: "не визначені", readiness: "Потребує доопрацювання", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG, goals: ["Робота за умов подвійного дефіциту ресурсів", "Розподіл обмеженого генераторного ресурсу"], why: "Частково відповідає загрозі; бракує даних про генератори — частину вводів фасилітатор внесе вручну." },
+        { name: "Комунікація в умовах перебоїв зв’язку", type: "Комунікаційна криза", dur: "60 хв", complexity: "низька", participants: "4–8", roles: "визначені: 3", readiness: "Готовий", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a", goals: ["Резервні канали інформування", "Єдиність повідомлень"], why: "Додатковий модуль: підходить як коротка сесія перед основною симуляцією." }
+    ].map((s, i) => {
+      const chosen = i === S.scenarioIdx;
+      return Object.assign({}, s, {
+        pFg: s.participants === "не визначено" ? "#8a8a84" : D,
+        rFg: s.roles === "не визначені" ? "#8a8a84" : D,
+        choose: () => this.setState({ scenarioIdx: i, screen: 6, created: false }),
+        btnLabel: chosen ? "Переглянути контекст симуляції →" : "Вибрати і переглянути контекст →",
+        btnBg: chosen ? D : "#fff", btnFg: chosen ? "#fff" : D, btnBorder: D, cursor: "pointer"
+      });
+    });
+    const sc = scenarios[S.scenarioIdx];
+
+    const comms = [
+      { name: "Березнегуватська селищна", oblast: "Миколаївська обл.", code: "UA48020010000012345", pop: "16 633", np: "41", shelters: "9", completeness: 78, status: "ДАНІ АКТУАЛЬНІ", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+      { name: "Горохівська міська", oblast: "Волинська обл.", code: "UA07020030000067890", pop: "23 480", np: "31", shelters: "18", completeness: 64, status: "ПОТРЕБУЄ ОНОВЛЕННЯ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG },
+      { name: "Вознесенська міська", oblast: "Миколаївська обл.", code: "UA48040070000011223", pop: "34 060", np: "6", shelters: "22", completeness: 71, status: "ПОТРЕБУЄ ОНОВЛЕННЯ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG },
+      { name: "Нововоронцовська сільська", oblast: "Херсонська обл.", code: "UA65060090000033445", pop: "9 870", np: "12", shelters: "5", completeness: 41, status: "ЧЕРНЕТКА", stGlyph: "○", stBg: "#f2f2ef", stBorder: "#b9b9b2", stFg: "#5c5c57" },
+      { name: "Бершадська міська", oblast: "Вінницька обл.", code: "UA05020050000055667", pop: "41 200", np: "27", shelters: "26", completeness: 83, status: "ДАНІ АКТУАЛЬНІ", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+      { name: "Славутицька міська", oblast: "Київська обл.", code: "UA32120110000077889", pop: "24 700", np: "1", shelters: "31", completeness: 57, status: "ПОТРЕБУЄ ОНОВЛЕННЯ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG }
+    ].map((c) => Object.assign({}, c, { open: this.toScreen(2) }));
+
+    const na = { vFg: "#8a8a84" };
+    const passport = [
+      { title: "Населення та населені пункти", ...TAGS.mock, rows: [{ k: "Загальне населення", v: "16 633" }, { k: "Населені пункти", v: "41" }, { k: "Адмін. центр", v: "смт Березнегувате" }, { k: "Щільність (розрахунок, MOCK)", v: "14,7 осіб/км²" }, { k: "ВПО в громаді", v: "дані уточнюються", ...na }] },
+      { title: "Критична інфраструктура", ...TAGS.mock, rows: [{ k: "Водозабори / насосні", v: "1 / 3" }, { k: "Електропідстанції", v: "2" }, { k: "Котельні", v: "4" }, { k: "Мости та переїзди", v: "6" }, { k: "Технічний стан водогонів", v: "немає даних", ...na }] },
+      { title: "Соціальна інфраструктура", ...TAGS.mock, rows: [{ k: "Закладів освіти", v: "11" }, { k: "Медичних закладів", v: "1 лікарня, 9 ФАП" }, { k: "Пунктів незламності", v: "3" }, { k: "Установ соцзахисту", v: "2" }] },
+      { title: "Доступні ресурси", ...TAGS.api, rows: [{ k: "Укриття / місць", v: "9 / потребує підтвердження", ...na }, { k: "Генератори", v: "не інвентаризовано", ...na }, { k: "Автоцистерни для води", v: "2" }, { k: "Пожежні підрозділи", v: "1 (24 км)" }, { k: "Волонтерські команди", v: "4" }] },
+      { title: "Вразливі групи", ...TAGS.mock, rows: [{ k: "Люди 65+", v: "2 140" }, { k: "Особи з інвалідністю", v: "412" }, { k: "Діти до 6 років", v: "780" }, { k: "Маломобільні одинокі", v: "потребує підтвердження", ...na }] },
+      { title: "Основні ризики", ...TAGS.pdr, rows: [{ k: "Пошкодження водопостачання", v: "висока / значний" }, { k: "Відсутність е/е > 24 год", v: "висока / значний" }, { k: "Приїзд ВПО", v: "середня / помірний" }, { k: "Ландшафтна пожежа", v: "середня / помірний" }, { k: "Методика оцінювання", v: "не визначена", ...na }] }
+    ];
+
+    const pinDefs = [
+      { label: "смт Березнегувате", glyph: "Н", x: 46, y: 34, radius: "50%", border: "#5c5c57", bg: "#e4e4e0", kind: "Населений пункт · адмін. центр", rows: [{ k: "Населення", v: "6 940" }, { k: "Укриття", v: "4" }, { k: "Пункт незламності", v: "так" }] },
+      { label: "Водозабір", glyph: "В", x: 27, y: 61, radius: "4px", border: "#1b1b1a", bg: "#fff", kind: "Критична інфраструктура · водопостачання", rows: [{ k: "Обслуговує", v: "більшість НП (MOCK)", vFg: "#8a8a84" }, { k: "Резервне джерело", v: "не підтверджено", vFg: "#8a8a84" }, { k: "Стан", v: "потребує обстеження" }, { k: "Оновлено", v: "12.03.2026" }] },
+      { label: "Опорна лікарня", glyph: "М", x: 52, y: 46, radius: "4px", border: "#1b1b1a", bg: "#f2f2ef", kind: "Медичний заклад", rows: [{ k: "Ліжок", v: "120" }, { k: "Генератор", v: "немає даних", vFg: "#8a8a84" }] },
+      { label: "Укриття №3", glyph: "У", x: 63, y: 27, radius: "4px", border: "#5c5c57", bg: "#fff", kind: "Укриття", rows: [{ k: "Місткість", v: "180 (не підтверджено)", vFg: "#8a8a84" }, { k: "Доступність", v: "частково безбар’єрне" }] },
+      { label: "Підстанція №1", glyph: "Е", x: 72, y: 58, radius: "4px", border: "#1b1b1a", bg: "#fff", kind: "Критична інфраструктура · енергетика", rows: [{ k: "Живить", v: "9 НП (MOCK)", vFg: "#8a8a84" }, { k: "Резерв", v: "немає даних", vFg: "#8a8a84" }] },
+      { label: "с. Мурахівка", glyph: "Н", x: 20, y: 26, radius: "50%", border: "#5c5c57", bg: "#e4e4e0", kind: "Населений пункт", rows: [{ k: "Населення", v: "610" }, { k: "Укриття", v: "0", vFg: "#8a8a84" }] },
+      { label: "с. Пришиб", glyph: "Н", x: 80, y: 38, radius: "50%", border: "#5c5c57", bg: "#e4e4e0", kind: "Населений пункт", rows: [{ k: "Населення", v: "480" }, { k: "Дорога", v: "ґрунтова 7 км" }] }
+    ];
+    const pins = pinDefs.map((p, i) => Object.assign({}, p, { pick: () => this.setState({ pinIdx: i }) }));
+    const pk = pinDefs[S.pinIdx];
+    const picked = { title: pk.label, kind: pk.kind, rows: pk.rows.concat([{ k: "Джерело", v: "MOCK DATA", vFg: "#8a8a84" }]) };
+
+    const layers = [["Населені пункти", "41", "Н"], ["Критична інфраструктура", "9", "К"], ["Укриття", "9", "У"], ["Медичні заклади", "10", "М"], ["Дороги", "—", "Д"], ["Зони ризику", "3", "Р"]].map(([label, count, glyph], i) => ({
+      label, count, glyph, on: i < 4,
+      border: i < 4 ? D : "#cfcfca", bg: i < 4 ? "#e9e9e5" : "#fff", fg: i < 4 ? D : "#6b6b66"
+    }));
+    const legend = [
+      { label: "Населений пункт", glyph: "Н", radius: "50%", border: "#5c5c57", bg: "#e4e4e0" },
+      { label: "Критична інфраструктура", glyph: "К", radius: "3px", border: "#1b1b1a", bg: "#fff" },
+      { label: "Укриття", glyph: "У", radius: "3px", border: "#5c5c57", bg: "#fff" },
+      { label: "Медичний заклад", glyph: "М", radius: "3px", border: "#1b1b1a", bg: "#f2f2ef" },
+      { label: "Зона ризику", glyph: "", radius: "50%", border: "#9a9a93", bg: "#00000008" }
+    ];
+
+    const snapPicks = [
+      { kind: "ГРОМАДА", name: "Березнегуватська селищна", meta: "Миколаївська обл. · 16 633 особи · 41 НП · повнота даних 78% (MOCK)", change: this.toScreen(1) },
+      { kind: "ЗАГРОЗА", name: t0.name, meta: t0.cat + " · імовірність " + t0.prob + " · вплив " + t0.impact, change: this.toScreen(4) },
+      { kind: "СЦЕНАРІЙ", name: sc.name, meta: sc.type + " · " + sc.dur + " · складність " + sc.complexity, change: this.toScreen(5) }
+    ];
+    const snapBlocks = [
+      { title: "Ключові показники громади", ...TAGS.mock, rows: [{ k: "Населення", v: "16 633" }, { k: "Населені пункти", v: "41" }, { k: "Вразливі групи, разом", v: "3 332 (MOCK)", vFg: "#8a8a84" }] },
+      { title: "Критичні об’єкти в сесії", ...TAGS.mock, rows: [{ k: "Водозабір «Центральний»", v: "включено" }, { k: "Насосна станція №2", v: "включено" }, { k: "Опорна лікарня", v: "включено" }, { k: "Ліцей №1", v: "включено" }] },
+      { title: "Ресурси", ...TAGS.api, rows: [{ k: "Автоцистерни", v: "2" }, { k: "Укриття / місць", v: "9 / не підтверджено", vFg: "#8a8a84" }, { k: "Генератори", v: "не інвентаризовано", vFg: "#8a8a84" }, { k: "Волонтерські команди", v: "4" }] },
+      { title: "Вразливості", ...TAGS.mock, rows: [{ k: "НП без укриттів", v: "3" }, { k: "Один водозабір на 11 НП", v: "так" }, { k: "Пожежна частина", v: "24 км" }] },
+      { title: "Навчальні цілі сценарію", ...TAGS.mock, rows: sc.goals.map((g) => ({ k: g, v: "" })) },
+      { title: "Джерело та актуальність", ...TAGS.mock, rows: [{ k: "Паспорт громади", v: "12.03.2026" }, { k: "Геодані", v: "MOCK DATA", vFg: "#8a8a84" }, { k: "Профіль загрози", v: "12.03.2026" }, { k: "Сценарій, версія", v: "v1.2" }] }
+    ];
+
+    const specs = {
+      1: { title: "Каталог громад", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Знайти та вибрати громаду, для якої готуватиметься симуляція"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Відкрити громаду» — одна на картку"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Пошук", "Фільтр за областю та статусом даних", "Скинути фільтри"] },
+        { title: "ДАНІ ЕКРАНА", items: ["Список громад: назва, область, код, населення, НП, укриття, повнота даних, статус", "API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["communityId → паспорт громади"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["Як розраховується «повнота даних»?", "Чи є громади з обмеженим доступом?"] }
+      ] },
+      2: { title: "Профіль / паспорт громади", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Отримати стислий структурований контекст громади"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Перейти до загроз»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Геопросторовий огляд", "Повернення до каталогу"] },
+        { title: "ДАНІ ЕКРАНА", items: ["6 блоків паспорта + дата оновлення + перелік неповних даних", "Фактичні дані відокремлені від припущень: сірий текст + позначка джерела"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["communityId, контекст ризиків → екран загроз"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["Хто відповідає за актуалізацію даних?", "Чи потрібне версіонування паспорта?"] }
+      ] },
+      3: { title: "Геопросторовий огляд", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Показати територіальний контекст, критичні об’єкти, ресурси та зони ризику"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["Вибір об’єкта на карті → бокова панель"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Перемикачі шарів", "Масштабування", "Перехід до загроз"] },
+        { title: "ДАНІ ЕКРАНА", items: ["Шари: НП, критична інфраструктура, укриття, медзаклади, дороги, зони ризику", "MOCK DATA: карта схематична, не геодані", "API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities/{id}/geo"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["Вибрані об’єкти як контекст загрози"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["Джерело геодани: OSM, ДЗК чи власний шар?", "Чи можна редагувати об’єкти в інтерфейсі?"] }
+      ] },
+      4: { title: "Вибір і профіль загрози", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Визначити загрозу, для якої готуватиметься симуляція"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Вибрати загрозу»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Перегляд профілю", "Повернення до паспорта"] },
+        { title: "ДАНІ ЕКРАНА", items: ["Перелік релевантних загроз: категорія, імовірність, вплив, обґрунтування", "Уразливі території та групи, пов’язані об’єкти"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["threatId + пов’язані об’єкти → добір сценарію"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: методика оцінювання загроз", "Чи може фасилітатор додати власну загрозу?"] }
+      ] },
+      5: { title: "Вибір сценарію для громади", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Вибрати сценарій, що відповідає громаді та загрозі"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Переглянути контекст симуляції»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Повернення до загроз", "Порівняння сценаріїв"] },
+        { title: "ДАНІ ЕКРАНА", items: ["Назва, тип, навчальні цілі, тривалість, складність, статус готовності", "Кількість учасників і ролі показуються лише якщо визначені в даних"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["scenarioId → Simulation Context Snapshot"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: автоматичний підбір сценаріїв", "PRODUCT DECISION: склад ролей і кількість раундів"] }
+      ] },
+      7: { title: "Сесія · lobby (чернетка, етап 2)", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Показати, що фасилітатор отримує після контрольної точки: код, склад учасників, готовність"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Запустити симуляцію» — недоступна, поки не підтверджено готовність і роли"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Скопіювати код / надіслати запрошення", "Перевірити готовність", "Призначити роль вручну", "Скасувати сесію", "Відкрити снепшот"] },
+        { title: "ДАНІ ЕКРАНА", items: ["sessionId, код приєднання, список учасників зі статусом готовності, зафіксований снепшот", "API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: POST /sessions, GET /sessions/{id}/participants, POST /sessions/{id}/start"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["sessionId → активна симуляція (етап 2)"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: склад ролей і спосіб їх призначення", "Чи можна стартувати без повної готовності?", "Що бачить учасник у lobby"] }
+      ] },
+      6: { title: "Simulation Context Snapshot", role: "Фасилітатор", blocks: [
+        { title: "МЕТА", items: ["Контрольна точка: показати, які дані буде зафіксовано в сесії"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Створити симуляційну сесію»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["«Змінити» громаду / загрозу / сценарій", "Змінити вибір"] },
+        { title: "ДАНІ ЕКРАНА", items: ["Агрегація громади, загрози та сценарію + джерела й дати + блок неповних даних"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["snapshotId → створення сесії, lobby, код приєднання"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["Чи можна створити сесію за критично неповних даних?", "Чи зберігається снепшот як окрема сутність для звіту?"] }
+      ] }
+    };
+
+    const nodeS = (label, tag, mode) => ({
+      label, tag,
+      style: mode === "future" ? "dashed" : "solid",
+      border: mode === "current" ? D : "#cfcfca",
+      bg: mode === "current" ? "#e9e9e5" : mode === "future" ? "#fbfbf9" : "#fff",
+      fg: mode === "future" ? "#8a8a84" : D,
+      font: (mode === "current" ? "600" : "400") + " 12.5px/1.35 system-ui,-apple-system,Segoe UI,Arial,sans-serif"
+    });
+    const flowLanesRaw = [
+      { title: "Підготовка контексту — етап 1 (спроєктовано)", actor: "фасилітатор", nodes: [nodeS("Каталог громад", "ЕКРАН 1", "current"), nodeS("Паспорт громади", "ЕКРАН 2", "current"), nodeS("Геопросторовий огляд", "ЕКРАН 3", "current"), nodeS("Профіль загрози", "ЕКРАН 4", "current"), nodeS("Добір сценарію", "ЕКРАН 5", "current"), nodeS("Context Snapshot", "ЕКРАН 6", "current")] },
+      { title: "Створення та проведення сесії", actor: "фасилітатор", nodes: [nodeS("Створення сесії", "ЕТАП 2", "future"), nodeS("Код приєднання", "ЕТАП 2", "future"), nodeS("Lobby", "ЕТАП 2", "future"), nodeS("Перевірка готовності", "ЕТАП 2", "future"), nodeS("Активна симуляція: inject → рішення", "ЕТАП 2", "future"), nodeS("Завершення", "ЕТАП 2", "future")] },
+      { title: "Шлях учасника", actor: "учасник", nodes: [nodeS("Ввід коду сесії", "ЕТАП 2", "future"), nodeS("Ім’я та роль", "ЕТАП 2", "future"), nodeS("Lobby · готовність", "ЕТАП 2", "future"), nodeS("Активна подія", "ЕТАП 2", "future"), nodeS("Подання рішення", "ЕТАП 2", "future"), nodeS("Дебрифінг", "ЕТАП 2", "future")] },
+      { title: "Завершення та навчальний результат", actor: "фасилітатор + учасники", nodes: [nodeS("Оцінювання", "ЕТАП 2", "future"), nodeS("AAR / дебрифінг", "ЕТАП 2", "future"), nodeS("Підсумковий звіт", "ЕТАП 2", "future"), nodeS("Архів сесій", "ЕТАП 2", "future")] }
+    ];
+    const flowLanes = flowLanesRaw.map((l) => Object.assign({}, l, {
+      nodes: l.nodes.map((n, i) => Object.assign({}, n, { notLast: i < l.nodes.length - 1 }))
+    }));
+
+    const sitemap = [
+      { title: "Громади", tag: "ЕТАП 1", items: [{ label: "Каталог громад", fg: D }, { label: "Паспорт громади", fg: D }, { label: "Геопросторовий огляд", fg: D }, { label: "Загрози громади", fg: D }] },
+      { title: "Сценарії", tag: "ЕТАП 1 / 2", items: [{ label: "Сценарії для громади", fg: D }, { label: "Simulation Context Snapshot", fg: D }, { label: "Бібліотека сценаріїв (вторинний вхід)", fg: MUT }] },
+      { title: "Активні сесії", tag: "ЕТАП 2", items: [{ label: "Створення сесії", fg: MUT }, { label: "Lobby та готовність", fg: MUT }, { label: "Активна симуляція", fg: MUT }, { label: "Журнал сесії", fg: MUT }] },
+      { title: "Архів і звіти", tag: "ЕТАП 2", items: [{ label: "Архів сесій", fg: MUT }, { label: "Оцінювання", fg: MUT }, { label: "AAR / дебрифінг", fg: MUT }, { label: "Підсумковий звіт", fg: MUT }] },
+      { title: "Учасник", tag: "ЕТАП 2", items: [{ label: "Приєднання за кодом", fg: MUT }, { label: "Ім’я та роль", fg: MUT }, { label: "Lobby учасника", fg: MUT }, { label: "Активна подія та рішення", fg: MUT }, { label: "Дебрифінг", fg: MUT }] },
+      { title: "Адміністрування (MVP)", tag: "PDR", items: [{ label: "Громади", fg: MUT }, { label: "Сценарії", fg: MUT }, { label: "Користувачі та фасилітатори", fg: MUT }, { label: "Доступи", fg: MUT }, { label: "Архів сесій", fg: MUT }] }
+    ];
+
+    const responsive = [
+      { title: "Desktop", w: "≥ 1280 px", items: ["Каталог: 3 колонки карток", "Паспорт: 2 колонки блоків", "Карта + бокова панель 2:1", "Загрози: список + профіль", "Snapshot: 3 + 2 колонки"] },
+      { title: "Tablet", w: "834–1279 px, ландшафт для фасилітації", items: ["Каталог: 2 колонки", "Паспорт: 1 колонка", "Карта на всю ширину, панель об’єкта — під картою", "Шари згортаються у список", "Кнопки й пін-таргети ≥ 44×44 px"] },
+      { title: "Mobile — принцип", w: "< 640 px, читання, не фасилітація", items: ["Один стовпець; блоки-акордеони", "Крокова навігація стає компактним індикатором «Крок 2 з 5»", "Карта: спрощений режим зі списком об’єктів замість інтерактивних пінів", "Головна дія фіксується в нижній панелі", "Створення сесії доступне, проведення симуляції — рекомендовано з планшета або ноутбука"] }
+    ];
+
+    const stateCards = [
+      { title: "Loading", where: "ЕКРАНИ 1–6", isSkeleton: true },
+      { title: "Empty", where: "ЕКРАН 1", isMessage: true, glyph: "○", headline: "Громад за такими умовами не знайдено", body: "Спробуйте змінити область або скинути фільтри. Якщо громади немає в системі — надішліть запит на її додавання.", actions: ["Скинути фільтри", "Запит на додавання громади"], border: "#c9c9c4", borderStyle: "dashed", bg: "#fbfbf9", fg: D },
+      { title: "Error", where: "ЕКРАНИ 1, 3", isMessage: true, glyph: "✕", headline: "Не вдалося завантажити дані громади", body: "Помилка з’єднання з сервісом даних. Повідомлення розміщується на місці блоку, решта екрана залишається доступною.", actions: ["Повторити спробу", "Повідомити адміністратора"], border: "#c9a5a1", borderStyle: "solid", bg: "#f9efee", fg: "#7a2f28" },
+      { title: "Warning · неповні дані", where: "ЕКРАНИ 2, 4, 6", isMessage: true, glyph: "!", headline: "Частина даних неповна або непідтверджена", body: "Симуляцію створити можна. Неповні поля позначені сірим текстом і підписом джерела, а не лише кольором.", actions: ["Показати перелік (4)", "Продовжити"], border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN_FG },
+      { title: "Success", where: "ЕКРАН 6", isMessage: true, glyph: "✓", headline: "Симуляційну сесію створено", body: "Код приєднання ABX-4471. Снепшот зафіксовано і не змінюється. Далі — lobby (етап 2).", actions: ["Перейти до lobby", "Скопіювати код"], border: "#a9c3b0", borderStyle: "solid", bg: "#eef5f0", fg: "#22503a" },
+      { title: "Warning · втрата вибору", where: "ПЕРЕХОДИ НАЗАД", isMessage: true, glyph: "!", headline: "Зміна громади скине загрозу та сценарій", body: "Модальне підтвердження перераховує, що саме буде скинуто, перед тим як користувач повернеться назад.", actions: ["Змінити громаду", "Залишитися"], border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN_FG }
+    ];
+
+    const stateTable = [
+      { screen: "1. Каталог громад", loading: "Skeleton 6 карток + вимкнені фільтри", empty: "«Громад не знайдено» + скинути фільтри", error: "Помилка списку, фільтри доступні, кнопка «Повторити»", warning: "Повнота даних < 50% → підпис «Обмежено придатна для симуляції»", success: "—" },
+      { screen: "2. Паспорт громади", loading: "Skeleton по блоках, шапка з назвою вже видима", empty: "Блок без даних: «Дані не внесені» + хто відповідальний", error: "Помилка окремого блоку, решта паспорта читається", warning: "Банер «Дані оновлено 12.03.2026 · частково неповні» + перелік", success: "Тост «Дані оновлено» після синхронізації" },
+      { screen: "3. Геопросторовий огляд", loading: "Плейсхолдер карти + прогрес шарів", empty: "«Геодані для громади відсутні» + список об’єктів текстом", error: "«Карта недоступна» + резервний перелік об’єктів", warning: "Позначка MOCK DATA на карті; шар без даних вимкнено з підписом", success: "—" },
+      { screen: "4. Загрози", loading: "Skeleton списку + порожня панель профілю", empty: "«Загрози для громади не визначені» + запит до адміністратора", error: "Помилка профілю загрози, список залишається активним", warning: "«Пов’язані об’єкти заповнено 60%»", success: "Підтвердження вибору в контекстній смузі" },
+      { screen: "5. Сценарії", loading: "Skeleton 3 карток", empty: "«Немає сценаріїв для цієї загрози» + перейти до інших загроз", error: "Помилка завантаження бібліотеки + повторити", warning: "Статус «Потребує доопрацювання»; учасники/ролі «не визначені»", success: "Картка вибраного сценарію позначена в контекстній смузі" },
+      { screen: "6. Snapshot", loading: "Skeleton агрегації, кнопка створення вимкнена", empty: "Не застосовується — снепшот завжди має вибір", error: "«Не вдалося зібрати снепшот» + повторити, без часткового створення", warning: "Блок «Дані з обмеженнями (3)» перед головною дією", success: "Панель «Сесію створено · код ABX-4471»" }
+    ];
+
+    const docTables = [
+      { title: "Таблиця компонентів", note: "Компоненти, потрібні для шести екранів. Стани перелічені для кожного; усі інтерактивні елементи — не менше 44×44 px, з видимим keyboard focus.", cols: ["КОМПОНЕНТ", "ТИП", "СТАНИ", "ДЕ ВИКОРИСТОВУЄТЬСЯ"], rows: [
+        { cells: ["AppHeader + GlobalNav", "навігація", "default, active, focus", "усі екрани"] },
+        { cells: ["ContextBar (громада / загроза / сценарій)", "навігація", "empty, partial, full", "екрани 2–6"] },
+        { cells: ["StepIndicator (5 кроків)", "навігація", "done, current, upcoming, disabled", "екрани 1–6"] },
+        { cells: ["SearchField", "форма", "default, focus, filled, disabled, error", "екран 1"] },
+        { cells: ["FilterSelect", "форма", "default, open, selected, disabled", "екран 1"] },
+        { cells: ["CommunityCard", "дані", "default, hover, focus, low-completeness", "екран 1"] },
+        { cells: ["CompletenessMeter", "індикатор", "0–49 / 50–79 / 80–100 + текстовий підпис", "екрани 1, 6"] },
+        { cells: ["StatusBadge", "індикатор", "актуально, потребує оновлення, чернетка (глиф + текст)", "екрани 1, 5"] },
+        { cells: ["DataBlock (dl-секція)", "дані", "loaded, partial, empty, error", "екрани 2, 6"] },
+        { cells: ["DataSourceTag", "мета", "MOCK DATA / API REQUIRED — PROPOSED / PRODUCT DECISION REQUIRED", "екрани 2–6"] },
+        { cells: ["MapCanvas + MapPin", "карта", "loading, loaded, mock, error, selected", "екран 3"] },
+        { cells: ["LayerToggle", "керування", "on, off, no-data (вимкнено з підписом)", "екран 3"] },
+        { cells: ["MapLegend", "довідка", "default", "екран 3"] },
+        { cells: ["ObjectSidePanel", "дані", "empty, loaded, error", "екран 3"] },
+        { cells: ["ThreatListItem", "дані", "default, selected, incomplete", "екран 4"] },
+        { cells: ["ThreatProfilePanel", "дані", "loaded, partial, error", "екран 4"] },
+        { cells: ["ScenarioCard", "дані", "готовий, потребує доопрацювання, вибраний", "екран 5"] },
+        { cells: ["RelevanceNote", "пояснення", "default", "екран 5"] },
+        { cells: ["SnapshotSummary", "дані", "complete, with-warnings", "екран 6"] },
+        { cells: ["IncompleteDataPanel", "попередження", "0 / 1+ пунктів", "екрани 2, 6"] },
+        { cells: ["PrimaryActionBar", "дія", "enabled, disabled, loading", "екрани 2–6"] },
+        { cells: ["ConfirmDialog (втрата вибору)", "діалог", "default, focus-trap", "переходи назад"] },
+        { cells: ["Skeleton", "стан", "text, card, map", "усі екрани"] },
+        { cells: ["InlineMessage", "стан", "info, warning, error, success", "усі екрани"] }
+      ] },
+      { title: "Використані mock-дані", note: "Усе нижче — демонстраційне наповнення для перевірки логіки, а не дані громади. Позначки REAL DATA у прототипі не використовуються: будь-який показник без підтвердженого джерела має тег MOCK DATA. Березнегуватська громада — лише приклад наповнення.", cols: ["БЛОК", "ЩО ЗАМОКАНО", "ПОЗНАЧКА В UI"], rows: [
+        { cells: ["Базові дані Березнегуватської громади", "населення 16 633, населених пунктів 41 — надані замовником; решта показників громади — вигадані", "решта полів — MOCK DATA"] },
+        { cells: ["Список громад (6 записів)", "назви, коди, населення, НП, укриття, повнота даних", "MOCK DATA у шапці списку"] },
+        { cells: ["Ролі, кількість учасників, тривалість, раунди, готовність сценаріїв", "усі значення демонстраційні або не визначені", "MOCK DATA / PRODUCT DECISION REQUIRED"] },
+        { cells: ["Lobby та список учасників", "імена, роли, статуси готовності", "PREVIEW — STAGE 2, NOT APPROVED WIREFRAME"] },
+        { cells: ["Паспорт громади", "інфраструктура, ресурси, вразливі групи, ризики", "тег на кожному блоці"] },
+        { cells: ["Карта громади", "схематичні пі́ни та зона ризику, без реальних координат", "«MOCK DATA · схематична карта, не геодані»"] },
+        { cells: ["Профілі загроз (4)", "категорія, імовірність, вплив, обґрунтування", "тег MOCK / PRODUCT DECISION"] },
+        { cells: ["Сценарії (3)", "назви, цілі, тривалість, складність, готовність", "статус-бейдж на картці"] },
+        { cells: ["Код сесії ABX-4471", "демонстрація success-стану", "підпис MOCK DATA"] },
+        { cells: ["Дати актуальності (12.03.2026)", "демонстрація логіки «свіжості» даних", "у шапці паспорта та снепшоті"] }
+      ] },
+      { title: "Потрібні API · API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED", note: "Жоден із цих ендпоінтів не існує і не погоджений. Це перелік ресурсів, які потрібні шести екранам, у вигляді пропозиції для обговорення з командою розробки. Назви, параметри та структура відповіді — PRODUCT DECISION REQUIRED.", cols: ["ЕНДПОІНТ · PROPOSED, NOT IMPLEMENTED", "ПРИЗНАЧЕННЯ", "ЕКРАН"], rows: [
+        { cells: ["GET /communities?search&oblast&status", "каталог громад із пагінацією та фільтрами", "1"] },
+        { cells: ["GET /communities/{id}", "паспорт громади: населення, інфраструктура, ресурси, групи", "2"] },
+        { cells: ["GET /communities/{id}/data-quality", "повнота даних, дата оновлення, перелік неповних полів", "1, 2, 6"] },
+        { cells: ["GET /communities/{id}/geo?layers=", "об’єкти шарів для карти", "3"] },
+        { cells: ["GET /communities/{id}/objects/{objectId}", "деталі об’єкта для бокової панелі", "3"] },
+        { cells: ["GET /communities/{id}/threats", "релевантні загрози з обґрунтуванням", "4"] },
+        { cells: ["GET /threats/{id}", "профіль загрози: території, групи, пов’язані об’єкти", "4"] },
+        { cells: ["GET /scenarios?communityId&threatId", "сценарії, відповідні контексту", "5"] },
+        { cells: ["GET /scenarios/{id}", "цілі, тривалість, складність, готовність, ролі (якщо визначені)", "5"] },
+        { cells: ["POST /snapshots", "зафіксувати вибір громади, загрози та сценарію", "6"] },
+        { cells: ["GET /snapshots/{id}", "перегляд снепшота перед створенням сесії", "6"] },
+        { cells: ["POST /sessions", "створення сесії зі снепшота, повертає код приєднання", "6 → етап 2"] }
+      ] },
+      { title: "PRODUCT DECISION REQUIRED", note: "Питання, які не можна закрити дизайном — потрібне рішення власника продукту до етапу 2.", cols: ["ПИТАННЯ", "ЧОМУ БЛОКУЄ", "ДЕ ВПЛИВАЄ"], rows: [
+        { cells: ["Методика оцінювання загроз (імовірність / вплив)", "визначає шкалу, підписи та сортування переліку загроз", "екрани 2, 4"] },
+        { cells: ["Автоматичний підбір сценаріїв", "чи система рекомендує, чи фасилітатор шукає сам", "екран 5"] },
+        { cells: ["Склад ролей учасників", "впливає на картку сценарію, lobby та розподіл інформації", "екрани 5, 6, етап 2"] },
+        { cells: ["Кількість раундів і переходи між ними", "структура активної симуляції", "етап 2"] },
+        { cells: ["Методика оцінювання учасників", "форма оцінювання та звіт", "етап 2"] },
+        { cells: ["Структура AAR / дебрифінгу", "склад екрана та полів звіту", "етап 2"] },
+        { cells: ["Права адміністратора в MVP", "обсяг адмін-розділу", "адміністрування"] },
+        { cells: ["Чи можна створити сесію за критично неповних даних", "поведінка головної дії на екрані 6", "екран 6"] },
+        { cells: ["Розрахунок «повноти даних»", "індикатор у каталозі та снепшоті", "екрани 1, 6"] },
+        { cells: ["Джерело геодани та можливість редагування об’єктів", "функціональність карти", "екран 3"] }
+      ] }
+    ];
+
+    return {
+      tabs, devices, steps, globalNav,
+      isProto: view === "proto", isFlow: view === "flow", isStates: view === "states", isDocs: view === "docs",
+      isTablet: tablet,
+      frameStyle: "width:" + (tablet ? 834 : 1280) + "px;max-width:100%;margin:0 auto;background:#fff;border:1px solid #cfcfca;border-radius:4px;overflow:hidden",
+      frameLabel: tablet ? "TABLET · 834 × 1112" : "DESKTOP · 1280 × auto",
+      routePath: ["/communities", "/communities/berezneguvate", "/communities/berezneguvate/geo", "/communities/berezneguvate/threats", "/communities/berezneguvate/scenarios", "/snapshot/draft", "/sessions/abx-4471/lobby"][S.screen - 1],
+      sessionCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.15fr) minmax(320px,1fr)",
+      onS7: S.screen === 7,
+      lobby: [
+        { name: "Олена Ткач", role: "Керівник штабу · ОМС", status: "ГОТОВИЙ", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "Ігор Мельник", role: "Водоканал", status: "ГОТОВИЙ", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "Наталія Бондар", role: "Соціальна служба", status: "ГОТОВИЙ", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "Сергій Кравець", role: "Медицина", status: "ГОТОВИЙ", stGlyph: "✓", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "Марія Лисенко", role: "роль не призначена", status: "ОЧІКУЄ", stGlyph: "○", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG },
+        { name: "Вільне місце", role: "Комунікації — не приєднався", status: "НЕ В LOBBY", stBg: "#f2f2ef", stBorder: "#b9b9b2", stFg: "#5c5c57", stGlyph: "—", nameFg: "#8a8a84" }
+      ].map((p) => Object.assign({ nameFg: D }, p)),
+      sessionSnapRows: [
+        { k: "Громада", v: "Березнегуватська селищна", vFg: D },
+        { k: "Загроза", v: t0.name, vFg: D },
+        { k: "Сценарій", v: sc.name, vFg: D },
+        { k: "Тривалість", v: sc.dur, vFg: D },
+        { k: "Дані з обмеженнями", v: "3 пункти", vFg: "#8a8a84" },
+        { k: "Створено", v: "12.03.2026, 10:24 · MOCK", vFg: "#8a8a84" }
+      ],
+      catalogCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      passportCols: tablet ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))",
+      geoCols: tablet ? "minmax(0,1fr)" : "minmax(0,2fr) minmax(280px,1fr)",
+      threatCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.15fr) minmax(320px,1fr)",
+      scenarioCols: tablet ? "minmax(0,1fr)" : "repeat(3,minmax(0,1fr))",
+      snapCols3: tablet ? "minmax(0,1fr)" : "repeat(3,minmax(0,1fr))",
+      snapCols2: tablet ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))",
+      specCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      sitemapCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      stateCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      mapH: tablet ? "440px" : "520px",
+      onS1: S.screen === 1, onS2: S.screen === 2, onS3: S.screen === 3,
+      onS4: S.screen === 4, onS5: S.screen === 5, onS6: S.screen === 6,
+      toS1: this.toScreen(1), toS2: this.toScreen(2), toS3: this.toScreen(3),
+      toS4: this.toScreen(4), toS5: this.toScreen(5), toS6: this.toScreen(6),
+      createSession: () => this.setState({ created: true, screen: 7 }), created: S.created,
+      contextChips: [
+        { k: "ГРОМАДА", v: S.screen >= 2 ? "Березнегуватська селищна" : "не вибрано", fg: S.screen >= 2 ? D : "#8a8a84" },
+        { k: "ЗАГРОЗА", v: S.screen >= 5 ? t0.name : "не вибрано", fg: S.screen >= 5 ? D : "#8a8a84" },
+        { k: "СЦЕНАРІЙ", v: S.screen >= 6 ? sc.name : "не вибрано", fg: S.screen >= 6 ? D : "#8a8a84" }
+      ],
+      comms, passport, layers, legend, pins, picked, threats, threat, scenarios,
+      snapPicks, snapBlocks, spec: specs[S.screen],
+      flowLanes, sitemap, responsive, stateCards, stateTable, docTables
+    };
+  }
+}
+
+window.__TPS360Component = Component;
+</script>
+</body>
+</html>
