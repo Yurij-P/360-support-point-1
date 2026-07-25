@@ -85,3 +85,9 @@
 | Scope and resource membership | definition target scope | `test_definition_rejects_target_from_another_session` | partial: SimulationContext resource membership is not yet validated |
 
 - **Контрольна примітка:** попередньо заявлені 352 tests не доступні у Git, stash, worktree або журналах як test list; вони не можуть бути зіставлені рядок-до-рядка. Поточне покриття доповнюється тільки за gap analysis, не за лічильником.
+
+#### Cycle 1 — checkpoint publication
+
+- **Основний commit:** `619b506c7c940a03b08199025e48e389b7c7b141` — `feat(simulation): redesign impact engine contracts and atomic execution`.
+- **Push:** успішно виконано до `origin/main`; локальний HEAD дорівнював `origin/main` після push.
+- **Стан робочого дерева після основного commit:** чистий.
