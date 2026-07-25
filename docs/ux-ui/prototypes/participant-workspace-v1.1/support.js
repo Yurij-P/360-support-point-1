@@ -165,6 +165,7 @@
     window.__tps360WireframesComponent = component;
     component.__render = () => render(component, mount, template);
     component.__render();
+    if (typeof component.startRuntime === "function") component.startRuntime();
   }
 
   if (document.readyState === "loading") {
