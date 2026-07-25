@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 from math import isfinite
@@ -13,11 +13,15 @@ from .enums import ImpactTargetType
 class StateKey:
     target_type: ImpactTargetType
     target_id: UUID | None
-    field: str
+    attribute: str
 
     def __post_init__(self) -> None:
-        if not self.field.strip():
-            raise DomainRuleViolation("Simulation state field must not be empty.")
+        if not self.attribute:
+            raise DomainRuleViolation("Simulation state requires a typed target attribute.")
+        if self.target_type is ImpactTargetType.SIMULATION and self.target_id is not None:
+            raise DomainRuleViolation("Simulation state target cannot have an identifier.")
+        if self.target_type is not ImpactTargetType.SIMULATION and self.target_id is None:
+            raise DomainRuleViolation("Simulation state target identifier is required.")
 
 
 @dataclass(frozen=True)
@@ -32,23 +36,16 @@ class StateValue:
 
 @dataclass(frozen=True)
 class SimulationState:
-    """Immutable, versioned state owned by one simulation session."""
-
     simulation_id: UUID
     version: int = 0
     values: tuple[StateValue, ...] = ()
 
     def __post_init__(self) -> None:
-        if self.version < 0:
-            raise DomainRuleViolation("Simulation state version cannot be negative.")
-        if len({value.key for value in self.values}) != len(self.values):
-            raise DomainRuleViolation("Simulation state keys must be unique.")
+        if self.version < 0 or len({value.key for value in self.values}) != len(self.values):
+            raise DomainRuleViolation("Simulation state version or keys are invalid.")
 
     def get(self, key: StateKey) -> float | bool | None:
-        for value in self.values:
-            if value.key == key:
-                return value.value
-        return None
+        return next((item.value for item in self.values if item.key == key), None)
 
     def with_values(self, values: tuple[StateValue, ...]) -> SimulationState:
         return SimulationState(self.simulation_id, self.version + 1, values)

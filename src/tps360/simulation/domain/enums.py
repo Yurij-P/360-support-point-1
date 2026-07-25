@@ -1,4 +1,4 @@
-from enum import StrEnum
+﻿from enum import StrEnum
 
 
 class SimulationStatus(StrEnum):
@@ -159,7 +159,12 @@ class ImpactOperation(StrEnum):
     SET = "set"
     INCREASE = "increase"
     DECREASE = "decrease"
+    ADD = "add"
+    SUBTRACT = "subtract"
     MULTIPLY = "multiply"
+    DIVIDE = "divide"
+    MIN = "min"
+    MAX = "max"
     ACTIVATE = "activate"
     DEACTIVATE = "deactivate"
     DAMAGE = "damage"

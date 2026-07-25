@@ -378,3 +378,17 @@ class SimulationStateChanged(ImpactCreated):
 @dataclass(frozen=True)
 class ImpactConflictDetected(ImpactCreated):
     pass
+# Impact lifecycle events are intentionally separate from the historical simulation-only union.
+ImpactDomainEvent = (
+    ImpactCreated
+    | ImpactScheduled
+    | ImpactReady
+    | ImpactApplied
+    | ImpactActivated
+    | ImpactReversed
+    | ImpactExpired
+    | ImpactCancelled
+    | ImpactFailed
+    | SimulationStateChanged
+    | ImpactConflictDetected
+)
