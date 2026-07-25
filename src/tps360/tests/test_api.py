@@ -172,3 +172,14 @@ def test_facilitator_token_is_returned_once_and_not_exposed_by_session_reads():
     assert created.json()["facilitator_token"]
     assert "facilitator_token" not in fetched.json()
     assert "facilitator_token_digest" not in fetched.json()
+
+
+def test_session_openapi_schemas_do_not_expose_facilitator_token_digest():
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+
+    assert "facilitator_token_digest" not in schemas["SessionResponse"]["properties"]
+    assert "facilitator_token_digest" not in schemas["CreateSessionResponse"]["properties"]
+    assert "facilitator_token_digest" not in schemas["SessionResponse"].get("required", [])
+    assert "facilitator_token_digest" not in schemas["CreateSessionResponse"].get(
+        "required", []
+    )

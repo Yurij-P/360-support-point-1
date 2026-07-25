@@ -8,7 +8,11 @@ from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import sessions
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
-from tps360.simulation.domain.session import FacilitatedSession, Participant
+from tps360.simulation.domain.session import (
+    FacilitatedSession,
+    Participant,
+    SessionStatus,
+)
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 T = TypeVar("T")
@@ -28,7 +32,20 @@ class AssignRoleRequest(BaseModel):
     role_id: UUID
 
 
-class CreateSessionResponse(FacilitatedSession):
+class SessionResponse(BaseModel):
+    id: UUID
+    community_id: UUID
+    facilitator_name: str
+    player_capacity: int
+    status: SessionStatus
+    participants: list[Participant]
+
+    @classmethod
+    def from_domain(cls, session: FacilitatedSession) -> "SessionResponse":
+        return cls(**session.model_dump())
+
+
+class CreateSessionResponse(SessionResponse):
     facilitator_token: str
 
 
@@ -61,14 +78,13 @@ def create(request: CreateSessionRequest) -> CreateSessionResponse:
     )
     return CreateSessionResponse(
         **session.model_dump(),
-        facilitator_token_digest=session.facilitator_token_digest,
         facilitator_token=facilitator_token,
     )
 
 
 @router.get("/{session_id}")
-def get_session(session_id: UUID) -> FacilitatedSession:
-    return item(session_id)
+def get_session(session_id: UUID) -> SessionResponse:
+    return SessionResponse.from_domain(item(session_id))
 
 
 @router.post("/{session_id}/participants")
@@ -93,11 +109,11 @@ def assign_role(
 def start(
     session_id: UUID,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
-) -> FacilitatedSession:
+) -> SessionResponse:
     session = item(session_id)
     authorize_facilitator(session, facilitator_token)
     domain_action(session.start)
-    return session
+    return SessionResponse.from_domain(session)
 
 
 def authorize_facilitator(
