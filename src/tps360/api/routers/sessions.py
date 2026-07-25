@@ -123,8 +123,13 @@ class ParticipantJoinResponse(ParticipantViewResponse):
     participant_token: str | None
 
 @router.get("/{session_id}")
-def get_session(session_id: UUID) -> SessionResponse:
-    return SessionResponse.from_domain(item(session_id))
+def get_session(
+    session_id: UUID,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> SessionResponse:
+    session = item(session_id)
+    authorize_facilitator(session, facilitator_token)
+    return SessionResponse.from_domain(session)
 
 
 @router.post("/{session_id}/participants/join")

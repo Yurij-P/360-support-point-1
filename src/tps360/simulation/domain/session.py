@@ -151,7 +151,7 @@ class FacilitatedSession(BaseModel):
         if self.status not in {SessionStatus.LOBBY, SessionStatus.READY}:
             raise DomainRuleViolation("Roles can be assigned only before the session starts")
         participant = self._participant(participant_id)
-        if self.role_profiles and not any(profile.role_id == role_id for profile in self.role_profiles):
+        if not any(profile.role_id == role_id for profile in self.role_profiles):
             raise DomainRuleViolation("Role is not available in this session")
         participant.role_id = role_id
         participant.lifecycle = ParticipantLifecycle.ROLE_ASSIGNED

@@ -124,3 +124,58 @@ def test_only_facilitator_can_assign_role_and_participant_receives_profile() -> 
         headers={"X-Facilitator-Token": facilitator_token},
     )
     assert invalid_role.status_code == 409
+
+def create_session_without_roles() -> tuple[str, str, str]:
+    response = client.post(
+        "/sessions",
+        json={
+            "community_id": str(uuid4()),
+            "facilitator_name": "Facilitator",
+            "player_capacity": 1,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    return body["id"], body["facilitator_token"], body["join_token"]
+
+
+def test_full_session_view_is_facilitator_only() -> None:
+    session_id, facilitator_token, join_token, _ = create_session()
+    other_session_id, other_facilitator_token, _, _ = create_session()
+    joined = client.post(
+        f"/sessions/{session_id}/participants/join",
+        json={"join_token": join_token, "display_name": "Participant One"},
+    )
+    participant_token = joined.json()["participant_token"]
+
+    assert client.get(f"/sessions/{session_id}").status_code == 401
+    assert client.get(
+        f"/sessions/{session_id}",
+        headers={"X-Participant-Token": participant_token},
+    ).status_code in {401, 403}
+    assert client.get(
+        f"/sessions/{session_id}",
+        headers={"X-Facilitator-Token": other_facilitator_token},
+    ).status_code == 403
+    allowed = client.get(
+        f"/sessions/{session_id}",
+        headers={"X-Facilitator-Token": facilitator_token},
+    )
+    assert allowed.status_code == 200
+    assert "participants" in allowed.json()
+    assert other_session_id != session_id
+
+
+def test_empty_role_catalog_rejects_all_role_assignments() -> None:
+    session_id, facilitator_token, join_token = create_session_without_roles()
+    joined = client.post(
+        f"/sessions/{session_id}/participants/join",
+        json={"join_token": join_token, "display_name": "Participant One"},
+    )
+    participant_id = joined.json()["participant_id"]
+    response = client.put(
+        f"/sessions/{session_id}/participants/{participant_id}/role",
+        json={"role_id": str(uuid4())},
+        headers={"X-Facilitator-Token": facilitator_token},
+    )
+    assert response.status_code == 409
