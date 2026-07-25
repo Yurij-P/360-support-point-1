@@ -1,0 +1,1 @@
+from .profile import CommunityPreparednessProfile as CommunityPreparednessProfile

@@ -13,9 +13,9 @@ def test_create_community():
     response = client.post(
         "/communities",
         json={
-            "name": "Р“СЂРѕРјР°РґР°",
+            "name": "Громада",
             "code": "API-1",
-            "oblast": "РљРёС—РІСЃСЊРєР°",
+            "oblast": "Київська",
             "population": 1,
             "area_km2": 1,
         },

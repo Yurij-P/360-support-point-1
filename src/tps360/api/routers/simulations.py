@@ -23,6 +23,12 @@ def create(simulation: Simulation) -> Simulation:
     return simulations.add(simulation)
 
 
+@router.get("/{simulation_id}")
+def get_simulation(simulation_id: UUID) -> Simulation:
+    return item(simulation_id)
+
+
+
 @router.post("/{simulation_id}/start")
 def start(simulation_id: UUID) -> Simulation:
     return service.start_simulation(item(simulation_id))
