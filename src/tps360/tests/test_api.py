@@ -36,6 +36,9 @@ def test_facilitated_session_startup_flow():
     )
     assert created.status_code == 200
     session_id = created.json()["id"]
+    facilitator_headers = {
+        "X-Facilitator-Token": created.json()["facilitator_token"]
+    }
 
     joined = client.post(
         f"/sessions/{session_id}/participants",
@@ -44,15 +47,139 @@ def test_facilitated_session_startup_flow():
     assert joined.status_code == 200
     participant_id = joined.json()["id"]
 
-    blocked = client.post(f"/sessions/{session_id}/start")
+    blocked = client.post(
+        f"/sessions/{session_id}/start", headers=facilitator_headers
+    )
     assert blocked.status_code == 409
 
     assigned = client.put(
         f"/sessions/{session_id}/participants/{participant_id}/role",
         json={"role_id": str(uuid4())},
+        headers=facilitator_headers,
     )
     assert assigned.status_code == 200
 
-    started = client.post(f"/sessions/{session_id}/start")
+    started = client.post(
+        f"/sessions/{session_id}/start", headers=facilitator_headers
+    )
     assert started.status_code == 200
     assert started.json()["status"] == "active"
+
+
+def test_assigning_role_to_unknown_participant_returns_not_found():
+    created = client.post(
+        "/sessions",
+        json={
+            "community_id": str(uuid4()),
+            "facilitator_name": "Фасилітатор",
+            "player_capacity": 1,
+        },
+    )
+    session_id = created.json()["id"]
+    facilitator_headers = {
+        "X-Facilitator-Token": created.json()["facilitator_token"]
+    }
+
+    response = client.put(
+        f"/sessions/{session_id}/participants/{uuid4()}/role",
+        json={"role_id": str(uuid4())},
+        headers=facilitator_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_session_cannot_be_started_twice():
+    created = client.post(
+        "/sessions",
+        json={
+            "community_id": str(uuid4()),
+            "facilitator_name": "Фасилітатор",
+            "player_capacity": 1,
+        },
+    )
+    session_id = created.json()["id"]
+    facilitator_headers = {
+        "X-Facilitator-Token": created.json()["facilitator_token"]
+    }
+    joined = client.post(
+        f"/sessions/{session_id}/participants",
+        json={"display_name": "Гравець 1"},
+    )
+    client.put(
+        f"/sessions/{session_id}/participants/{joined.json()['id']}/role",
+        json={"role_id": str(uuid4())},
+        headers=facilitator_headers,
+    )
+    assert (
+        client.post(f"/sessions/{session_id}/start", headers=facilitator_headers).status_code
+        == 200
+    )
+
+    repeated = client.post(
+        f"/sessions/{session_id}/start", headers=facilitator_headers
+    )
+
+    assert repeated.status_code == 409
+
+
+def test_facilitator_actions_require_the_generated_token():
+    created = client.post(
+        "/sessions",
+        json={
+            "community_id": str(uuid4()),
+            "facilitator_name": "Фасилітатор",
+            "player_capacity": 1,
+        },
+    )
+    session_id = created.json()["id"]
+    token = created.json()["facilitator_token"]
+    joined = client.post(
+        f"/sessions/{session_id}/participants",
+        json={"display_name": "Гравець 1"},
+    )
+    role_url = f"/sessions/{session_id}/participants/{joined.json()['id']}/role"
+
+    missing = client.put(role_url, json={"role_id": str(uuid4())})
+    invalid = client.put(
+        role_url,
+        json={"role_id": str(uuid4())},
+        headers={"X-Facilitator-Token": "not-the-token"},
+    )
+    authorized = client.put(
+        role_url,
+        json={"role_id": str(uuid4())},
+        headers={"X-Facilitator-Token": token},
+    )
+
+    assert missing.status_code == 401
+    assert invalid.status_code == 403
+    assert authorized.status_code == 200
+
+
+def test_facilitator_token_is_returned_once_and_not_exposed_by_session_reads():
+    created = client.post(
+        "/sessions",
+        json={
+            "community_id": str(uuid4()),
+            "facilitator_name": "Фасилітатор",
+            "player_capacity": 1,
+        },
+    )
+
+    fetched = client.get(f"/sessions/{created.json()['id']}")
+
+    assert created.json()["facilitator_token"]
+    assert "facilitator_token" not in fetched.json()
+    assert "facilitator_token_digest" not in fetched.json()
+
+
+def test_session_openapi_schemas_do_not_expose_facilitator_token_digest():
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+
+    assert "facilitator_token_digest" not in schemas["SessionResponse"]["properties"]
+    assert "facilitator_token_digest" not in schemas["CreateSessionResponse"]["properties"]
+    assert "facilitator_token_digest" not in schemas["SessionResponse"].get("required", [])
+    assert "facilitator_token_digest" not in schemas["CreateSessionResponse"].get(
+        "required", []
+    )
