@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+body{margin:0;background:#f2f2f0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#1b1b1a;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2a5f8f}a:hover{color:#1c4266}
+:focus-visible{outline:2px solid #2a5f8f;outline-offset:2px}
+button{font-family:inherit}
+@keyframes shim{0%{opacity:.45}50%{opacity:.9}100%{opacity:.45}}
+</style>
+</helmet>
+
+<div style="min-height:100vh">
+
+<header style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #d5d5d1;padding:14px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <span style="font:600 15px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">TPS360 · Робоче середовище учасника</span>
+    <span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:#7a7a74;letter-spacing:.04em">ЕТАП 2 · LOW-FIDELITY WIREFRAMES · НЕ ПОГОДЖЕНО</span>
+  </div>
+  <nav style="display:flex;gap:6px;flex-wrap:wrap" aria-label="Розділи документа">
+    <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="4">
+      <button type="button" onClick="{{ tab.go }}" aria-current="{{ tab.current }}" style="min-height:38px;padding:0 14px;border-radius:5px;border:1px solid #cfcfca;background:{{ tab.bg }};color:{{ tab.fg }};font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ tab.label }}</button>
+    </sc-for>
+  </nav>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+    <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#7a7a74">РОЗМІР ЕКРАНА</span>
+    <div style="display:flex;border:1px solid #cfcfca;border-radius:5px;overflow:hidden">
+      <sc-for list="{{ devices }}" as="d" hint-placeholder-count="2">
+        <button type="button" onClick="{{ d.go }}" aria-pressed="{{ d.on }}" style="min-height:38px;padding:0 12px;border:0;border-left:1px solid #eceae6;background:{{ d.bg }};color:#33332f;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ d.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ ПРОТОТИП ══════════ -->
+<sc-if value="{{ isProto }}" hint-placeholder-val="{{ true }}">
+<div style="padding:22px 28px 60px">
+
+  <div style="max-width:1340px;margin:0 auto 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <ol style="list-style:none;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="7">
+        <li style="display:flex;align-items:center;gap:6px">
+          <button type="button" onClick="{{ st.go }}" style="min-height:40px;display:flex;align-items:center;gap:7px;padding:0 11px;border-radius:5px;border:1px solid {{ st.border }};background:{{ st.bg }};color:{{ st.fg }};font:{{ st.font }};cursor:pointer">
+            <span style="font-family:'IBM Plex Mono',monospace">{{ st.glyph }}</span>{{ st.n }}. {{ st.label }}
+          </button>
+          <sc-if value="{{ st.notLast }}"><span aria-hidden="true" style="color:#b5b5af">›</span></sc-if>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+      <span style="font:500 10px/1.4 'IBM Plex Mono',monospace;color:#7a7a74">ДЕМОНСТРАЦІЯ РОЛІ</span>
+      <span style="padding:5px 9px;border:1px solid #d9c99f;border-radius:4px;background:#fdf6e7;font:500 10px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">ROLE ASSIGNMENT: FACILITATOR ONLY</span>
+      <span style="padding:3px 6px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — ROLE PERMISSIONS AND INFORMATION ACCESS</span>
+    </div>
+  </div>
+
+  <div style="max-width:1340px;margin:0 auto;background:#fff;border:1px solid #cfcfca;border-radius:8px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:#e9e9e5;border-bottom:1px solid #d5d5d1">
+      <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">{{ frameLabel }}</span>
+      <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">prototype.local{{ routePath }}</span>
+      <span style="margin-left:auto;font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">РОЛЬ: УЧАСНИК</span>
+    </div>
+    <div style="overflow-x:auto;padding:20px;background:#f7f7f5">
+    <div style="{{ frameStyle }}">
+
+      <!-- ── шапка сесії (екрани 3–7) ── -->
+      <sc-if value="{{ showSessionHeader }}">
+      <div style="border-bottom:1px solid #dcdcd8;background:#fff">
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 18px;flex-wrap:wrap">
+          <span style="font:600 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">TPS360</span>
+          <span style="width:1px;height:20px;background:#e2e2de"></span>
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <span style="font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ session.name }}</span>
+            <span style="font:400 11px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66">{{ session.context }}</span>
+          </span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid #cfcfca;border-radius:4px;background:#fafaf8;font:500 11px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif"><span style="font-family:'IBM Plex Mono',monospace;color:#8a8a84">РОЛЬ</span>{{ session.role }}</span>
+            <span style="padding:3px 6px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">ROLE MODEL NOT APPROVED</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid {{ conn.border }};border-radius:4px;background:{{ conn.bg }};font:500 11px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:{{ conn.fg }}"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">{{ conn.glyph }}</span>{{ conn.label }}</span>
+            <button type="button" style="min-height:40px;min-width:44px;padding:0 11px;border:1px solid #cfcfca;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Довідка</button>
+          </span>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ═══ P1 · ПРИЄДНАННЯ ═══ -->
+      <sc-if value="{{ onP1 }}" hint-placeholder-val="{{ true }}">
+      <main style="padding:36px 20px 44px;min-height:520px;background:#fbfbf9">
+        <div style="max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+          <div style="text-align:center">
+            <span style="font:600 15px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">TPS360 · Точка підтримки 360</span>
+            <h1 style="font:600 24px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:10px 0 6px">Приєднання до симуляційної сесії</h1>
+            <p style="font:400 13px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f;margin:0">Введіть код, який надав фасилітатор, або скористайтеся запрошувальним посиланням.</p>
+          </div>
+
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:18px;display:flex;flex-direction:column;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:6px;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">Код сесії
+              <span style="display:flex;align-items:center;min-height:52px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 20px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#9a9a94">ABX-4471</span>
+              <span style="font:400 11.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66">8 символів, регістр не має значення</span>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">Ім’я та прізвище
+              <span style="display:flex;align-items:center;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#9a9a94">Як вас бачитиме фасилітатор</span>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">Організація або підрозділ <span style="font-weight:400;color:#8a8a84">— необов’язково</span>
+              <span style="display:flex;align-items:center;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#9a9a94">Напр. КП «Водоканал»</span>
+            </label>
+            <p style="margin:0;padding:11px 13px;border:1px solid #dcdcd8;border-radius:5px;background:#fafaf8;font:400 12px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f"><b style="font-weight:600">Що бачить фасилітатор: </b>ваше ім’я, організацію, роль, статус готовності, подані рішення та час подання. Фасилітатор не бачить ваших чернеток до подання.</p>
+             <p style="margin:0;padding:10px 12px;border:1px dashed #b9b9b2;background:#fbfbf9;font:400 11.5px/1.5 IBM Plex Mono,monospace;color:#55554f">MOCK DATA ? participant_id: {{ participant.participant_id }} ? reconnect: {{ participant.reconnect_status }}</p>
+            <button type="button" onClick="{{ joinSession }}" style="min-height:48px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:600 15px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Приєднатися до сесії</button>
+            <span style="font:400 11.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;text-align:center">Отримали запрошувальне посилання? Відкрийте його — код підставиться автоматично.</span>
+            <span style="align-self:center;padding:4px 7px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — AUTHENTICATION METHOD</span>
+          </section>
+
+          <section style="border:1px dashed #b9b9b2;border-radius:6px;background:#fff;padding:16px">
+            <h2 style="font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 4px">Стани входу (варіанти повідомлень)</h2>
+            <p style="font:400 11.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:0 0 12px">Показані поруч для перевірки логіки; в інтерфейсі відображається один із них біля поля коду.</p>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ joinStates }}" as="j" hint-placeholder-count="5">
+                <li style="display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px {{ j.borderStyle }} {{ j.border }};border-radius:5px;background:{{ j.bg }}">
+                  <span aria-hidden="true" style="font:600 12px/1.4 'IBM Plex Mono',monospace;color:{{ j.fg }}">{{ j.glyph }}</span>
+                  <span style="flex:1;display:flex;flex-direction:column;gap:3px">
+                    <span style="font:600 12.5px/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:{{ j.fg }}">{{ j.title }}</span>
+                    <span style="font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">{{ j.body }}</span>
+                  </span>
+                  <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 11px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;white-space:nowrap">{{ j.action }}</span>
+                </li>
+              </sc-for>
+            </ul>
+          </section>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- ═══ P3 · РОЛЬ І BRIEFING ═══ -->
+      <sc-if value="{{ onP3 }}">
+      <main style="padding:22px 20px 30px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toP2 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">← Приєднання</button>
+          <div style="flex:1 1 320px">
+            <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">БЕРЕЗНЕГУВАТСЬКА СЕЛИЩНА ГРОМАДА · MOCK</span>
+            <h1 style="font:600 22px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:6px 0 4px">Аварія на водозаборі: перші 24 години</h1>
+            <p style="font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f;margin:0">Participant briefing · ознайомтеся з роллю, доступною інформацією та межами повноважень</p>
+          </div>
+        </div>
+
+         <section style="border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px">
+           <strong>Role assignment</strong>
+           <p style="margin:6px 0 0;font:400 12.5px/1.5 system-ui,-apple-system,Arial,sans-serif">The facilitator assigns the role before this briefing becomes available. Participants cannot self-select, change, or auto-assign a role.</p>
+           <span style="display:inline-block;margin-top:8px;font:500 10px/1.2 IBM Plex Mono,monospace;color:#7a5a12">ROLE MODEL NOT APPROVED - MOCK DATA</span>
+         </section>
+        <div style="display:grid;grid-template-columns:{{ briefCols }};gap:14px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:16px">
+              <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+                <span style="width:44px;height:44px;border-radius:5px;background:#eceae6;border:1px solid #d5d5d1;display:flex;align-items:center;justify-content:center;font:600 15px/1 'IBM Plex Mono',monospace">{{ role.glyph }}</span>
+                <div style="flex:1 1 220px">
+                  <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">ВАША РОЛЬ · MOCK DATA — ROLE MODEL NOT APPROVED</span>
+                  <h2 style="font:600 17px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:6px 0 4px">{{ role.title }}</h2>
+                  <p style="font:400 12px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:0 0 6px">{{ role.org }}</p>
+                  <p style="font:400 13px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f;margin:0;text-wrap:pretty">{{ role.desc }}</p>
+                  <p style="font:500 12px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f;margin:8px 0 0">{{ role.accent }}</p>
+                </div>
+              </div>
+            </section>
+            <sc-for list="{{ briefBlocks }}" as="b" hint-placeholder-count="5">
+              <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+                <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                  <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">{{ b.title }}</h2>
+                  <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ b.tagBorder }};background:{{ b.tagBg }};font:500 9px/1.2 'IBM Plex Mono',monospace;color:{{ b.tagFg }}">{{ b.tag }}</span>
+                </header>
+                <ul style="margin:0;padding:10px 14px 14px 30px;font:400 13px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">
+                  <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+                    <li>{{ it }}</li>
+                  </sc-for>
+                </ul>
+              </section>
+            </sc-for>
+          </div>
+
+          <aside style="display:flex;flex-direction:column;gap:14px;position:sticky;top:12px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px">
+              <h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 10px">Правила взаємодії</h2>
+              <ul style="margin:0;padding-left:16px;font:400 12.5px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">
+                <li>Рішення подаються через форму, а не голосом</li>
+                <li>Інформація ролі не є секретною поза симуляцією</li>
+                <li>Час на реакцію визначає фасилітатор</li>
+                <li>Питання до фасилітатора — через повідомлення сесії</li>
+              </ul>
+              <p style="margin:10px 0 0;font:400 11.5px/1.5 'IBM Plex Mono',monospace;color:#8a8a84">MOCK DATA · правила потребують погодження</p>
+            </section>
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px;display:flex;flex-direction:column;gap:12px">
+              <label style="display:flex;gap:10px;align-items:flex-start;font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">
+                <span style="width:24px;height:24px;flex:none;border:2px solid {{ confirm.border }};border-radius:4px;background:{{ confirm.bg }};display:flex;align-items:center;justify-content:center;font:600 13px/1 'IBM Plex Mono',monospace;color:#fff">{{ confirm.glyph }}</span>
+                <span>Підтверджую, що ознайомився з роллю, доступною інформацією та правилами</span>
+              </label>
+              <button type="button" onClick="{{ toggleConfirm }}" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ confirm.toggleLabel }}</button>
+              <button type="button" onClick="{{ toP4 }}" style="min-height:48px;border:1px solid {{ confirm.ctaBorder }};border-radius:5px;background:{{ confirm.ctaBg }};color:{{ confirm.ctaFg }};font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Continue to active simulation</button>
+              <sc-if value="{{ confirm.warn }}">
+                <span style="display:flex;gap:8px;align-items:flex-start;padding:10px 11px;border:1px solid #d9c99f;border-radius:5px;background:#fdf6e7;font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#4a4a44"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace;color:#7a5a12">!</span>Спочатку підтвердьте ознайомлення — інакше briefing вважається неповним (incomplete briefing).</span>
+              </sc-if>
+            </section>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- ═══ P2 · LOBBY / READINESS ═══ -->
+      <sc-if value="{{ onP2 }}">
+      <main style="padding:22px 20px 30px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toP1 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">← Briefing</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Lobby · готовність до початку</h1>
+            <p style="font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Громада: Березнегуватська селищна · Загроза: пошкодження системи водопостачання <span style="font:500 10px/1 'IBM Plex Mono',monospace">MOCK</span></p>
+          </div>
+          <span style="padding:5px 8px;border-radius:4px;border:1px dashed #b9b9b2;background:#f2f2ef;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#5c5c57">ЕТАП 2 · НЕ ЗМІНЮЄ ПОГОДЖЕНІ 6 COMMUNITY-FIRST ЕКРАНІВ</span>
+        </div>
+
+         <section style="border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px;margin-bottom:14px">
+           <strong>Role assignment status</strong>
+           <p style="margin:6px 0 0;font:400 12.5px/1.5 system-ui,-apple-system,Arial,sans-serif">{{ roleAssignment.title }} - {{ roleAssignment.body }}</p>
+           <span style="display:inline-block;margin-top:8px;font:500 10px/1.2 IBM Plex Mono,monospace;color:#7a5a12">{{ roleAssignment.tag }}</span>
+         </section>
+        <div style="display:grid;grid-template-columns:{{ lobbyCols }};gap:14px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid {{ ready.border }};border-radius:6px;background:{{ ready.bg }};padding:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+              <div style="flex:1 1 260px">
+                <h2 style="font:600 15px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 5px;color:{{ ready.fg }}"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">{{ ready.glyph }}</span> {{ ready.title }}</h2>
+                <p style="margin:0;font:400 12.5px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">{{ ready.body }}</p>
+              </div>
+              <button type="button" onClick="{{ toggleReady }}" style="min-height:48px;padding:0 18px;border:1px solid {{ ready.btnBorder }};border-radius:5px;background:{{ ready.btnBg }};color:{{ ready.btnFg }};font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ ready.btnLabel }}</button>
+            </section>
+
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2"><h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Технічна перевірка</h2></header>
+              <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ techCheck }}" as="t" hint-placeholder-count="4">
+                  <li style="display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px dashed #e8e8e4">
+                    <span aria-hidden="true" style="font:600 12px/1 'IBM Plex Mono',monospace;color:{{ t.fg }};width:16px">{{ t.glyph }}</span>
+                    <span style="flex:1;font:400 13px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ t.label }}</span>
+                    <span style="font:500 11.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:{{ t.fg }}">{{ t.status }}</span>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px">
+              <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:8px">
+                <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Повідомлення фасилітатора</h2>
+                <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">10:31 · MOCK</span>
+              </div>
+              <p style="margin:0;padding:11px 12px;border-left:3px solid #6f6f69;border:1px solid #dcdcd8;border-radius:5px;background:#fafaf8;font:400 13px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">Починаємо за 5 хвилин. Перечитайте briefing своєї ролі; питання щодо правил — до старту.</p>
+            </section>
+          </div>
+
+          <aside style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px">
+              <h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 10px">Стан сесії</h2>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ lobbyStatus }}" as="s" hint-placeholder-count="4">
+                  <li style="display:flex;gap:10px;align-items:baseline;font:400 12.5px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span style="flex:1">{{ s.k }}</span><span style="font-weight:500;color:{{ s.vFg }};text-align:right">{{ s.v }}</span></li>
+                </sc-for>
+              </ul>
+              <p style="margin:12px 0 0;padding:10px 11px;border:1px dashed #b9b9b2;border-radius:5px;background:#fbfbf9;font:400 11.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f">Чи бачить учасник кількість підключених — <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span>. Показано як приховане за замовчуванням.</p>
+            </section>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <button type="button" onClick="{{ toP3 }}" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Відкрити briefing ще раз</button>
+              <button type="button" onClick="{{ toP4 }}" style="min-height:48px;border:1px solid {{ ready.startBorder }};border-radius:5px;background:{{ ready.startBg }};color:{{ ready.startFg }};font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ ready.startLabel }}</button>
+              <span style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:#8a8a84">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: GET /sessions/{code}/state · POST /participants/{id}/ready</span>
+            </div>
+            <section style="border:1px solid #c9a5a1;border-radius:6px;background:#f9efee;padding:13px">
+              <h3 style="font:600 12.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 6px;color:#7a2f28"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">↻</span> Reconnect banner (демонстрація)</h3>
+              <p style="margin:0 0 9px;font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">З’єднання втрачено. Готовність збережена, повторне підключення виконується автоматично.</p>
+              <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 11px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">Підключитися зараз</span>
+            </section>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- ═══ P4 · ACTIVE SIMULATION WORKSPACE ═══ -->
+      <sc-if value="{{ onP4 }}">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid #e2e2de;background:#fafaf8;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border:1px solid #cfcfca;border-radius:4px;background:#fff;font:500 12px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif"><span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">ЕТАП</span>Реагування · етап 2 з 4</span>
+        <span style="padding:3px 6px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — STAGES, ROUNDS AND TIMING MODEL</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border:1px dashed #b9b9b2;border-radius:4px;background:#fff;font:500 12px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">ВАРІАНТ</span>Часовий індикатор: без таймера, лише «етап триває»</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border:1px solid #cfcfca;border-radius:4px;background:#fff;font:500 12px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif"><span style="font:600 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ role.glyph }}</span>{{ role.accent }}</span>
+        <span style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;font:400 11.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span>{{ autosave }}</span>
+      </div>
+      <main style="padding:16px 18px 26px;background:#fbfbf9">
+        <div style="display:grid;grid-template-columns:{{ wsCols }};gap:14px;align-items:start">
+
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;order:{{ wsOrder.left }}">
+            <nav style="display:flex;gap:4px;padding:8px;border-bottom:1px solid #e6e6e2;flex-wrap:wrap" aria-label="Контекстні панелі">
+              <sc-for list="{{ wsTabs }}" as="t" hint-placeholder-count="3">
+                <button type="button" onClick="{{ t.go }}" aria-pressed="{{ t.on }}" style="min-height:40px;padding:0 12px;border:1px solid {{ t.border }};border-radius:5px;background:{{ t.bg }};font:{{ t.font }};color:#33332f;cursor:pointer">{{ t.label }}</button>
+              </sc-for>
+            </nav>
+            <div style="padding:14px">
+              <sc-if value="{{ wsIsContext }}">
+                <ul style="list-style:none;margin:0;padding:0">
+                  <sc-for list="{{ contextRows }}" as="r" hint-placeholder-count="6">
+                    <li style="display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px dashed #e8e8e4;font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span style="flex:1">{{ r.k }}</span><span style="font-weight:500;color:{{ r.vFg }};text-align:right">{{ r.v }}</span></li>
+                  </sc-for>
+                </ul>
+                <span style="display:inline-block;margin-top:10px;padding:3px 6px;border-radius:3px;border:1px solid #b9b9b2;background:#f2f2ef;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#5c5c57">MOCK DATA</span>
+              </sc-if>
+              <sc-if value="{{ wsIsMap }}">
+                <div style="position:relative;height:220px;border:1px dashed #b9b9b2;border-radius:6px;background:#f0efec;background-image:linear-gradient(#e6e5e1 1px,transparent 1px),linear-gradient(90deg,#e6e5e1 1px,transparent 1px);background-size:36px 36px;display:flex;align-items:center;justify-content:center">
+                  <span style="padding:5px 9px;border-radius:4px;background:#fff;border:1px dashed #b9b9b2;font:500 10px/1.4 'IBM Plex Mono',monospace;color:#5c5c57;text-align:center">MOCK DATA · ГЕОПРОСТОРОВИЙ ФРАГМЕНТ<br>без реальних координат</span>
+                </div>
+                <ul style="list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ mapObjects }}" as="m" hint-placeholder-count="4">
+                    <li style="display:flex;gap:9px;align-items:center;font:400 12.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif"><span style="width:18px;height:18px;flex:none;border:2px solid #5c5c57;border-radius:3px;background:#fff;display:flex;align-items:center;justify-content:center;font:600 9px/1 'IBM Plex Mono',monospace">{{ m.glyph }}</span><span style="flex:1">{{ m.label }}</span><span style="font:400 11.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66">{{ m.note }}</span></li>
+                  </sc-for>
+                </ul>
+                <p style="margin:10px 0 0;font:400 11px/1.5 'IBM Plex Mono',monospace;color:#8a8a84">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED: GET /sessions/{id}/geo-fragment</p>
+              </sc-if>
+              <sc-if value="{{ wsIsResources }}">
+                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ resources }}" as="r" hint-placeholder-count="4">
+                    <li style="border:1px solid #dcdcd8;border-radius:5px;background:#fafaf8;padding:11px">
+                      <div style="display:flex;gap:10px;align-items:baseline"><span style="flex:1;font:600 12.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ r.name }}</span><span style="font:500 11.5px/1.2 'IBM Plex Mono',monospace;color:{{ r.vFg }}">{{ r.qty }}</span></div>
+                      <span style="display:block;margin-top:4px;font:400 11.5px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66">{{ r.note }}</span>
+                    </li>
+                  </sc-for>
+                </ul>
+              </sc-if>
+            </div>
+          </section>
+
+          <section style="display:flex;flex-direction:column;gap:14px;order:{{ wsOrder.center }}">
+            <article style="border:1px solid #1b1b1a;border-radius:6px;background:#fff">
+              <header style="display:flex;gap:10px;align-items:flex-start;padding:14px;border-bottom:1px solid #e6e6e2;flex-wrap:wrap">
+                <span style="padding:4px 7px;border-radius:4px;border:1px solid #c9a5a1;background:#f9efee;font:600 10px/1.2 'IBM Plex Mono',monospace;color:#7a2f28">НОВА ПОДІЯ · НЕ ПЕРЕГЛЯНУТО</span>
+                <span style="font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:#8a8a84">10:47 · джерело: диспетчер водоканалу</span>
+              </header>
+              <div style="padding:14px;display:flex;flex-direction:column;gap:11px">
+                <h2 style="font:600 17px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Падіння тиску в мережі, знеструмлення насосної станції №2</h2>
+                <p style="margin:0;font:400 13px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f;text-wrap:pretty">Диспетчер повідомляє про падіння тиску та зупинку насосної. Кількість відключених споживачів уточнюється. Демонстраційний текст події.</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <sc-for list="{{ reliability }}" as="rl" hint-placeholder-count="3">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px {{ rl.borderStyle }} {{ rl.border }};border-radius:4px;background:{{ rl.bg }};font:500 11.5px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:{{ rl.fg }}"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">{{ rl.glyph }}</span>{{ rl.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button type="button" onClick="{{ toP5 }}" style="min-height:48px;padding:0 16px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Відкрити подію</button>
+                  <button type="button" onClick="{{ toP6 }}" style="min-height:48px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Підготувати рішення</button>
+                </div>
+              </div>
+            </article>
+
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Стрічка інформації</h2>
+                <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">НОВЕ: 1 · ПЕРЕГЛЯНУТО: 3</span>
+              </header>
+              <ul style="list-style:none;margin:0;padding:8px 14px 14px;display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ feed }}" as="f" hint-placeholder-count="4">
+                  <li style="display:flex;gap:11px;align-items:flex-start;padding:11px;border:1px {{ f.borderStyle }} {{ f.border }};border-radius:5px;background:{{ f.bg }}">
+                    <span aria-hidden="true" style="font:600 11px/1.5 'IBM Plex Mono',monospace;color:#8a8a84;width:38px;flex:none">{{ f.time }}</span>
+                    <span style="flex:1;display:flex;flex-direction:column;gap:3px">
+                      <span style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><span style="font:{{ f.titleFont }};color:#1b1b1a">{{ f.title }}</span><span style="padding:2px 5px;border-radius:3px;border:1px solid {{ f.tagBorder }};background:{{ f.tagBg }};font:500 9px/1.2 'IBM Plex Mono',monospace;color:{{ f.tagFg }}">{{ f.tag }}</span></span>
+                      <span style="font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f">{{ f.body }}</span>
+                    </span>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+          </section>
+
+          <aside style="display:flex;flex-direction:column;gap:14px;order:{{ wsOrder.right }}">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2"><h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Завдання ролі · 2 з 3</h2></header>
+              <ul style="list-style:none;margin:0;padding:8px 14px 12px;display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ tasks }}" as="t" hint-placeholder-count="3">
+                  <li style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #e2e2de;border-radius:5px;background:{{ t.bg }}">
+                    <span aria-hidden="true" style="font:600 12px/1.4 'IBM Plex Mono',monospace;color:{{ t.fg }};width:16px">{{ t.glyph }}</span>
+                    <span style="flex:1;display:flex;flex-direction:column;gap:3px">
+                      <span style="font:500 12.5px/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ t.label }}</span>
+                      <span style="font:400 11.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66">{{ t.status }}</span>
+                    </span>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+
+            <section style="border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:13px">
+              <div style="display:flex;gap:9px;align-items:baseline;margin-bottom:6px">
+                <h2 style="flex:1;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0;color:#5f4708">Чернетка рішення</h2>
+                <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">НЕ ПОДАНО</span>
+              </div>
+              <p style="margin:0 0 10px;font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">«Підвіз води для трьох віддалених НП…» — збережено автоматично 10:52</p>
+              <button type="button" onClick="{{ toP6 }}" style="min-height:44px;width:100%;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Продовжити чернетку</button>
+            </section>
+
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2"><h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Подані рішення · 1</h2></header>
+              <ul style="list-style:none;margin:0;padding:8px 14px 12px;display:flex;flex-direction:column;gap:8px">
+                <li style="padding:10px;border:1px solid #a9c3b0;border-radius:5px;background:#eef5f0">
+                  <span style="display:block;font:500 12.5px/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">Інформування населення про графік підвозу</span>
+                  <span style="display:block;margin-top:4px;font:400 11.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#22503a"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span> Прийнято системою 10:39</span>
+                </li>
+              </ul>
+            </section>
+
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:13px">
+              <h2 style="font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 7px">Повідомлення фасилітатора</h2>
+              <p style="margin:0;font:400 12px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">10:45 · Уточнення: інформація про знеструмлення ще не підтверджена обленерго.</p>
+            </section>
+          </aside>
+        </div>
+
+        <sc-if value="{{ isTablet }}">
+        <p style="margin:14px 0 0;padding:11px 13px;border:1px dashed #b9b9b2;border-radius:6px;background:#fff;font:400 12px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f">Планшет: три зони стають одним стовпцем у порядку «поточна подія → завдання і рішення → контекст»; контекстні панелі згортаються у вкладки; головна дія залишається видимою без прокручування.</p>
+        </sc-if>
+      </main>
+      </sc-if>
+
+      <!-- ═══ P5 · INJECT DETAIL ═══ -->
+      <sc-if value="{{ onP5 }}">
+      <main style="padding:22px 20px 30px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toP4 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">← Робоче вікно</button>
+          <span style="font:500 10px/1.4 'IBM Plex Mono',monospace;color:#8a8a84;align-self:center">ПОДІЯ · INJECT DETAIL · MOCK DATA</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ injectCols }};gap:14px;align-items:start">
+          <article style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+            <header style="padding:16px;border-bottom:1px solid #e6e6e2">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:9px">
+                <span style="padding:4px 7px;border-radius:4px;border:1px solid #c9a5a1;background:#f9efee;font:600 10px/1.2 'IBM Plex Mono',monospace;color:#7a2f28">ПОДІЯ ОНОВЛЕНА 10:51</span>
+                <span style="font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:#8a8a84">отримано 10:47 · джерело: диспетчер водоканалу (усне повідомлення)</span>
+              </div>
+              <h1 style="font:600 20px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Падіння тиску в мережі, знеструмлення насосної станції №2</h1>
+            </header>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+              <p style="margin:0;font:400 13.5px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f;text-wrap:pretty">Демонстраційний опис події для перевірки структури екрана. Диспетчер повідомляє про падіння тиску в центральній мережі та зупинку насосної станції №2. Причина зупинки уточнюється. Кількість відключених споживачів на момент повідомлення невідома.</p>
+
+              <section>
+                <h2 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 8px">РІВЕНЬ ПІДТВЕРДЖЕННЯ ІНФОРМАЦІЇ</h2>
+                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ injectFacts }}" as="f" hint-placeholder-count="3">
+                    <li style="display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px {{ f.borderStyle }} {{ f.border }};border-radius:5px;background:{{ f.bg }}">
+                      <span style="display:inline-flex;align-items:center;gap:6px;font:600 11px/1.3 'IBM Plex Mono',monospace;color:{{ f.fg }};white-space:nowrap"><span aria-hidden="true">{{ f.glyph }}</span>{{ f.level }}</span>
+                      <span style="flex:1;font:400 12.5px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">{{ f.text }}</span>
+                    </li>
+                  </sc-for>
+                </ul>
+              </section>
+
+              <section>
+                <h2 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 8px">ПОВ’ЯЗАНІ ТЕРИТОРІЇ ТА ОБ’ЄКТИ</h2>
+                <ul style="list-style:none;margin:0;padding:0;display:flex;gap:8px;flex-wrap:wrap">
+                  <sc-for list="{{ injectLinks }}" as="l" hint-placeholder-count="4">
+                    <li style="padding:7px 10px;border:1px solid #dcdcd8;border-radius:4px;background:#fafaf8;font:400 12.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ l }}</li>
+                  </sc-for>
+                </ul>
+              </section>
+
+              <section>
+                <h2 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 8px">ВКЛАДЕНІ МАТЕРІАЛИ · ЗАПРОПОНОВАНИЙ КОМПОНЕНТ</h2>
+                <ul style="list-style:none;margin:0;padding:0;display:flex;gap:9px;flex-wrap:wrap">
+                  <sc-for list="{{ attachments }}" as="a" hint-placeholder-count="2">
+                    <li style="display:flex;gap:9px;align-items:center;padding:10px 12px;border:1px dashed #b9b9b2;border-radius:5px;background:#fbfbf9;font:400 12.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace;color:#8a8a84">{{ a.glyph }}</span>{{ a.label }}</li>
+                  </sc-for>
+                </ul>
+              </section>
+            </div>
+          </article>
+
+          <aside style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #1b1b1a;border-radius:6px;background:#fff;padding:14px">
+              <h2 style="font:600 14px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 9px">Що очікується від вашої ролі</h2>
+              <ul style="margin:0 0 12px;padding-left:16px;font:400 12.5px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">
+                <sc-for list="{{ injectAsks }}" as="q" hint-placeholder-count="3">
+                  <li>{{ q }}</li>
+                </sc-for>
+              </ul>
+              <button type="button" onClick="{{ toP6 }}" style="min-height:48px;width:100%;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Підготувати рішення →</button>
+              <button type="button" onClick="{{ toP4 }}" style="margin-top:9px;min-height:44px;width:100%;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Повернутися до робочого вікна</button>
+            </section>
+            <p style="margin:0;padding:12px 13px;border:1px dashed #b9b9b2;border-radius:6px;background:#fbfbf9;font:400 11.5px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f">Позначки «факт / припущення / не підтверджено» дублюються глифом і словом; колір лише підсилює. Оновлення або відкликання події показується окремим станом стрічки, а не тихою підміною тексту.</p>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- ═══ P6 · РІШЕННЯ ═══ -->
+      <sc-if value="{{ onP6 }}">
+      <main style="padding:22px 20px 30px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px">
+          <button type="button" onClick="{{ toP5 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">← Подія</button>
+          <div style="flex:1 1 300px">
+            <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Підготовка рішення</h1>
+            <p style="font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Пов’язана подія: падіння тиску в мережі, знеструмлення насосної №2 · 10:47</p>
+          </div>
+          <span style="padding:4px 7px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — DECISION STRUCTURE AND APPROVAL WORKFLOW</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ decisionCols }};gap:14px;align-items:start">
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+            <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+              <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Форма рішення · запропонована структура</h2>
+              <span style="display:inline-flex;align-items:center;gap:6px;font:400 11.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span>{{ autosave }}</span>
+            </header>
+            <div style="padding:14px;display:flex;flex-direction:column;gap:13px">
+              <sc-for list="{{ decisionFields }}" as="f" hint-placeholder-count="8">
+                <label style="display:flex;flex-direction:column;gap:6px;font:500 12px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">
+                  <span style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">{{ f.label }}<span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:{{ f.reqFg }}">{{ f.req }}</span></span>
+                  <span style="display:block;min-height:{{ f.h }};padding:11px 12px;border:1px solid {{ f.border }};border-radius:5px;background:#fff;font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#9a9a94">{{ f.placeholder }}</span>
+                  <sc-if value="{{ f.err }}">
+                    <span style="display:flex;gap:7px;align-items:flex-start;font:400 11.5px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#7a2f28"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✕</span>{{ f.errText }}</span>
+                  </sc-if>
+                </label>
+              </sc-for>
+              <div style="display:flex;gap:10px;align-items:center;padding:11px 12px;border:1px dashed #b9b9b2;border-radius:5px;background:#fbfbf9;font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace;color:#8a8a84">＋</span>Вкладення — запропонований компонент, потребує погодження</div>
+            </div>
+          </section>
+
+          <aside style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px">
+              <h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 10px">Перед поданням</h2>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ preSubmit }}" as="p" hint-placeholder-count="3">
+                  <li style="display:flex;gap:10px;align-items:flex-start;font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f"><span aria-hidden="true" style="font:600 12px/1.4 'IBM Plex Mono',monospace;color:{{ p.fg }};width:14px">{{ p.glyph }}</span><span style="flex:1">{{ p.text }}</span></li>
+                </sc-for>
+              </ul>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:13px">
+                <button type="button" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Попередній перегляд</button>
+                <button type="button" disabled="{{ submitted }}" onClick="{{ submitDecision }}" style="min-height:48px;border:1px solid {{ submit.border }};border-radius:5px;background:{{ submit.bg }};color:{{ submit.fg }};font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ submit.label }}</button>
+                <span style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:#8a8a84">Повторне натискання блокується до відповіді сервера</span>
+              </div>
+            </section>
+
+            <sc-if value="{{ submitted }}">
+            <section style="border:1px solid #a9c3b0;border-radius:6px;background:#eef5f0;padding:14px">
+              <h2 style="font:600 13.5px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 6px;color:#22503a"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span> Рішення подано · 10:58</h2>
+               <p style="margin:0 0 10px;font:400 12.5px/1.55 system-ui,-apple-system,Arial,sans-serif;color:#3a463d">Submitted state is locked. Editing after submission is unavailable in this prototype.</p>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">
+                <button type="button" onClick="{{ toP4 }}" style="min-height:44px;padding:0 13px;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">До робочого вікна</button>
+                <button type="button" onClick="{{ toP7 }}" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Симуляція завершена →</button>
+              </div>
+            </section>
+            </sc-if>
+
+            <sc-if value="{{ notSubmitted }}">
+            <section style="border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:13px">
+              <h2 style="font:600 12.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 6px;color:#5f4708"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">!</span> Незбережені зміни та підтвердження</h2>
+              <p style="margin:0;font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">Перед поданням показується діалог підтвердження з коротким переліком заповнених полів. Спроба вийти з незбереженою чернеткою — попередження, а не тихе закриття.</p>
+            </section>
+            </sc-if>
+
+             <span style="font:400 11px/1.55 IBM Plex Mono,monospace;color:#8a8a84">API REQUIRED - PROPOSED CONTRACT, NOT IMPLEMENTED: local decision draft/submission only</span>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- ═══ P7 · ЗАВЕРШЕННЯ ТА РЕФЛЕКСІЯ ═══ -->
+      <sc-if value="{{ onP7 }}">
+      <main style="padding:22px 20px 30px">
+        <section style="border:1px solid #a9c3b0;border-radius:6px;background:#eef5f0;padding:16px;margin-bottom:14px">
+          <h1 style="font:600 19px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 6px;color:#22503a"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span> Симуляцію завершено</h1>
+          <p style="margin:0;font:400 13px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#3a463d;max-width:80ch">Ваша участь зафіксована. Далі — коротка індивідуальна рефлексія, потім спільний дебрифінг із фасилітатором. Оцінювання не є рейтингом і не порівнює учасників.</p>
+        </section>
+
+        <div style="display:grid;grid-template-columns:{{ finalCols }};gap:14px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Питання для самооцінювання</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — EVALUATION AND AAR METHODOLOGY</span>
+              </header>
+              <div style="padding:14px;display:flex;flex-direction:column;gap:13px">
+                <sc-for list="{{ reflectQs }}" as="q" hint-placeholder-count="4">
+                  <label style="display:flex;flex-direction:column;gap:6px;font:500 12.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">{{ q.label }}
+                    <span style="display:block;min-height:{{ q.h }};padding:11px 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#9a9a94">{{ q.placeholder }}</span>
+                  </label>
+                </sc-for>
+                <p style="margin:0;padding:11px 12px;border:1px solid #dcdcd8;border-radius:5px;background:#fafaf8;font:400 12px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f"><b style="font-weight:600">Хто побачить відповіді: </b>фасилітатор сесії — повністю; інші учасники — ні. Використання відповідей у звіті громади — <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span>.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button type="button" style="min-height:48px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Зберегти чернетку</button>
+                  <button type="button" onClick="{{ sendReflection }}" style="min-height:48px;padding:0 16px;border:1px solid {{ reflect.border }};border-radius:5px;background:{{ reflect.bg }};color:{{ reflect.fg }};font:600 14px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">{{ reflect.label }}</button>
+                </div>
+                <sc-if value="{{ reflectSent }}">
+                  <p style="margin:0;padding:11px 12px;border:1px solid #a9c3b0;border-radius:5px;background:#eef5f0;font:400 12.5px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#22503a"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span> Відповіді надіслано. Ви можете переглянути їх у дебрифінгу.</p>
+                </sc-if>
+              </div>
+            </section>
+          </div>
+
+          <aside style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2"><h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Підсумок вашої участі</h2></header>
+              <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ myStats }}" as="s" hint-placeholder-count="4">
+                  <li style="display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px dashed #e8e8e4;font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span style="flex:1">{{ s.k }}</span><span style="font-weight:500;color:{{ s.vFg }};text-align:right">{{ s.v }}</span></li>
+                </sc-for>
+              </ul>
+            </section>
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2"><h2 style="font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Ваші подані рішення · 2</h2></header>
+              <ul style="list-style:none;margin:0;padding:8px 14px 12px;display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ mySubmissions }}" as="s" hint-placeholder-count="2">
+                  <li style="padding:10px;border:1px solid #e2e2de;border-radius:5px;background:#fafaf8">
+                    <span style="display:block;font:500 12.5px/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ s.title }}</span>
+                    <span style="display:block;margin-top:4px;font:400 11.5px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f">{{ s.meta }}</span>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+            <section style="border:1px dashed #b9b9b2;border-radius:6px;background:#fbfbf9;padding:14px">
+              <h2 style="font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 7px">Debriefing preview</h2>
+              <p style="margin:0 0 11px;font:400 12px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f">Спільний дебрифінг веде фасилітатор: хронологія подій, ключові рішення, що спрацювало, що ні. Структура AAR не затверджена.</p>
+              <button type="button" style="min-height:44px;width:100%;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:500 13px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">Перейти до дебрифінгу</button>
+            </section>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+    </div>
+    </div>
+  </div>
+
+  <section style="max-width:1340px;margin:18px auto 0;border:1px solid #cfcfca;border-radius:8px;background:#fff">
+    <header style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #e6e6e2">
+      <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Специфікація екрана · {{ spec.title }}</h2>
+      <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">РОЛЬ: {{ spec.role }}</span>
+    </header>
+    <div style="padding:16px;display:grid;grid-template-columns:{{ specCols }};gap:16px">
+      <sc-for list="{{ spec.blocks }}" as="b" hint-placeholder-count="7">
+        <section>
+          <h3 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 8px;letter-spacing:.04em">{{ b.title }}</h3>
+          <ul style="margin:0;padding-left:16px;font:400 13px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">
+            <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+              <li>{{ it }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ══════════ FLOW + SITEMAP ══════════ -->
+<sc-if value="{{ isFlow }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 4px">Participant flow</h1>
+    <p style="font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f;margin:0 0 18px;max-width:80ch">Наскрізний шлях учасника після створення сесії фасилітатором. Погоджені community-first екрани (Громада → Загроза → Сценарій → Контекст → Сесія) не змінюються — вони лише постачають контекст.</p>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ flowLanes }}" as="lane" hint-placeholder-count="4">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:13px">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:11px">
+            <h2 style="font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">{{ lane.title }}</h2>
+            <span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:#8a8a84">{{ lane.actor }}</span>
+          </div>
+          <ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ lane.nodes }}" as="n" hint-placeholder-count="5">
+              <li style="display:flex;align-items:center;gap:8px">
+                <span style="display:flex;flex-direction:column;gap:4px;min-width:132px;padding:10px 11px;border:1px {{ n.style }} {{ n.border }};border-radius:5px;background:{{ n.bg }}">
+                  <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ n.tag }}</span>
+                  <span style="font:{{ n.font }};color:{{ n.fg }}">{{ n.label }}</span>
+                </span>
+                <sc-if value="{{ n.notLast }}"><span aria-hidden="true" style="color:#b5b5af;font-size:15px">→</span></sc-if>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </sc-for>
+    </div>
+    <p style="margin:16px 0 0;padding:12px 14px;border:1px solid #dcdcd8;border-radius:6px;background:#fafaf8;font:400 12px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f"><b style="font-weight:600">Розгалуження: </b>спосіб призначення ролі показано трьома альтернативними станами (призначає фасилітатор / вибір зі списку / автоматично) — жоден не затверджений. Втрата з’єднання не виводить учасника з потоку: чернетки й готовність зберігаються, повернення відбувається на той самий крок.</p>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px">
+      <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Категорії учасників, які враховує UX</h1>
+      <span style="padding:4px 7px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — ROLE PERMISSIONS AND INFORMATION ACCESS</span>
+    </div>
+    <p style="font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f;margin:6px 0 16px;max-width:80ch">Перелік визначає категорії користувачів, під які проєктується середовище, і не затверджує рольову модель конкретної симуляції. Старости, керівники ДПК і керівники закладів освіти показані окремо, а не як «представник установи».</p>
+    <div style="display:grid;grid-template-columns:{{ threeCols }};gap:14px;align-items:start">
+      <sc-for list="{{ roleCatalog }}" as="c" hint-placeholder-count="7">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:14px">
+          <h2 style="font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 9px">{{ c.title }}</h2>
+          <ul style="margin:0;padding-left:16px;font:400 12.5px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f">
+            <sc-for list="{{ c.items }}" as="i" hint-placeholder-count="4">
+              <li>{{ i }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+    <p style="margin:16px 0 0;padding:12px 14px;border:1px solid #dcdcd8;border-radius:6px;background:#fafaf8;font:400 12px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f"><b style="font-weight:600">Принцип адаптації: </b>структура інтерфейсу єдина для всіх ролей — та сама шапка сесії, ті самі зони й та сама головна дія. Від ролі залежать лише наповнення: доступна інформація, ресурси, завдання, акценти та запитання події. Окремої програми для кожної ролі немає. Перемикач «Демонстрація ролі» у прототипі показує це на трьох ролях: староста, керівник ДПК, директор закладу освіти.</p>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 16px">Sitemap середовища учасника</h1>
+    <div style="display:grid;grid-template-columns:{{ threeCols }};gap:14px;align-items:start">
+      <sc-for list="{{ sitemap }}" as="s" hint-placeholder-count="4">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9">
+          <header style="padding:11px 13px;border-bottom:1px solid #e6e6e2;display:flex;gap:8px;align-items:center">
+            <h2 style="flex:1;font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">{{ s.title }}</h2>
+            <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ s.tag }}</span>
+          </header>
+          <ul style="list-style:none;margin:0;padding:8px 13px 12px;display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ s.items }}" as="i" hint-placeholder-count="4">
+              <li style="font:400 12.5px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:{{ i.fg }};padding-left:11px;border-left:2px solid #dcdcd8">{{ i.label }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 12px">Адаптивність</h1>
+    <div style="display:grid;grid-template-columns:{{ threeCols }};gap:14px">
+      <sc-for list="{{ responsive }}" as="r" hint-placeholder-count="3">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:14px">
+          <h2 style="font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 4px">{{ r.title }}</h2>
+          <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ r.w }}</span>
+          <ul style="margin:10px 0 0;padding-left:16px;font:400 12.5px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">
+            <sc-for list="{{ r.items }}" as="i" hint-placeholder-count="4">
+              <li>{{ i }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ══════════ СТАНИ ══════════ -->
+<sc-if value="{{ isStates }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto">
+  <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 4px">Системні стани середовища учасника</h1>
+  <p style="font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f;margin:0 0 18px;max-width:80ch">Кожне критичне сповіщення має текст, глиф та дію. Важливі повідомлення не зникають автоматично.</p>
+
+  <div style="display:grid;grid-template-columns:{{ threeCols }};gap:14px;margin-bottom:22px">
+    <sc-for list="{{ stateCards }}" as="s" hint-placeholder-count="6">
+      <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;overflow:hidden">
+        <header style="padding:11px 13px;border-bottom:1px solid #e6e6e2;display:flex;gap:8px;align-items:center">
+          <h2 style="flex:1;font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">{{ s.title }}</h2>
+          <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ s.where }}</span>
+        </header>
+        <div style="padding:14px;min-height:148px;background:#fbfbf9">
+          <sc-if value="{{ s.isSkeleton }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="height:14px;width:52%;border-radius:3px;background:#e4e4e0;animation:shim 1.4s ease-in-out infinite"></span>
+              <span style="height:52px;border-radius:5px;background:#e8e8e4;animation:shim 1.4s ease-in-out infinite .1s"></span>
+              <span style="height:52px;border-radius:5px;background:#e8e8e4;animation:shim 1.4s ease-in-out infinite .2s"></span>
+              <span style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:#8a8a84">Skeleton по зонах; шапка сесії залишається видимою</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ s.isMessage }}">
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:12px;border:1px {{ s.borderStyle }} {{ s.border }};border-radius:6px;background:{{ s.bg }}">
+              <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:{{ s.fg }}"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">{{ s.glyph }}</span>{{ s.headline }}</span>
+              <span style="font:400 12.5px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">{{ s.body }}</span>
+              <span style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ s.actions }}" as="a" hint-placeholder-count="2">
+                  <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif">{{ a }}</span>
+                </sc-for>
+              </span>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-for>
+  </div>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h2 style="font:600 15px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 12px">Повний перелік станів</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-width:860px">
+        <thead><tr>
+          <sc-for list="{{ stateTableCols }}" as="c" hint-placeholder-count="4">
+            <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1.2 'IBM Plex Mono',monospace;color:#5c5c57">{{ c }}</th>
+          </sc-for>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ stateTable }}" as="r" hint-placeholder-count="10">
+            <tr>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;font-weight:600;font-family:'IBM Plex Mono',monospace;font-size:11.5px">{{ r.state }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.where }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.behavior }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.marker }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ══════════ ДОКУМЕНТАЦІЯ ══════════ -->
+<sc-if value="{{ isDocs }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+  <sc-for list="{{ docTables }}" as="t" hint-placeholder-count="5">
+    <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+      <h1 style="font:600 18px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 4px">{{ t.title }}</h1>
+      <p style="font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:0 0 14px;max-width:80ch">{{ t.note }}</p>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-width:760px">
+          <thead><tr>
+            <sc-for list="{{ t.cols }}" as="c" hint-placeholder-count="4">
+              <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1.2 'IBM Plex Mono',monospace;color:#5c5c57">{{ c }}</th>
+            </sc-for>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="6">
+              <tr>
+                <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
+                  <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#33332f">{{ cell }}</td>
+                </sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const D = "#1b1b1a", MUT = "#6b6b66", GRAY = "#8a8a84", WARN = "#7a5a12";
+const T = {
+  mock: { tag: "MOCK DATA", tagBg: "#f2f2ef", tagBorder: "#b9b9b2", tagFg: "#5c5c57" },
+  role: { tag: "MOCK — ROLE MODEL NOT APPROVED", tagBg: "#fdf6e7", tagBorder: "#d9c99f", tagFg: WARN },
+  api: { tag: "API REQUIRED - PROPOSED CONTRACT, NOT IMPLEMENTED", tagBg: "#eef2f7", tagBorder: "#a6bcd4", tagFg: "#22456b" },
+  pdr: { tag: "PRODUCT DECISION REQUIRED", tagBg: "#fdf6e7", tagBorder: "#d9c99f", tagFg: WARN }
+};
+
+class Component extends DCLogic {
+  state = Component.loadState();
+
+  static loadState() {
+    const base = {
+      view: "proto", screen: 1, device: "desktop", role: null, roleAssigned: false,
+      assignmentSource: "MOCK DATA - facilitator assignment", lifecycle: "JOIN",
+      confirmed: false, ready: false, wsTab: "context", submitted: false, reflectSent: false,
+      decision: null,
+      participant: { session_id: "session-demo-abx-4471", participant_id: "participant-demo-001", display_name: "Demo participant", role_id: null, role_version: null, reconnect_status: "new" }
+    };
+    try {
+      const raw = window.localStorage.getItem("tps360-participant-workspace-v1.1");
+      if (!raw) return base;
+      const saved = JSON.parse(raw);
+      return Object.assign(base, saved, {
+        participant: Object.assign(base.participant, saved.participant || {}),
+        reconnect_status: "restored"
+      });
+    } catch (_error) {
+      return base;
+    }
+  }
+
+  persistState() {
+    try {
+      window.localStorage.setItem("tps360-participant-workspace-v1.1", JSON.stringify({
+        participant: this.state.participant,
+        screen: this.state.screen,
+        ready: this.state.ready,
+        role: this.state.role,
+        roleAssigned: this.state.roleAssigned,
+        assignmentSource: this.state.assignmentSource,
+        lifecycle: this.state.lifecycle,
+        submitted: this.state.submitted,
+        reflectSent: this.state.reflectSent,
+        decision: this.state.decision
+      }));
+    } catch (_error) {
+      // MOCK DATA persistence is best effort in a restricted browser context.
+    }
+  }
+
+  setState(patch) {
+    super.setState(patch);
+    this.persistState();
+  }
+
+  joinSession() {
+    return () => this.setState({
+      screen: 2,
+      lifecycle: this.state.roleAssigned ? "BRIEFING" : "LOBBY_ROLE_PENDING",
+      participant: Object.assign({}, this.state.participant, {
+        session_id: "session-demo-abx-4471",
+        participant_id: this.state.participant.participant_id || "participant-demo-001",
+        display_name: this.state.participant.display_name || "Demo participant",
+        reconnect_status: "restored"
+      })
+    });
+  }
+
+  assignFacilitatorRole(id) {
+    if (!this.roleProfiles || !this.roleProfiles[id]) return;
+    const profile = this.roleProfiles[id];
+    this.setState({
+      role: id,
+      roleAssigned: true,
+      assignmentSource: "MOCK DATA - facilitator assignment",
+      lifecycle: "BRIEFING",
+      screen: 3,
+      participant: Object.assign({}, this.state.participant, {
+        role_id: profile.role_id,
+        role_version: profile.role_version
+      })
+    });
+  }
+
+  toScreen(n) {
+    return () => {
+      if (n >= 3 && !this.state.roleAssigned) return;
+      const lifecycle = ["JOIN", "LOBBY_ROLE_PENDING", "BRIEFING", "ACTIVE", "INJECT_DETAIL", "DECISION", "COMPLETED"][n - 1];
+      this.setState({ screen: n, lifecycle });
+    };
+  }
+
+  go(view) { return () => this.setState({ view }); }
+
+  renderVals() {
+    const S = this.state, view = S.view, tablet = S.device === "tablet";
+    const tabDefs = [["proto", "Прототип · 7 екранів"], ["flow", "Participant flow + sitemap"], ["states", "Системні стани"], ["docs", "Документація"]];
+    const tabs = tabDefs.map(([id, label]) => ({ label, go: this.go(id), current: view === id ? "page" : "false", bg: view === id ? D : "#fff", fg: view === id ? "#fff" : "#33332f" }));
+    const devices = [["desktop", "Desktop 1280"], ["tablet", "Tablet 834"]].map(([id, label]) => ({ label, on: S.device === id, go: () => this.setState({ device: id }), bg: S.device === id ? "#e4e4e0" : "#fff" }));
+
+    const stepLabels = ["Join Session", "Lobby / Readiness", "Role and Participant Briefing", "Active Simulation Workspace", "Inject Detail", "Decision Preparation and Submission", "Completion and Individual Reflection"];
+    const steps = stepLabels.map((label, i) => {
+      const n = i + 1, done = n < S.screen, active = n === S.screen;
+      return { n, label, go: this.toScreen(n), glyph: done ? "✓" : active ? "●" : "○", border: active ? D : "#cfcfca", bg: active ? "#e9e9e5" : "#fff", fg: n > S.screen ? GRAY : D, font: (active ? "600" : "400") + " 12.5px/1 system-ui,-apple-system,'Segoe UI',Arial,sans-serif", notLast: n < stepLabels.length };
+    });
+
+    const conn = { label: "Онлайн", glyph: "●", border: "#a9c3b0", bg: "#eef5f0", fg: "#22503a" };
+    const joinStates = [
+      { title: "Неправильний код", body: "Код не знайдено. Перевірте 8 символів або попросіть фасилітатора надіслати посилання.", action: "Ввести знову", glyph: "✕", border: "#c9a5a1", borderStyle: "solid", bg: "#f9efee", fg: "#7a2f28" },
+      { title: "Код прострочений", body: "Сесія почалася або код більше не діє. Зверніться до фасилітатора.", action: "Запросити новий код", glyph: "!", border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN },
+      { title: "Сесія закрита", body: "Фасилітатор закрив приєднання. Ви можете долучитися до дебрифінгу, якщо він відкритий.", action: "Оновити стан", glyph: "○", border: "#b9b9b2", borderStyle: "dashed", bg: "#fbfbf9", fg: D },
+      { title: "Запрошення вже використане", body: "Посилання одноразове. Якщо це були ви — відновіть попередній вхід на цьому пристрої.", action: "Відновити вхід", glyph: "!", border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN },
+      { title: "Відновлення після втрати з’єднання", body: "Знайдено незавершений вхід у сесію ABX-4471. Продовжити з того самого місця?", action: "Продовжити", glyph: "↻", border: "#a6bcd4", borderStyle: "solid", bg: "#eef2f7", fg: "#22456b" }
+    ];
+
+
+    const roleDefs = {
+      starosta: {
+        short: "Староста округу", glyph: "С", title: "Староста Мурахівського старостинського округу", org: "Старостинський округ · 6 населених пунктів",
+        accent: "Акцент ролі: територія округу, люди на місцях, первинна інформація та логістика",
+        desc: "Демонстраційний опис відповідальності: первинний збір інформації з території, зв’язок між мешканцями віддалених НП і виконкомом, організація видачі та підвозу на місці. Це не посадова інструкція.",
+        facts: ["Три віддалені НП округу без альтернативного водозабезпечення", "Мешканці телефонують про відсутність води", "Ґрунтова дорога до с. Пришиб — 7 км, після дощу ускладнена"],
+        resources: [{ name: "Транспорт округу", qty: "1", note: "MOCK · легковий, малий об’єм", vFg: D }, { name: "Актив мешканців", qty: "4 особи", note: "MOCK · допомога з розвезенням", vFg: D }, { name: "Приміщення старостату", qty: "1", note: "можлива точка видачі води", vFg: D }, { name: "Запас води на місці", qty: "не підтверджено", note: "потребує уточнення", vFg: GRAY }],
+        limits: ["Не розпоряджаєтеся технікою водоканалу", "Не оголошуєте евакуацію", "Графік підвозу погоджуєте з виконкомом", "Остаточні повноваження не затверджені"],
+        tasks: [{ label: "Уточнити фактичний стан водопостачання по НП округу", status: "виконано 10:38", glyph: "✓", fg: "#22503a", bg: "#fafaf8" }, { label: "Скласти перелік мешканців, яким потрібна доставка води", status: "у роботі · чернетка збережена", glyph: "●", fg: WARN, bg: "#fff" }, { label: "Повідомити виконком про потреби округу", status: "не розпочато", glyph: "○", fg: GRAY, bg: "#fff" }],
+        asks: ["Підтвердити, які НП округу фактично без води", "Вказати місця та час видачі води для мешканців", "Назвати мешканців, яких треба обслужити першими"],
+        contextExtra: [{ k: "Ваш округ", v: "Мурахівський · 6 НП", vFg: D }, { k: "Маломобільні мешканці округу", v: "37 (MOCK)", vFg: GRAY }],
+        mapObjects: [{ glyph: "С", label: "с. Мурахівка · центр округу", note: "ваша територія" }, { glyph: "Н", label: "с. Пришиб", note: "ґрунтова дорога 7 км" }, { glyph: "У", label: "Приміщення старостату", note: "можлива точка видачі" }, { glyph: "В", label: "Водозабір «Центральний»", note: "поза округом" }],
+        responsible: "Староста, актив мешканців (MOCK)"
+      },
+      dpk: {
+        short: "Керівник ДПК", glyph: "П", title: "Керівник добровільної пожежної команди громади", org: "ДПК · 1 автоцистерна, особовий склад 7",
+        accent: "Акцент ролі: доступність води для гасіння, техніка, протипожежний захист об’єктів",
+        desc: "Демонстраційний опис відповідальності: залучення сил і техніки ДПК, оцінка джерел води для гасіння, підвіз води технікою за рішенням штабу. Це не посадова інструкція.",
+        facts: ["Тиск у мережі впав — гідранти можуть не працювати", "Найближча державна пожежно-рятувальна частина — 24 км", "Одна автоцистерна ДПК у строю"],
+        resources: [{ name: "Автоцистерна ДПК", qty: "1", note: "MOCK · 4 м³", vFg: D }, { name: "Особовий склад", qty: "7", note: "MOCK · на зміні 3", vFg: D }, { name: "Мотопомпа", qty: "1", note: "MOCK", vFg: D }, { name: "Запас палива", qty: "не підтверджено", note: "потребує уточнення", vFg: GRAY }],
+        limits: ["Не керуєте ремонтом мереж", "Не ухвалюєте рішень щодо евакуації", "Дії узгоджуєте з ДСНС і штабом", "Остаточні повноваження не затверджені"],
+        tasks: [{ label: "Оцінити доступність джерел води для гасіння", status: "виконано 10:36", glyph: "✓", fg: "#22503a", bg: "#fafaf8" }, { label: "Підготувати автоцистерну до можливого підвозу", status: "у роботі · чернетка збережена", glyph: "●", fg: WARN, bg: "#fff" }, { label: "Повідомити штаб про обмеження протипожежного захисту", status: "не розпочато", glyph: "○", fg: GRAY, bg: "#fff" }],
+        asks: ["Чи забезпечений протипожежний запас води в громаді", "Які об’єкти прикрити першими", "Чого бракує для роботи техніки"],
+        contextExtra: [{ k: "Гідранти в мережі", v: "14 (MOCK)", vFg: GRAY }, { k: "Найближча ДПРЧ", v: "24 км", vFg: D }],
+        mapObjects: [{ glyph: "П", label: "Депо ДПК", note: "ваша база" }, { glyph: "В", label: "Водозабір «Центральний»", note: "джерело наповнення" }, { glyph: "Н", label: "смт Березнегувате", note: "зона прикриття" }, { glyph: "Ш", label: "Ліцей №1", note: "об’єкт із людьми" }],
+        responsible: "ДПК, взаємодія з ДСНС (MOCK)"
+      },
+      school: {
+        short: "Керівник закладу освіти", glyph: "Ш", title: "Керівник закладу освіти №1 · відповідальний за укриття", org: "Ліцей №1 · 640 учнів, 58 працівників (MOCK)",
+        accent: "Акцент ролі: безпека учнів і працівників, укриття, освітній процес",
+        desc: "Демонстраційний опис відповідальності: організація безпеки учнів і працівників, робота укриття закладу, підготовка рішення щодо освітнього процесу під час кризи. Це не посадова інструкція.",
+        facts: ["У закладі 640 учнів і 58 працівників (MOCK)", "Укриття в підвалі — місткість не підтверджена", "Запас питної води в закладі — приблизно на добу"],
+        resources: [{ name: "Укриття закладу", qty: "180 місць", note: "не підтверджено", vFg: GRAY }, { name: "Харчоблок", qty: "запас 1 доба", note: "MOCK", vFg: D }, { name: "Персонал", qty: "58", note: "MOCK · чергування можливе", vFg: D }, { name: "Автобус підвозу", qty: "1", note: "MOCK · спільний з громадою", vFg: D }],
+        limits: ["Не скасовуєте навчання одноосібно — погодження з відділом освіти", "Не керуєте технічними роботами", "Не оголошуєте евакуацію громади", "Остаточні повноваження не затверджені"],
+        tasks: [{ label: "Оцінити запас питної води в закладі", status: "виконано 10:41", glyph: "✓", fg: "#22503a", bg: "#fafaf8" }, { label: "Підготувати рішення щодо освітнього процесу на добу", status: "у роботі · чернетка збережена", glyph: "●", fg: WARN, bg: "#fff" }, { label: "Повідомити батьків погодженим каналом", status: "не розпочато", glyph: "○", fg: GRAY, bg: "#fff" }],
+        asks: ["Чи можна продовжувати освітній процес", "Скільки води потрібно закладу на добу", "Хто з дітей потребує особливої уваги"],
+        contextExtra: [{ k: "Учнів у закладі", v: "640 (MOCK)", vFg: GRAY }, { k: "Місць в укритті", v: "180 — не підтверджено", vFg: GRAY }],
+        mapObjects: [{ glyph: "Ш", label: "Ліцей №1", note: "ваш заклад" }, { glyph: "У", label: "Укриття закладу", note: "підвал, місткість MOCK" }, { glyph: "М", label: "Опорна лікарня", note: "поруч" }, { glyph: "Н", label: "смт Березнегувате", note: "адмін. центр" }],
+        responsible: "Заклад освіти, відділ освіти (MOCK)"
+      },
+      ems: {
+        short: "Emergency medical representative", glyph: "M", title: "Emergency medical representative", org: "Emergency medical service - DEMO FIXTURE",
+        accent: "Role focus: medical needs, assistance priorities, and community coordination",
+        desc: "Demonstration role profile for testing the universal shell. This is not a job description.",
+        facts: ["Affected-person needs are being verified", "Team availability is unconfirmed", "All values are MOCK DATA"],
+        resources: [{ name: "Medical response team", qty: "unconfirmed", note: "MOCK DATA", vFg: GRAY }],
+        limits: ["Does not command community evacuation", "Final powers are not approved"],
+        tasks: [{ label: "Confirm priority medical needs", status: "not started", glyph: "O", fg: GRAY, bg: "#fff" }],
+        asks: ["Which groups need first assistance", "Which resources should be requested"],
+        contextExtra: [{ k: "Data status", v: "MOCK DATA", vFg: GRAY }],
+        mapObjects: [{ glyph: "M", label: "Medical assistance point", note: "MOCK DATA" }],
+        responsible: "Emergency medical service (MOCK DATA)"
+      },
+    };
+    const categoryMap = {
+      starosta: { id: "local-government", title: "Local government" },
+      dpk: { id: "volunteer-fire", title: "Volunteer fire teams" },
+      school: { id: "education", title: "Education institutions" },
+      ems: { id: "emergency-medical", title: "Emergency and safety services" }
+    };
+    const roleProfiles = Object.fromEntries(Object.entries(roleDefs).map(([role_id, profile]) => {
+      const category = categoryMap[role_id] || { id: "scenario-defined", title: "Scenario-defined category" };
+      return [role_id, Object.assign({
+        role_id, role_version: "demo-fixture-1.0", category_id: category.id, category_title: category.title,
+        briefing: profile.desc, responsibilities: profile.accent, permissions: profile.responsible,
+        available_data: profile.facts, allowed_actions: profile.tasks.map((task) => task.label),
+        restrictions: profile.limits, interactions: [profile.responsible], visibility_rules: ["server-authorized role view"]
+      }, profile)];
+    }));
+    this.roleProfiles = roleProfiles;
+    const R = S.roleAssigned && roleProfiles[S.role] ? roleProfiles[S.role] : roleProfiles.ems;
+    const scenario = { scenario_id: "scenario-demo-water-001", version: "demo-1.0", title: "Water supply incident - MOCK DATA", role_profile_ids: Object.keys(roleProfiles) };
+    const session = { session_id: "session-demo-abx-4471", scenario_id: scenario.scenario_id, state: S.lifecycle, role_ids: S.roleAssigned ? [S.role] : [] };
+    const participant = Object.assign({}, S.participant, { session_id: session.session_id, role_id: S.roleAssigned ? S.role : null, role_version: S.roleAssigned ? R.role_version : null });
+    const sessionState = { state: session.state, role_assigned: S.roleAssigned, ready: S.ready, submitted: S.submitted, persistence: "MOCK DATA - API REQUIRED" };
+    const injects = [{ inject_id: "inject-demo-12", status: "MOCK DATA", event_type: "water-supply" }];
+    const decisions = S.decision ? [S.decision] : [];
+    const allowedActions = S.roleAssigned ? R.allowed_actions : [];
+    const roleCatalog = [
+      { title: "Орган місцевого самоврядування", items: ["Голова громади", "Заступник голови", "Керівник або спеціаліст із цивільного захисту", "Представник виконавчих органів ради"] },
+      { title: "Старости", items: ["Староста старостинського округу", "Представник віддаленого населеного пункту", "Координатор первинного збору інформації з території"] },
+      { title: "Добровільні пожежні команди", items: ["Керівник ДПК", "Представник або член ДПК"] },
+      { title: "Заклади освіти", items: ["Директор закладу освіти", "Заступник директора", "Відповідальна особа за цивільний захист", "Відповідальна особа за укриття або евакуацію"] },
+      { title: "Екстрені та безпекові служби", items: ["Представник ДСНС", "Представник поліції", "Представник екстреної медичної допомоги"] },
+      { title: "Комунальні та соціальні служби", items: ["Керівник або представник комунального підприємства", "Представник медичного закладу", "Представник соціальної служби", "Представник служби у справах дітей"] },
+      { title: "Громадський сектор", items: ["Представник громадської організації", "Представник волонтерської групи", "Представник місцевого гуманітарного штабу"] }
+    ];
+
+    const briefBlocks = [
+      { title: "Відомі факти на початок симуляції", ...T.mock, items: R.facts },
+      { title: "Доступні вам ресурси", ...T.mock, items: R.resources.map((r) => r.name + " — " + r.qty + " · " + r.note) },
+      { title: "Обмеження вашої ролі", ...T.pdr, items: R.limits },
+      { title: "Навчальні цілі сесії", ...T.mock, items: ["Координація між службами", "Пріоритезація для вразливих груп", "Робота з неповною інформацією"] },
+      { title: "Конфіденційна інформація ролі", ...T.pdr, items: ["Структурний блок: показується лише вашій ролі", "Наповнення визначає методика сценарію", "Не є секретною поза симуляцією"] }
+    ];
+
+    const techCheck = [
+      { label: "З’єднання з сервером сесії", status: "стабільне", glyph: "✓", fg: "#22503a" },
+      { label: "Версія браузера", status: "підтримується", glyph: "✓", fg: "#22503a" },
+      { label: "Розмір екрана", status: tablet ? "планшет — підходить" : "достатній", glyph: "✓", fg: "#22503a" },
+      { label: "Сповіщення браузера", status: "вимкнені — не обов’язково", glyph: "○", fg: GRAY }
+    ];
+
+    const roleAssignment = S.roleAssigned
+      ? { title: "Role assigned", body: "Facilitator assignment received. Briefing is available.", tag: "MOCK DATA - facilitator assignment" }
+      : { title: "Waiting for role assignment", body: "The facilitator must assign a role before briefing and readiness can continue.", tag: "ROLE MODEL NOT APPROVED - WAITING" };
+    const ready = !S.roleAssigned
+      ? { title: "Role assignment required", body: "Readiness is unavailable until the facilitator assigns your role.", glyph: "O", border: "#d9c99f", bg: "#fdf6e7", fg: WARN, btnLabel: "Waiting for facilitator", btnBg: "#efeeea", btnFg: GRAY, btnBorder: "#c9c9c4" }
+      : S.ready
+        ? { title: "Readiness confirmed", body: "The facilitator can see your readiness.", glyph: "O", border: "#a9c3b0", bg: "#eef5f0", fg: "#22503a", btnLabel: "Cancel readiness", btnBg: "#fff", btnFg: D, btnBorder: "#c6c6c0" }
+        : { title: "Readiness not confirmed", body: "Confirm readiness after the facilitator assignment.", glyph: "-", border: "#d9c99f", bg: "#fdf6e7", fg: WARN, btnLabel: "Confirm readiness", btnBg: D, btnFg: "#fff", btnBorder: D };
+    const confirm = S.confirmed
+      ? { glyph: "✓", border: "#1b1b1a", bg: "#1b1b1a", toggleLabel: "Скасувати підтвердження", ctaBg: D, ctaFg: "#fff", ctaBorder: D, warn: false }
+      : { glyph: "", border: "#c6c6c0", bg: "#fff", toggleLabel: "Підтвердити ознайомлення", ctaBg: "#efeeea", ctaFg: GRAY, ctaBorder: "#c9c9c4", warn: true };
+
+    const wsTabDefs = [["context", "Контекст громади"], ["map", "Карта"], ["resources", "Ресурси"]];
+    const wsTabs = wsTabDefs.map(([id, label]) => ({ label, on: S.wsTab === id, go: () => this.setState({ wsTab: id }), border: S.wsTab === id ? D : "#cfcfca", bg: S.wsTab === id ? "#e9e9e5" : "#fff", font: (S.wsTab === id ? "600" : "400") + " 12.5px/1 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" }));
+
+    const submit = S.submitted
+      ? { label: "Submitted - local MOCK DATA", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
+      : { label: "Submit decision", bg: D, fg: "#fff", border: D };
+    const reflect = S.reflectSent
+      ? { label: "Відповіді надіслано ✓", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
+      : { label: "Надіслати відповіді", bg: D, fg: "#fff", border: D };
+
+    const decisionFields = [
+      { label: "Коротка назва рішення", req: "обов’язково", reqFg: "#7a2f28", h: "44px", placeholder: "Напр. підвіз води для віддалених НП", border: "#c6c6c0" },
+      { label: "Опис запропонованого рішення", req: "обов’язково", reqFg: "#7a2f28", h: "88px", placeholder: "Що саме пропонуєте зробити", border: "#c6c6c0" },
+      { label: "Обґрунтування", req: "обов’язково", reqFg: "#7a2f28", h: "76px", placeholder: "Чому це рішення, на які дані спираєтеся", border: "#c9a5a1", err: true, errText: "Заповніть обґрунтування — без нього рішення не подається" },
+      { label: "Заплановані дії та терміни", req: "необов’язково", reqFg: GRAY, h: "76px", placeholder: "Послідовність дій", border: "#c6c6c0" },
+      { label: "Відповідальні", req: "необов’язково", reqFg: GRAY, h: "44px", placeholder: R.responsible + " - ROLE MODEL NOT APPROVED", border: "#c6c6c0" },
+      { label: "Потрібні ресурси", req: "необов’язково", reqFg: GRAY, h: "44px", placeholder: "Техніка, люди, матеріали", border: "#c6c6c0" },
+      { label: "Очікуваний результат", req: "необов’язково", reqFg: GRAY, h: "60px", placeholder: "Що зміниться після виконання", border: "#c6c6c0" },
+      { label: "Ризики та залежності від інших служб", req: "необов’язково", reqFg: GRAY, h: "60px", placeholder: "Від кого залежить, що може піти не так", border: "#c6c6c0" }
+    ];
+
+    const specs = {
+      1: { title: "Приєднання до сесії", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Безпечний і зрозумілий вхід у сесію за кодом або посиланням"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Приєднатися до сесії»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Вхід за запрошувальним посиланням", "Відновлення попереднього входу"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Код сесії, ім’я, організація (необов’язково)"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["participantId + sessionId → briefing"] },
+        { title: "СТАНИ", items: ["loading, error (код), warning (прострочено), access denied, session closed, reconnecting"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: спосіб автентифікації", "Чи потрібна організація обов’язково?"] }
+      ] },
+      2: { title: "Lobby / readiness", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Показати готовність учасника та стан початку сесії"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Підтвердити готовність»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Технічна перевірка", "Відкрити briefing ще раз"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Сесія, громада, загроза, роль, статус з’єднання, повідомлення фасилітатора"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["readiness=true → робоче вікно після старту"] },
+        { title: "СТАНИ", items: ["waiting, ready, session paused, offline, reconnecting, error"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: чи бачить учасник кількість підключених", "Хто може скасувати готовність"] }
+      ] },
+      3: { title: "Роль і participant briefing", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Пояснити роль, доступну інформацію та межі повноважень"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Перейти до готовності» після підтвердження ознайомлення"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Перечитати блоки briefing", "Попросити зміну ролі (варіанти B та C)"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Громада, назва симуляції, роль, briefing-блоки, правила"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["Підтвердження ознайомлення → lobby"] },
+        { title: "СТАНИ", items: ["loading, role not assigned, incomplete briefing, error, offline"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: рольова модель і спосіб призначення", "Обсяг конфіденційного блоку ролі"] }
+      ] },
+      4: { title: "Active simulation workspace", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Основне робоче вікно: ситуація, завдання, підготовка рішень"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Відкрити подію» — одна головна дія на екрані"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Продовжити чернетку", "Перемикати контекстні панелі", "Читати стрічку та повідомлення фасилітатора"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Поточний етап, події, стрічка, контекст громади, ресурси, завдання, подані рішення"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["eventId → екран події; draftId → форма рішення"] },
+        { title: "СТАНИ", items: ["loading, empty (немає подій), new event, event updated/withdrawn, autosave, offline, reconnecting, session paused, session completed"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: етапи, раунди та модель часу", "Чи є ліміт активних подій одночасно"] }
+      ] },
+      5: { title: "Подія / inject detail", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Уважно опрацювати нову подію або зміну ситуації"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Підготувати рішення»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Повернутися до робочого вікна", "Відкрити вкладені матеріали"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Назва, час, джерело, опис, рівень підтвердження, пов’язані об’єкти, завдання"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["eventId → чернетка рішення"] },
+        { title: "СТАНИ", items: ["loading, updated, withdrawn, error, offline, attachment unavailable"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["Хто визначає рівень підтвердження інформації", "Чи можна ставити питання фасилітатору з екрана події"] }
+      ] },
+      6: { title: "Підготовка і подання рішення", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Сформулювати обґрунтовану відповідь на ситуацію"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Подати рішення» з підтвердженням"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Попередній перегляд", "Автозбереження чернетки", "Повернення до події"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Пов’язана подія, чернетка, обов’язкові поля"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["decisionId → подані рішення, журнал сесії, звіт"] },
+        { title: "СТАНИ", items: ["unsaved draft, autosave completed, validation error, submission in progress, submission accepted, submission failed, offline"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: структура рішення та порядок погодження", "Чи можна редагувати рішення після подання"] }
+      ] },
+      7: { title: "Завершення та індивідуальна рефлексія", role: "Учасник", blocks: [
+        { title: "МЕТА", items: ["Зафіксувати досвід учасника після завершення симуляції"] },
+        { title: "ГОЛОВНА ДІЯ", items: ["«Надіслати відповіді»"] },
+        { title: "ДРУГОРЯДНІ ДІЇ", items: ["Зберегти чернетку", "Переглянути подані рішення", "Перейти до дебрифінгу"] },
+        { title: "ВХІДНІ ДАНІ", items: ["Підсумок участі, подані рішення, питання самооцінювання"] },
+        { title: "ПЕРЕДАЄТЬСЯ ДАЛІ", items: ["reflectionId → дебрифінг і підсумковий звіт"] },
+        { title: "СТАНИ", items: ["session completed, draft saved, submission accepted, submission failed, empty (немає рішень)"] },
+        { title: "ВІДКРИТІ ПИТАННЯ", items: ["PRODUCT DECISION: методика оцінювання та AAR", "Чи входять відповіді у звіт громади"] }
+      ] }
+    };
+
+    const nodeS = (label, tag, mode) => ({ label, tag, style: mode === "future" ? "dashed" : "solid", border: mode === "current" ? D : "#cfcfca", bg: mode === "current" ? "#e9e9e5" : mode === "future" ? "#fbfbf9" : "#fff", fg: mode === "future" ? GRAY : D, font: (mode === "current" ? "600" : "400") + " 12.5px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" });
+    const lanes = [
+      { title: "Погоджений контекст (не змінюється)", actor: "фасилітатор", nodes: [nodeS("Громада", "ЕТАП 1", "done"), nodeS("Загроза", "ЕТАП 1", "done"), nodeS("Сценарій", "ЕТАП 1", "done"), nodeS("Контекст", "ЕТАП 1", "done"), nodeS("Сесія створена", "ЕТАП 1", "done")] },
+      { title: "Вхід і підготовка учасника", actor: "учасник", nodes: [nodeS("Вхід за кодом", "ЕКРАН 1", "current"), nodeS("Ідентифікація", "ЕКРАН 1", "current"), nodeS("Роль (3 варіанти)", "ЕКРАН 2", "current"), nodeS("Briefing", "ЕКРАН 2", "current"), nodeS("Lobby · готовність", "ЕКРАН 3", "current")] },
+      { title: "Активна симуляція", actor: "учасник", nodes: [nodeS("Робоче вікно", "ЕКРАН 4", "current"), nodeS("Подія / inject", "ЕКРАН 5", "current"), nodeS("Чернетка рішення", "ЕКРАН 6", "current"), nodeS("Підтвердження подання", "ЕКРАН 6", "current"), nodeS("Статус рішення", "ЕКРАН 4/6", "current")] },
+      { title: "Завершення та навчальний результат", actor: "учасник + фасилітатор", nodes: [nodeS("Завершення симуляції", "ЕКРАН 7", "current"), nodeS("Індивідуальна рефлексія", "ЕКРАН 7", "current"), nodeS("Debriefing preview", "ЕКРАН 7", "current"), nodeS("Спільний AAR", "ЕТАП 3", "future"), nodeS("Підсумковий звіт", "ЕТАП 3", "future")] }
+    ];
+    const flowLanes = lanes.map((l) => Object.assign({}, l, { nodes: l.nodes.map((n, i) => Object.assign({}, n, { notLast: i < l.nodes.length - 1 })) }));
+
+    const stateCards = [
+      { title: "Loading", where: "ЕКРАНИ 3–7", isSkeleton: true },
+      { title: "Offline", where: "УСІ ЕКРАНИ", isMessage: true, glyph: "⚑", headline: "Немає з’єднання", body: "Чернетка збережена локально. Подання рішення буде доступне після відновлення з’єднання.", actions: ["Спробувати зараз", "Продовжити офлайн"], border: "#c9a5a1", borderStyle: "solid", bg: "#f9efee", fg: "#7a2f28" },
+      { title: "Reconnecting", where: "УСІ ЕКРАНИ", isMessage: true, glyph: "↻", headline: "Відновлюємо підключення", body: "Ви повернетеся на той самий крок. Ніякі дані не втрачені; банер не зникає сам.", actions: ["Підключитися зараз"], border: "#a6bcd4", borderStyle: "solid", bg: "#eef2f7", fg: "#22456b" },
+      { title: "New event received", where: "ЕКРАН 4", isMessage: true, glyph: "●", headline: "Нова подія: падіння тиску в мережі", body: "Нові події позначені словом «нове» і рамкою; переглянуті — звичайним стилем. Ніщо не зникає автоматично.", actions: ["Відкрити подію", "Пізніше"], border: "#c9a5a1", borderStyle: "solid", bg: "#f9efee", fg: "#7a2f28" },
+      { title: "Autosave / unsaved draft", where: "ЕКРАН 6", isMessage: true, glyph: "✓", headline: "Чернетку збережено 10:52", body: "Автозбереження кожні 20 секунд і при переході. Спроба виходу з незбереженими змінами — попередження з вибором.", actions: ["Зберегти зараз", "Вийти без збереження"], border: "#b9b9b2", borderStyle: "dashed", bg: "#fbfbf9", fg: D },
+      { title: "Submission accepted / failed", where: "ЕКРАН 6", isMessage: true, glyph: "✓", headline: "Рішення прийнято · 10:58", body: "Помилка подання показує причину, зберігає введене і пропонує повтор; кнопка блокується до відповіді сервера.", actions: ["Переглянути рішення", "Повторити подання"], border: "#a9c3b0", borderStyle: "solid", bg: "#eef5f0", fg: "#22503a" }
+    ];
+
+    const stateTableCols = ["СТАН", "ДЕ", "ПОВЕДІНКА", "ПОЗНАЧЕННЯ (ТЕКСТ + ГЛИФ + ДІЯ)"];
+    const stateTable = [
+      { state: "loading", where: "3–7", behavior: "Skeleton по зонах, шапка сесії видима, дії вимкнені", marker: "«Завантаження…» + skeleton" },
+      { state: "empty", where: "4, 5, 7", behavior: "Немає активних подій / вкладень / поданих рішень", marker: "○ + текст «Поки немає подій» + що робити далі" },
+      { state: "error", where: "1–7", behavior: "Помилка блоку, решта екрана працює", marker: "✕ + причина + «Повторити»" },
+      { state: "warning", where: "2, 4, 6", behavior: "Неповний briefing, непідтверджена інформація, незаповнені поля", marker: "! + пояснення + дія" },
+      { state: "success", where: "3, 6, 7", behavior: "Готовність, подання рішення, надсилання рефлексії", marker: "✓ + час + наступний крок" },
+      { state: "offline", where: "усі", behavior: "Робота з локальною чернеткою, подання заблоковане", marker: "⚑ + «Немає з’єднання» + «Спробувати зараз»" },
+      { state: "reconnecting", where: "усі", behavior: "Автоматичне повернення на той самий крок", marker: "↻ + банер, що не зникає сам" },
+      { state: "session paused", where: "3, 4", behavior: "Події не надходять, чернетки доступні для редагування", marker: "‖ + «Сесію призупинено фасилітатором»" },
+      { state: "session completed", where: "4 → 7", behavior: "Робоче вікно переходить у режим тільки читання", marker: "✓ + «Симуляцію завершено» + «До рефлексії»" },
+      { state: "access denied", where: "1, 3", behavior: "Код закритий, роль відкликана або сесія недоступна", marker: "✕ + причина + «Звернутися до фасилітатора»" },
+      { state: "role not assigned", where: "2, 3", behavior: "Учасник у сесії без ролі; briefing недоступний", marker: "○ + «Роль ще не призначено» + «Оновити»" },
+      { state: "incomplete briefing", where: "2, 3", behavior: "Готовність недоступна до підтвердження ознайомлення", marker: "! + перелік непрочитаних блоків" },
+      { state: "unsaved draft", where: "6, 7", behavior: "Попередження при виході або перемиканні події", marker: "! + «Є незбережені зміни» + вибір дії" },
+      { state: "autosave completed", where: "6, 7", behavior: "Тихий, але постійний індикатор у шапці форми", marker: "✓ + «Збережено 10:52»" },
+      { state: "submission in progress", where: "6", behavior: "Кнопка заблокована, повторне натискання неможливе", marker: "◌ + «Надсилаємо…»" },
+      { state: "submission accepted", where: "6", behavior: "Рішення з’являється у списку поданих", marker: "✓ + час + «Переглянути»" },
+      { state: "submission failed", where: "6", behavior: "Введене збережено, показана причина", marker: "✕ + причина + «Повторити подання»" },
+      { state: "new event received", where: "4", behavior: "Подія додається у стрічку як непереглянута", marker: "● + «Нове» + «Відкрити подію»" },
+      { state: "event updated / withdrawn", where: "4, 5", behavior: "Окреме повідомлення, старий текст не підмінюється тихо", marker: "⟳ / ⃠ + «Подію оновлено / відкликано» + «Що змінилося»" }
+    ];
+
+    const docTables = [
+      { title: "Таблиця компонентів", note: "Компоненти робочого середовища учасника: призначення, стани, поведінка. Усі інтерактивні елементи ≥ 44×44 px, видимий focus, керування з клавіатури.", cols: ["КОМПОНЕНТ", "ПРИЗНАЧЕННЯ", "СТАНИ", "ПОВЕДІНКА"], rows: [
+        { cells: ["Session header", "де я перебуваю: сесія, громада, загроза", "default, paused, completed", "Закріплена; на планшеті згортається в один рядок"] },
+        { cells: ["Role badge", "яку роль я виконую", "assigned, not assigned, change requested", "Завжди супроводжується тегом ROLE MODEL NOT APPROVED"] },
+        { cells: ["Connection status", "стан з’єднання", "online, unstable, offline, reconnecting", "Текст + глиф; не лише колір"] },
+        { cells: ["Readiness indicator", "готовність учасника", "not ready, ready, blocked (incomplete briefing)", "Скасування готовності можливе до старту"] },
+        { cells: ["Event card", "нова подія або зміна ситуації", "new, viewed, updated, withdrawn", "Нове відділене словом і рамкою, не тільки кольором"] },
+        { cells: ["Information reliability marker", "рівень підтвердження", "факт, припущення, не підтверджено", "Глиф + слово + пояснення джерела"] },
+        { cells: ["Resource card", "доступні ресурси ролі", "known, unconfirmed, unavailable", "Непідтверджене значення сірим + підпис"] },
+        { cells: ["Task card", "що очікується від ролі", "open, in progress, done", "Не є балами; без гейміфікації"] },
+        { cells: ["Decision draft", "чернетка рішення", "empty, editing, autosaved, invalid", "Автозбереження + попередження про незбережене"] },
+        { cells: ["Submission status", "стан поданого рішення", "in progress, accepted, failed", "Блокування повторного натискання"] },
+        { cells: ["Facilitator announcement", "повідомлення фасилітатора", "new, read", "Не перекриває робочу зону; не зникає само"] },
+        { cells: ["Event feed / timeline", "хронологія отриманої інформації", "loading, empty, has new, all viewed", "Групування за часом; лічильник нових"] },
+        { cells: ["Map preview", "геопросторовий фрагмент", "mock, loading, unavailable", "Позначка MOCK DATA; текстовий перелік як резерв"] },
+        { cells: ["Confirmation dialog", "підтвердження подання або виходу", "default, focus trap", "Перелічує наслідки дії"] },
+        { cells: ["Autosave indicator", "чи збережено", "saving, saved, failed", "Показує час останнього збереження"] },
+        { cells: ["Reconnect banner", "відновлення з’єднання", "reconnecting, restored, failed", "Не зникає автоматично"] },
+        { cells: ["Warning banner", "попередження", "info, warning, critical", "Текст + глиф + дія"] },
+        { cells: ["Empty state", "порожній блок", "no events, no decisions, no attachments", "Пояснює, що робити далі"] },
+        { cells: ["Error message", "помилка", "inline, block-level", "Поруч із відповідним полем або блоком"] },
+        { cells: ["Contextual help", "розшифровка скорочень і правил", "closed, open", "Доступна з клавіатури; не модальна за замовчуванням"] }
+      ] },
+      { title: "Адаптація Active Simulation Workspace під ролі", note: "Структура інтерфейсу єдина: шапка сесії, індикатор етапу, три зони, одна головна дія. Відрізняються лише наповнення й акценти. Показано на трьох ролях; повний перелік категорій — у розділі Participant flow. Права доступу до інформації — PRODUCT DECISION REQUIRED — role permissions and information access.", cols: ["ЩО ЗМІНЮЄТЬСЯ", "СТАРОСТА ОКРУГУ", "КЕРІВНИК ДПК", "ДИРЕКТОР ЗАКЛАДУ ОСВІТИ"], rows: [
+        { cells: ["Акцент ролі", "територія округу, люди, логістика на місці", "джерела води для гасіння, техніка, прикриття об’єктів", "безпека учнів і працівників, укриття, освітній процес"] },
+        { cells: ["Контекст громади (додаткові рядки)", "ваш округ, маломобільні мешканці округу", "гідранти в мережі, відстань до ДПРЧ", "кількість учнів, місця в укритті"] },
+        { cells: ["Карта: підсвічені об’єкти", "НП округу, точка видачі, дороги", "депо ДПК, джерела наповнення, об’єкти з людьми", "заклад, укриття закладу, лікарня поруч"] },
+        { cells: ["Ресурси", "транспорт округу, актив мешканців, приміщення старостату", "автоцистерна, особовий склад, мотопомпа, паливо", "укриття, харчоблок, персонал, автобус"] },
+        { cells: ["Завдання ролі", "уточнити стан по НП, перелік на доставку, повідомити виконком", "оцінити джерела води, підготувати техніку, повідомити штаб", "оцінити запас води, рішення щодо навчання, повідомити батьків"] },
+        { cells: ["Запитання події до ролі", "які НП без води, місця й час видачі, кого першими", "чи є протипожежний запас, які об’єкти прикрити, чого бракує", "чи продовжувати навчання, скільки води на добу, хто потребує уваги"] },
+        { cells: ["Підказка «Відповідальні» у формі рішення", "староста, актив мешканців", "ДПК, взаємодія з ДСНС", "заклад освіти, відділ освіти"] },
+        { cells: ["Що НЕ змінюється", "структура зон, шапка сесії, індикатор етапу, форма рішення, стани, автозбереження, маркери надійності інформації", "те саме", "те саме"] }
+      ] },
+      { title: "Перелік mock-даних", note: "Усе наповнення демонстраційне. REAL DATA у прототипі не використовується: жоден показник не має підтвердженого джерела.", cols: ["БЛОК", "ЩО ЗАМОКАНО", "ПОЗНАЧКА В UI"], rows: [
+        { cells: ["Ролі учасників (староста, керівник ДПК, директор ліцею)", "назви, опис відповідальності, межі повноважень, ресурси й завдання", "MOCK — ROLE MODEL NOT APPROVED"] },
+        { cells: ["Briefing: факти, ресурси, обмеження, цілі", "усі пункти вигадані для перевірки структури", "MOCK DATA / PRODUCT DECISION REQUIRED"] },
+        { cells: ["Подія та стрічка інформації", "тексти, час, джерела, рівні підтвердження", "MOCK DATA"] },
+        { cells: ["Геопросторовий фрагмент", "схематична сітка без координат", "MOCK DATA · без реальних координат"] },
+        { cells: ["Етап «Реагування · 2 з 4»", "демонстрація індикатора етапу", "PRODUCT DECISION REQUIRED — stages/rounds/timing"] },
+        { cells: ["Завдання ролі, ресурси, подані рішення", "кількість і формулювання", "MOCK DATA"] },
+        { cells: ["Код сесії ABX-4471, час подій", "демонстрація станів", "MOCK DATA"] },
+        { cells: ["Питання самооцінювання", "формулювання без затвердженої методики", "PRODUCT DECISION REQUIRED — evaluation/AAR"] }
+      ] },
+      { title: "Потрібні API · API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED", note: "Жоден ендпоінт не існує і не погоджений. Це перелік ресурсів, які потрібні семи екранам, як пропозиція для обговорення з розробкою.", cols: ["ЕНДПОІНТ · PROPOSED, NOT IMPLEMENTED", "ПРИЗНАЧЕННЯ", "ЕКРАН"], rows: [
+        { cells: ["POST /sessions/{code}/join", "приєднання за кодом, повертає participantId", "1"] },
+        { cells: ["GET /invitations/{token}", "перевірка запрошувального посилання", "1"] },
+        { cells: ["GET /participants/{id}/role", "призначена роль і межі повноважень", "2"] },
+        { cells: ["GET /sessions/{id}/briefing?role=", "briefing-блоки для ролі", "2"] },
+        { cells: ["POST /participants/{id}/briefing-ack", "підтвердження ознайомлення", "2"] },
+        { cells: ["POST /participants/{id}/ready", "підтвердження / скасування готовності", "3"] },
+        { cells: ["GET /sessions/{id}/state", "стан сесії, етап, повідомлення фасилітатора", "3, 4"] },
+        { cells: ["GET /sessions/{id}/events?since=", "нові та оновлені події для ролі", "4, 5"] },
+        { cells: ["GET /events/{id}", "деталі події, рівні підтвердження, вкладення", "5"] },
+        { cells: ["GET /sessions/{id}/geo-fragment", "геопросторовий фрагмент робочого вікна", "4"] },
+        { cells: ["Local decision draft/submission", "MOCK DATA only; backend endpoint is not implemented", "6"] },
+        { cells: ["POST /decisions", "подання рішення з ідемпотентним ключем", "6"] },
+        { cells: ["GET /participants/{id}/summary", "підсумок участі та подані рішення", "7"] },
+        { cells: ["POST /participants/{id}/reflection", "надсилання індивідуальної рефлексії", "7"] }
+      ] },
+      { title: "PRODUCT DECISION REQUIRED", note: "Питання, які не закриваються дизайном. До рішення власника продукту відповідні блоки залишаються варіантами або структурними заготовками.", cols: ["ПИТАННЯ", "ЧОМУ БЛОКУЄ", "ДЕ ВПЛИВАЄ"], rows: [
+        { cells: ["Спосіб автентифікації учасника", "визначає екран входу та безпеку сесії", "екран 1"] },
+        { cells: ["Рольова модель і спосіб призначення ролі", "показано три альтернативні варіанти замість одного", "екрани 2, 3"] },
+        { cells: ["Права ролей і доступ до інформації (role permissions and information access)", "визначає, що саме бачить кожна категорія учасників у робочому вікні", "екрани 2, 4, 5, 6"] },
+        { cells: ["Обсяг конфіденційної інформації ролі", "структурний блок без наповнення", "екран 2"] },
+        { cells: ["Етапи, раунди та модель часу", "індикатор етапу й наявність таймера", "екран 4"] },
+        { cells: ["Структура рішення та порядок погодження", "склад полів форми та обов’язковість", "екран 6"] },
+        { cells: ["Редагування рішення після подання", "поведінка success-стану", "екран 6"] },
+        { cells: ["Хто визначає рівень підтвердження інформації", "маркери надійності в події", "екран 5"] },
+        { cells: ["Чи бачить учасник кількість підключених", "склад блоку стану сесії", "екран 3"] },
+        { cells: ["Методика оцінювання та структура AAR", "питання рефлексії та дебрифінг", "екран 7"] },
+        { cells: ["Використання відповідей у звіті громади", "пояснення приватності", "екран 7"] },
+        { cells: ["Внутрішній чат, команди, таймери, штрафи, AI-рекомендації", "не проєктуються — потребують окремого рішення", "поза цим етапом"] }
+      ] },
+      { title: "UX-ризики", cols: ["РИЗИК", "НАСЛІДОК", "ЯК ЗНИЖУЄМО В ЦИХ WIREFRAMES"], note: "Ризики, які варто перевірити на тестовій сесії з реальними учасниками до high-fidelity дизайну.", rows: [
+        { cells: ["Перевантаження робочого вікна", "учасник не бачить головного — поточної події", "Три зони з єдиною головною дією; контекст у вкладках"] },
+        { cells: ["Нерозуміння власної ролі та повноважень", "рішення поза межами компетенції", "Briefing з обмеженнями + role badge у шапці"] },
+        { cells: ["Сприйняття непідтвердженої інформації як факту", "хибні рішення", "Обов’язкові маркери факт / припущення / не підтверджено"] },
+        { cells: ["Втрата чернетки при розриві з’єднання", "недовіра до платформи", "Автозбереження, локальна чернетка, reconnect-банер"] },
+        { cells: ["Випадкове повторне подання", "дублювання рішень у журналі", "Підтвердження + блокування кнопки + ідемпотентність"] },
+        { cells: ["Штучний стрес від таймерів", "поспішні рішення, вигорання", "Часовий індикатор — лише варіант; без таймера за замовчуванням"] },
+        { cells: ["Мобільна робота під час симуляції", "неможливо працювати з трьома зонами", "Послідовне розкриття, нижня навігація, рекомендація планшета"] },
+        { cells: ["Незрозумілі скорочення служб", "учасник не розуміє події", "Contextual help і повні назви замість абревіатур"] },
+        { cells: ["Сприйняття рефлексії як оцінки", "неохоче заповнення", "Прямо пояснено, хто бачить відповіді; без рейтингів"] }
+      ] }
+    ];
+
+    window.__TPS360_FACILITATOR_ASSIGN_ROLE = (roleId) => this.assignFacilitatorRole(roleId);
+    return {
+      tabs, devices, steps,
+      isProto: view === "proto", isFlow: view === "flow", isStates: view === "states", isDocs: view === "docs",
+      isTablet: tablet,
+      frameStyle: "width:" + (tablet ? 834 : 1280) + "px;max-width:100%;margin:0 auto;background:#fff;border:1px solid #cfcfca;border-radius:4px;overflow:hidden",
+      frameLabel: tablet ? "TABLET · 834 × 1112" : "DESKTOP · 1280 × auto",
+      routePath: ["/join", "/session/abx-4471/lobby", "/session/abx-4471/briefing", "/session/abx-4471/workspace", "/session/abx-4471/event/12", "/session/abx-4471/decision/new", "/session/abx-4471/completed"][S.screen - 1],
+      showSessionHeader: S.screen >= 2,
+      onP1: S.screen === 1, onP2: S.screen === 2, onP3: S.screen === 3, onP4: S.screen === 4, onP5: S.screen === 5, onP6: S.screen === 6, onP7: S.screen === 7,
+      toP1: this.toScreen(1), toP2: this.toScreen(2), toP3: this.toScreen(3), toP4: this.toScreen(4), toP5: this.toScreen(5), toP6: this.toScreen(6), toP7: this.toScreen(7), joinSession: this.joinSession(),
+      toggleConfirm: () => this.setState({ confirmed: !S.confirmed }),
+      toggleReady: () => { if (S.roleAssigned) this.setState({ ready: !S.ready }); },
+      submitDecision: () => {
+        if (S.submitted) return;
+        const decision = {
+          decision_id: "decision-demo-001",
+          participant_id: participant.participant_id,
+          session_id: session.session_id,
+          inject_id: "inject-demo-12",
+          data: {
+            title: "MOCK DATA - participant decision",
+            description: "MOCK DATA - local decision draft submitted from the participant workspace",
+            rationale: "MOCK DATA - rationale entered by the participant",
+            allowed_actions: allowedActions
+          },
+          status: "Submitted",
+          submitted_at: new Date().toISOString(),
+          locked: true,
+          persistence: "MOCK DATA - API REQUIRED"
+        };
+        this.setState({ submitted: true, decision });
+      },
+      sendReflection: () => this.setState({ reflectSent: true }),
+      submitted: S.submitted, notSubmitted: !S.submitted, reflectSent: S.reflectSent,      decisionStorage: "MOCK DATA - localStorage; API REQUIRED - backend submission",
+      autosave: "Чернетку збережено 10:52",
+      scenario, session, participant, sessionState, injects, decisions, allowedActions,
+      role: R, roleCatalog, roleProfiles, roleAssignment, lifecycle: S.lifecycle, decision: S.decision,
+      conn, joinStates, briefBlocks, techCheck, ready, confirm, wsTabs,
+      wsIsContext: S.wsTab === "context", wsIsMap: S.wsTab === "map", wsIsResources: S.wsTab === "resources",
+      wsOrder: tablet ? { left: 3, center: 1, right: 2 } : { left: 1, center: 2, right: 3 },
+      threeCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      briefCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.6fr) minmax(300px,1fr)",
+      lobbyCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.5fr) minmax(300px,1fr)",
+      wsCols: tablet ? "minmax(0,1fr)" : "minmax(240px,1fr) minmax(0,1.7fr) minmax(260px,1fr)",
+      injectCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.7fr) minmax(300px,1fr)",
+      decisionCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.6fr) minmax(300px,1fr)",
+      finalCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.5fr) minmax(300px,1fr)",
+      specCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      contextRows: [
+        { k: "Громада", v: "Березнегуватська селищна", vFg: D },
+        { k: "Населення", v: "16 633", vFg: D },
+        { k: "Населені пункти", v: "41", vFg: D },
+        { k: "Вразливі групи", v: "3 332 (MOCK)", vFg: GRAY },
+        { k: "НП без укриттів", v: "3 (MOCK)", vFg: GRAY },
+        { k: "Актуальність даних", v: "12.03.2026", vFg: GRAY }
+      ].concat(R.contextExtra),
+      mapObjects: R.mapObjects,
+      resources: R.resources,
+      reliability: [
+        { label: "Факт: тиск упав", glyph: "✓", border: "#a9c3b0", borderStyle: "solid", bg: "#eef5f0", fg: "#22503a" },
+        { label: "Припущення: причина — знеструмлення", glyph: "≈", border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN },
+        { label: "Не підтверджено: кількість відключених", glyph: "?", border: "#b9b9b2", borderStyle: "dashed", bg: "#fbfbf9", fg: "#5c5c57" }
+      ],
+      feed: [
+        { time: "10:47", title: "Падіння тиску, зупинка насосної №2", body: "Джерело: диспетчер водоканалу", tag: "НОВЕ", tagBg: "#f9efee", tagBorder: "#c9a5a1", tagFg: "#7a2f28", border: "#c9a5a1", borderStyle: "solid", bg: "#fff", titleFont: "600 12.5px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" },
+        { time: "10:39", title: "Ваше рішення прийнято системою", body: "Інформування населення про графік підвозу", tag: "ПЕРЕГЛЯНУТО", tagBg: "#f2f2ef", tagBorder: "#b9b9b2", tagFg: "#5c5c57", border: "#e2e2de", borderStyle: "solid", bg: "#fafaf8", titleFont: "400 12.5px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" },
+        { time: "10:32", title: "Повідомлення фасилітатора", body: "Уточнення щодо правил подання рішень", tag: "ПЕРЕГЛЯНУТО", tagBg: "#f2f2ef", tagBorder: "#b9b9b2", tagFg: "#5c5c57", border: "#e2e2de", borderStyle: "solid", bg: "#fafaf8", titleFont: "400 12.5px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" },
+        { time: "10:30", title: "Симуляцію розпочато", body: "Етап: оцінка ситуації", tag: "ПЕРЕГЛЯНУТО", tagBg: "#f2f2ef", tagBorder: "#b9b9b2", tagFg: "#5c5c57", border: "#e2e2de", borderStyle: "solid", bg: "#fafaf8", titleFont: "400 12.5px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" }
+      ],
+      tasks: R.tasks,
+      lobbyStatus: [
+        { k: "Статус сесії", v: "очікує початку", vFg: D },
+        { k: "Ваша роль", v: R.short, vFg: D },
+        { k: "З’єднання", v: "стабільне", vFg: "#22503a" },
+        { k: "Підключених учасників", v: "приховано", vFg: GRAY }
+      ],
+      injectFacts: [
+        { level: "ФАКТ", text: "Тиск у центральній мережі впав нижче робочого — зафіксовано приладами.", glyph: "✓", border: "#a9c3b0", borderStyle: "solid", bg: "#eef5f0", fg: "#22503a" },
+        { level: "ПРИПУЩЕННЯ", text: "Імовірна причина — знеструмлення насосної станції №2 (за словами диспетчера).", glyph: "≈", border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN },
+        { level: "НЕ ПІДТВЕРДЖЕНО", text: "Кількість відключених споживачів і тривалість відновлення.", glyph: "?", border: "#b9b9b2", borderStyle: "dashed", bg: "#fbfbf9", fg: "#5c5c57" }
+      ],
+      injectLinks: ["Водозабір «Центральний»", "Насосна станція №2", "смт Березнегувате", "с. Мурахівка", "Опорна лікарня"],
+      attachments: [{ glyph: "▣", label: "Схема мережі (MOCK)" }, { glyph: "▤", label: "Повідомлення диспетчера, текст (MOCK)" }],
+      injectAsks: R.asks,
+      decisionFields, preSubmit: [
+        { text: "Заповнені обов’язкові поля: 2 з 3", glyph: "!", fg: WARN },
+        { text: "Чернетка збережена автоматично 10:52", glyph: "✓", fg: "#22503a" },
+        { text: "Перед поданням буде показано підтвердження", glyph: "○", fg: GRAY }
+      ],
+      submit, reflect,
+      reflectQs: [
+        { label: "Що було зрозуміло у вашій ролі та завданнях?", placeholder: "Коротко, 2–3 речення", h: "72px" },
+        { label: "Що викликало труднощі?", placeholder: "Що саме сповільнювало або заплутувало", h: "72px" },
+        { label: "Яких даних або ресурсів бракувало?", placeholder: "Конкретні дані, документи, доступи", h: "72px" },
+        { label: "Які дії ви змінили б наступного разу?", placeholder: "Одна-дві конкретні зміни", h: "72px" }
+      ],
+      myStats: [
+        { k: "Тривалість участі", v: "1 год 24 хв (MOCK)", vFg: GRAY },
+        { k: "Отримано подій", v: "5 (MOCK)", vFg: GRAY },
+        { k: "Подано рішень", v: "2", vFg: D },
+        { k: "Незавершені чернетки", v: "0", vFg: D }
+      ],
+      mySubmissions: [
+        { title: "Інформування населення про графік підвозу", meta: "подано 10:39 · прийнято системою" },
+        { title: "Підвіз води для трьох віддалених НП", meta: "подано 10:58 · прийнято системою" }
+      ],
+      spec: specs[S.screen],
+      flowLanes,
+      sitemap: [
+        { title: "Вхід", tag: "ЕТАП 2", items: [{ label: "Приєднання за кодом", fg: D }, { label: "Вхід за запрошувальним посиланням", fg: D }, { label: "Відновлення входу", fg: D }] },
+        { title: "Підготовка", tag: "ЕТАП 2", items: [{ label: "Роль учасника (3 варіанти)", fg: D }, { label: "Participant briefing", fg: D }, { label: "Lobby / readiness", fg: D }, { label: "Технічна перевірка", fg: D }] },
+        { title: "Робота в симуляції", tag: "ЕТАП 2", items: [{ label: "Active simulation workspace", fg: D }, { label: "Контекст громади · Карта · Ресурси", fg: D }, { label: "Подія / inject detail", fg: D }, { label: "Форма рішення", fg: D }, { label: "Подані рішення", fg: D }] },
+        { title: "Завершення", tag: "ЕТАП 2", items: [{ label: "Завершення участі", fg: D }, { label: "Індивідуальна рефлексія", fg: D }, { label: "Debriefing preview", fg: D }] },
+        { title: "Поза цим етапом", tag: "ЕТАП 3", items: [{ label: "Спільний AAR", fg: MUT }, { label: "Оцінювання фасилітатором", fg: MUT }, { label: "Підсумковий звіт громади", fg: MUT }, { label: "Архів сесій", fg: MUT }] },
+        { title: "Не проєктується", tag: "PDR", items: [{ label: "Внутрішній чат", fg: MUT }, { label: "Командні структури", fg: MUT }, { label: "Рейтинги та бали", fg: MUT }, { label: "Таймери та штрафи", fg: MUT }, { label: "AI-рекомендації", fg: MUT }] }
+      ],
+      responsive: [
+        { title: "Desktop", w: "≥ 1280 px", items: ["Робоче вікно: три зони (контекст · подія і стрічка · завдання й рішення)", "Форма рішення + панель подання 1,6 : 1", "Подія + панель очікуваного", "Briefing: дві колонки зі закріпленою панеллю підтвердження"] },
+        { title: "Tablet", w: "834–1279 px · очна фасилітація", items: ["Робоче вікно: один стовпець «подія → завдання і рішення → контекст»", "Контекстні панелі — вкладки", "Подія та форма рішення на всю ширину", "Головна дія без прокручування; таргети ≥ 44×44 px"] },
+        { title: "Mobile — принцип", w: "< 640 px", items: ["Не показувати всі панелі одночасно: послідовне розкриття", "Нижня навігація: Подія · Стрічка · Рішення · Контекст", "Форма рішення — по одному блоку на крок із автозбереженням", "Робоче вікно придатне для читання й подання короткого рішення; повноцінна робота — планшет або ноутбук", "Критичні банери (offline, нова подія) закріплені й не зникають самі"] }
+      ],
+      stateCards, stateTableCols, stateTable, docTables
+    };
+  }
+}
+
+window.__TPS360Component = Component;
+</script>
+</body>
+</html>
