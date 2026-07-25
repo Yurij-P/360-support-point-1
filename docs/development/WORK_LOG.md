@@ -113,3 +113,14 @@
 - **Фактично виконані зміни:** Додано immutable typed `ImpactDependency`; `ImpactDefinition` тепер має dependency rule та explicit conflict policy. `ImpactEngine` валідовує цикли при замиканні графа, перевіряє required dependencies безпосередньо перед apply, виявляє collision за `TypedImpactTarget.state_key`, і застосовує documented policies `REJECT`, `HIGHEST_PRIORITY`, `SEQUENTIAL`, `MERGE_ADDITIVE`, `LAST_EXPLICIT_SET`. Додано immutable typed `ImpactConflictDetected` payload. Temporary impact проходить `READY → APPLIED → ACTIVE`, emit-ить `ImpactActivated`; reversal атомарно повертає exact previous values лише якщо всі affected state keys досі мають impact-produced values, та emit-ить `ImpactReversed`. Expiry виконує той самий safe reversal та emit-ить `ImpactExpired`.
 - **Тести:** Додано окремі behavioral tests для required/optional dependencies, ALL/ANY, cycle detection, runtime dependency enforcement, state-key conflict event, кожної allowed resolution policy, lifecycle/activation, safe reversal, reversal refusal after external state change та expiration; додано contract test immutable typed dependency/conflict event.
 - **Commit / push:** не виконувались за вимогою.
+
+### Cycle 2 — checkpoint publication
+
+- **Основний commit:** `2f08e689ac75ffc0d43221defd9e0336ec10dd3d` — `feat(simulation): add impact dependencies conflicts and safe reversal`.
+- **Вузькі Impact Engine / contract tests:** `56 passed`.
+- **Повний pytest:** `350 passed` (one external Starlette/TestClient deprecation warning).
+- **Ruff:** `All checks passed!`
+- **MyPy:** `Success: no issues found in 110 source files`.
+- **git diff --check:** passed.
+- **Push:** успішно виконано до `origin/main`; основний commit опубліковано.
+- **Примітка щодо лічильника:** фактичний результат повного набору на цьому checkpoint — `350 passed`; значення `351 passed` з інструкції не підтверджене запуском і не було записане як фактичне.
