@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+body{margin:0;background:#f2f2f0;font-family:"IBM Plex Sans",system-ui,sans-serif;color:#1b1b1a;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2a5f8f}a:hover{color:#1c4266}
+:focus-visible{outline:2px solid #2a5f8f;outline-offset:2px}
+button{font-family:inherit}
+@keyframes shim{0%{opacity:.45}50%{opacity:.9}100%{opacity:.45}}
+</style>
+</helmet>
+
+<div style="min-height:100vh">
+
+<header style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #d5d5d1;padding:14px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <span style="font:600 15px/1.2 'IBM Plex Sans',system-ui">РўРѕС‡РєР° РїС–РґС‚СЂРёРјРєРё 360 В· TPS360</span>
+    <span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:#7a7a74;letter-spacing:.04em">Р•РўРђРџ 1 вЂ” UX WIREFRAMES В· LOW FIDELITY</span>
+  </div>
+  <nav style="display:flex;gap:6px;flex-wrap:wrap" aria-label="Р РѕР·РґС–Р»Рё РґРѕРєСѓРјРµРЅС‚Р°">
+    <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="4">
+      <button type="button" onClick="{{ tab.go }}" aria-current="{{ tab.current }}" style="min-height:38px;padding:0 14px;border-radius:5px;border:1px solid #cfcfca;background:{{ tab.bg }};color:{{ tab.fg }};font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">{{ tab.label }}</button>
+    </sc-for>
+  </nav>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+    <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#7a7a74">Р РћР—РњР†Р  Р•РљР РђРќРђ</span>
+    <div style="display:flex;border:1px solid #cfcfca;border-radius:5px;overflow:hidden">
+      <sc-for list="{{ devices }}" as="d" hint-placeholder-count="2">
+        <button type="button" onClick="{{ d.go }}" aria-pressed="{{ d.on }}" style="min-height:38px;padding:0 12px;border:0;border-left:1px solid #eceae6;background:{{ d.bg }};color:{{ d.fg }};font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">{{ d.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+</header>
+
+<!-- в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РџР РћРўРћРўРРџ в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ -->
+<sc-if value="{{ isProto }}" hint-placeholder-val="{{ true }}">
+<div style="padding:22px 28px 60px">
+
+  <div style="max-width:1340px;margin:0 auto 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <ol style="list-style:none;margin:0;padding:0;display:flex;gap:8px;flex-wrap:wrap">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+        <li style="display:flex;align-items:center;gap:8px">
+          <button type="button" onClick="{{ st.go }}" style="min-height:40px;display:flex;align-items:center;gap:8px;padding:0 13px;border-radius:5px;border:1px solid {{ st.border }};background:{{ st.bg }};color:{{ st.fg }};font:{{ st.font }};cursor:pointer">
+            <span style="font-family:'IBM Plex Mono',monospace">{{ st.glyph }}</span>{{ st.n }}. {{ st.label }}
+          </button>
+          <sc-if value="{{ st.notLast }}"><span aria-hidden="true" style="color:#b5b5af">вЂє</span></sc-if>
+        </li>
+      </sc-for>
+    </ol>
+    <span style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:#7a7a74;margin-left:auto">РљР›Р†РљРђР‘Р•Р›Р¬РќРР™ РџРћРўР†Рљ: 6 Р•РљР РђРќР†Р’</span>
+  </div>
+
+  <div style="max-width:1340px;margin:0 auto;background:#fff;border:1px solid #cfcfca;border-radius:8px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:#e9e9e5;border-bottom:1px solid #d5d5d1">
+      <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">{{ frameLabel }}</span>
+      <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">prototype.local{{ routePath }}</span>
+    </div>
+    <div style="overflow-x:auto;padding:20px;background:#f7f7f5">
+    <div style="{{ frameStyle }}">
+
+      <!-- в”Ђв”Ђ СЃРїС–Р»СЊРЅРёР№ РєР°СЂРєР°СЃ Р·Р°СЃС‚РѕСЃСѓРЅРєСѓ в”Ђв”Ђ -->
+      <div style="display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid #dcdcd8;background:#fff">
+        <span style="font:600 13px/1 'IBM Plex Sans',system-ui">TPS360</span>
+        <nav style="display:flex;gap:4px;flex-wrap:wrap" aria-label="РћСЃРЅРѕРІРЅР° РЅР°РІС–РіР°С†С–СЏ">
+          <sc-for list="{{ globalNav }}" as="g" hint-placeholder-count="5">
+            <span style="padding:8px 11px;border-radius:5px;background:{{ g.bg }};font:{{ g.font }};color:{{ g.fg }};min-height:40px;display:flex;align-items:center">{{ g.label }}</span>
+          </sc-for>
+        </nav>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#7a7a74">Р РћР›Р¬: Р¤РђРЎРР›Р†РўРђРўРћР </span>
+          <span style="width:32px;height:32px;border-radius:50%;background:#e4e4e0;border:1px solid #d0d0cb"></span>
+        </div>
+      </div>
+
+      <!-- РєРѕРЅС‚РµРєСЃС‚РЅР° СЃРјСѓРіР° РІРёР±РѕСЂСѓ -->
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 20px;border-bottom:1px solid #e2e2de;background:#fafaf8;flex-wrap:wrap">
+        <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">РљРћРќРўР•РљРЎРў:</span>
+        <sc-for list="{{ contextChips }}" as="c" hint-placeholder-count="3">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid #d8d8d3;border-radius:4px;background:#fff;font:400 12px/1.2 'IBM Plex Sans',system-ui;color:{{ c.fg }}"><span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ c.k }}</span>{{ c.v }}</span>
+        </sc-for>
+      </div>
+
+      <!-- в•ђв•ђв•ђ 1. РљРђРўРђР›РћР“ Р“Р РћРњРђР” в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS1 }}" hint-placeholder-val="{{ true }}">
+      <main style="padding:24px 20px 28px">
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px">
+          <div style="flex:1 1 420px;min-width:280px">
+            <h1 style="font:600 24px/1.25 'IBM Plex Sans',system-ui;margin:0 0 6px">РљР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ</h1>
+            <p style="font:400 14px/1.5 'IBM Plex Sans',system-ui;color:#55554f;margin:0;max-width:62ch;text-wrap:pretty">Р’РёР±РµСЂС–С‚СЊ С‚РµСЂРёС‚РѕСЂС–Р°Р»СЊРЅСѓ РіСЂРѕРјР°РґСѓ, РґР»СЏ СЏРєРѕС— РіРѕС‚СѓРІР°С‚РёРјРµС‚СЊСЃСЏ СЃРёРјСѓР»СЏС†С–Р№РЅР° СЃРµСЃС–СЏ. РџСЂРѕС„С–Р»СЊ РіСЂРѕРјР°РґРё РІРёР·РЅР°С‡Р°С” РґРѕСЃС‚СѓРїРЅС– Р·Р°РіСЂРѕР·Рё С‚Р° СЂРµР»РµРІР°РЅС‚РЅС– СЃС†РµРЅР°СЂС–С—.</p>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:4px;background:#efeeea;border:1px dashed #b9b9b2;font:500 10px/1 'IBM Plex Mono',monospace;color:#5c5c57">MOCK DATA В· РЎРџРРЎРћРљ Р“Р РћРњРђР”</span>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:14px;border:1px solid #dcdcd8;border-radius:6px;background:#fbfbf9;margin-bottom:14px">
+          <label style="flex:1 1 300px;display:flex;flex-direction:column;gap:5px;font:500 12px/1 'IBM Plex Sans',system-ui;color:#44443f">РџРѕС€СѓРє РіСЂРѕРјР°РґРё
+            <span style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 'IBM Plex Sans',system-ui;color:#9a9a94"><span aria-hidden="true">вЊ•</span>РќР°Р·РІР° РіСЂРѕРјР°РґРё, РћРўР“ Р°Р±Рѕ РЅР°СЃРµР»РµРЅРёР№ РїСѓРЅРєС‚</span>
+          </label>
+          <label style="flex:0 1 190px;display:flex;flex-direction:column;gap:5px;font:500 12px/1 'IBM Plex Sans',system-ui;color:#44443f">РћР±Р»Р°СЃС‚СЊ
+            <span style="display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 'IBM Plex Sans',system-ui">РњРёРєРѕР»Р°С—РІСЃСЊРєР°<span aria-hidden="true" style="color:#8a8a84">в–ѕ</span></span>
+          </label>
+          <label style="flex:0 1 190px;display:flex;flex-direction:column;gap:5px;font:500 12px/1 'IBM Plex Sans',system-ui;color:#44443f">РЎС‚Р°С‚СѓСЃ РґР°РЅРёС…
+            <span style="display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:400 14px/1 'IBM Plex Sans',system-ui">РЈСЃС– СЃС‚Р°С‚СѓСЃРё<span aria-hidden="true" style="color:#8a8a84">в–ѕ</span></span>
+          </label>
+          <button type="button" style="min-height:44px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РЎРєРёРЅСѓС‚Рё</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+          <span style="font:400 13px/1 'IBM Plex Sans',system-ui;color:#55554f">Р—РЅР°Р№РґРµРЅРѕ 6 РіСЂРѕРјР°Рґ В· СЃРѕСЂС‚СѓРІР°РЅРЅСЏ: РїРѕРІРЅРѕС‚Р° РґР°РЅРёС…</span>
+          <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities?search&amp;oblast&amp;status</span>
+        </div>
+
+        <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:{{ catalogCols }};gap:14px">
+          <sc-for list="{{ comms }}" as="c" hint-placeholder-count="6">
+            <li style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <div style="flex:1">
+                  <h2 style="font:600 16px/1.3 'IBM Plex Sans',system-ui;margin:0 0 3px">{{ c.name }}</h2>
+                  <span style="font:400 12px/1.3 'IBM Plex Sans',system-ui;color:#6b6b66">{{ c.oblast }} В· {{ c.code }}</span>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid {{ c.stBorder }};border-radius:4px;background:{{ c.stBg }};font:500 10px/1.2 'IBM Plex Mono',monospace;color:{{ c.stFg }}"><span aria-hidden="true">{{ c.stGlyph }}</span>{{ c.status }}</span>
+              </div>
+              <dl style="margin:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">РќРђРЎР•Р›Р•РќРќРЇ</dt><dd style="margin:0;font:500 14px/1.2 'IBM Plex Sans',system-ui">{{ c.pop }}</dd></div>
+                <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">РќРђРЎ. РџРЈРќРљРўР</dt><dd style="margin:0;font:500 14px/1.2 'IBM Plex Sans',system-ui">{{ c.np }}</dd></div>
+                <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">РЈРљР РРўРўРЇ</dt><dd style="margin:0;font:500 14px/1.2 'IBM Plex Sans',system-ui">{{ c.shelters }}</dd></div>
+              </dl>
+              <div>
+                <div style="display:flex;justify-content:space-between;font:400 11px/1.2 'IBM Plex Sans',system-ui;color:#55554f;margin-bottom:5px"><span>РџРѕРІРЅРѕС‚Р° РґР°РЅРёС… РґР»СЏ СЃРёРјСѓР»СЏС†С–С—</span><span style="font-family:'IBM Plex Mono',monospace">{{ c.completeness }}%</span></div>
+                <div style="height:8px;border-radius:4px;background:#e8e8e4;overflow:hidden"><div style="height:100%;width:{{ c.completeness }}%;background:#6f6f69"></div></div>
+              </div>
+              <button type="button" onClick="{{ c.open }}" style="min-height:44px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">Р’С–РґРєСЂРёС‚Рё РіСЂРѕРјР°РґСѓ</button>
+            </li>
+          </sc-for>
+        </ul>
+      </main>
+      </sc-if>
+
+      <!-- в•ђв•ђв•ђ 2. РџРђРЎРџРћР Рў Р“Р РћРњРђР”Р в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS2 }}">
+      <main style="padding:20px 20px 28px">
+        <button type="button" onClick="{{ toS1 }}" style="min-height:40px;padding:0 10px;margin-bottom:14px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">в†ђ РљР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ</button>
+
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #e2e2de;margin-bottom:18px">
+          <div style="flex:1 1 380px">
+            <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">РџРђРЎРџРћР Рў Р“Р РћРњРђР”Р</span>
+            <h1 style="font:600 24px/1.25 'IBM Plex Sans',system-ui;margin:6px 0 6px">Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° СЃРµР»РёС‰РЅР° РіСЂРѕРјР°РґР°</h1>
+            <p style="font:400 13px/1.5 'IBM Plex Sans',system-ui;color:#55554f;margin:0">РњРёРєРѕР»Р°С—РІСЃСЊРєР° РѕР±Р»Р°СЃС‚СЊ В· Р‘Р°С€С‚Р°РЅСЃСЊРєРёР№ СЂР°Р№РѕРЅ В· РљРћРђРўРЈРЈ 4820955100 В· РїР»РѕС‰Р° 1 128 РєРјВІ</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #d9c99f;border-radius:4px;background:#fdf6e7;font:500 11px/1.2 'IBM Plex Sans',system-ui;color:#7a5a12"><span aria-hidden="true">!</span>Р”Р°РЅС– РѕРЅРѕРІР»РµРЅРѕ 12.03.2026 В· С‡Р°СЃС‚РєРѕРІРѕ РЅРµРїРѕРІРЅС–</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" onClick="{{ toS3 }}" style="min-height:44px;padding:0 14px;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:500 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ</button>
+              <button type="button" onClick="{{ toS4 }}" style="min-height:44px;padding:0 16px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">РџРµСЂРµР№С‚Рё РґРѕ Р·Р°РіСЂРѕР· в†’</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ passportCols }};gap:14px;align-items:start">
+          <sc-for list="{{ passport }}" as="b" hint-placeholder-count="6">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0">{{ b.title }}</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ b.tagBorder }};background:{{ b.tagBg }};font:500 9px/1.2 'IBM Plex Mono',monospace;color:{{ b.tagFg }}">{{ b.tag }}</span>
+              </header>
+              <dl style="margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4">
+                    <dt style="flex:1;font:400 13px/1.4 'IBM Plex Sans',system-ui;color:#55554f">{{ r.k }}</dt>
+                    <dd style="margin:0;font:500 13px/1.4 'IBM Plex Sans',system-ui;color:{{ r.vFg }};text-align:right">{{ r.v }}</dd>
+                  </div>
+                </sc-for>
+              </dl>
+            </section>
+          </sc-for>
+        </div>
+
+        <section style="margin-top:16px;border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px 16px">
+          <h2 style="font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0 0 8px;color:#5f4708">РќРµРїРѕРІРЅС– Р°Р±Рѕ РЅРµРїС–РґС‚РІРµСЂРґР¶РµРЅС– РґР°РЅС– (4)</h2>
+          <ul style="margin:0;padding-left:18px;font:400 13px/1.7 'IBM Plex Sans',system-ui;color:#4a4a44">
+            <li>РљС–Р»СЊРєС–СЃС‚СЊ РјС–СЃС†СЊ РІ СѓРєСЂРёС‚С‚СЏС… вЂ” РґР¶РµСЂРµР»Рѕ РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРµ <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">API REQUIRED — PROPOSED CONTRACT, NOT IMPLEMENTED</span></li>
+            <li>РђРєС‚СѓР°Р»СЊРЅРёР№ РїРµСЂРµР»С–Рє РІСЂР°Р·Р»РёРІРёС… РіСЂСѓРї вЂ” РїРѕС‚СЂРµР±СѓС” РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ СЃРѕС†СЃР»СѓР¶Р±РѕСЋ</li>
+            <li>РўРµС…РЅС–С‡РЅРёР№ СЃС‚Р°РЅ РІРѕРґРѕРіРѕРЅС–РІ вЂ” РЅРµРјР°С” РґР°РЅРёС…</li>
+            <li>РњРµС‚РѕРґРёРєР° РѕС†С–РЅСЋРІР°РЅРЅСЏ СЂРёР·РёРєС–РІ <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span></li>
+          </ul>
+        </section>
+      </main>
+      </sc-if>
+
+      <!-- в•ђв•ђв•ђ 3. Р“Р•РћРџР РћРЎРўРћР РћР’РР™ РћР“Р›РЇР” в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS3 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px">
+          <button type="button" onClick="{{ toS2 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">в†ђ РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0">Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ В· Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° РіСЂРѕРјР°РґР°</h1>
+            <p style="font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#6b6b66;margin:4px 0 0">РўРµСЂРёС‚РѕСЂС–Р°Р»СЊРЅРёР№ РєРѕРЅС‚РµРєСЃС‚, РєСЂРёС‚РёС‡РЅС– РѕР±вЂ™С”РєС‚Рё, СЂРµСЃСѓСЂСЃРё С‚Р° Р·РѕРЅРё СЂРёР·РёРєСѓ</p>
+          </div>
+          <button type="button" onClick="{{ toS4 }}" style="min-height:44px;padding:0 16px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">РџРµСЂРµР№С‚Рё РґРѕ Р·Р°РіСЂРѕР· в†’</button>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid #dcdcd8;border-radius:6px;background:#fbfbf9;margin-bottom:12px">
+          <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84;align-self:center;margin-right:4px">РЁРђР Р РљРђР РўР</span>
+          <sc-for list="{{ layers }}" as="l" hint-placeholder-count="6">
+            <button type="button" aria-pressed="{{ l.on }}" style="min-height:40px;display:inline-flex;align-items:center;gap:7px;padding:0 11px;border:1px solid {{ l.border }};border-radius:5px;background:{{ l.bg }};font:500 12px/1 'IBM Plex Sans',system-ui;color:{{ l.fg }};cursor:pointer"><span style="font-family:'IBM Plex Mono',monospace">{{ l.glyph }}</span>{{ l.label }} <span style="color:#8a8a84;font-family:'IBM Plex Mono',monospace">{{ l.count }}</span></button>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ geoCols }};gap:14px;align-items:start">
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;overflow:hidden">
+            <div style="position:relative;height:{{ mapH }};background:#f0efec;border-bottom:1px solid #e6e6e2;background-image:linear-gradient(#e6e5e1 1px,transparent 1px),linear-gradient(90deg,#e6e5e1 1px,transparent 1px);background-size:44px 44px">
+              <span style="position:absolute;inset:14px;border:2px dashed #bdbdb6;border-radius:8px"></span>
+              <span style="position:absolute;top:22px;left:50%;transform:translateX(-50%);padding:5px 10px;border-radius:4px;background:#fff;border:1px dashed #b9b9b2;font:500 10px/1 'IBM Plex Mono',monospace;color:#5c5c57">MOCK DATA В· РЎРҐР•РњРђРўРР§РќРђ РљРђР РўРђ, РќР• Р“Р•РћР”РђРќР†</span>
+              <sc-for list="{{ pins }}" as="p" hint-placeholder-count="7">
+                <button type="button" onClick="{{ p.pick }}" style="position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;transform:translate(-50%,-50%);min-width:44px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;cursor:pointer">
+                  <span style="width:22px;height:22px;border-radius:{{ p.radius }};border:2px solid {{ p.border }};background:{{ p.bg }};display:flex;align-items:center;justify-content:center;font:600 10px/1 'IBM Plex Mono',monospace;color:#1b1b1a">{{ p.glyph }}</span>
+                  <span style="font:500 10px/1.1 'IBM Plex Sans',system-ui;background:#fffffff2;padding:1px 4px;border-radius:3px;white-space:nowrap">{{ p.label }}</span>
+                </button>
+              </sc-for>
+              <span style="position:absolute;left:22%;top:58%;width:150px;height:100px;border:2px dotted #9a9a93;border-radius:50%;background:#00000008"></span>
+              <span style="position:absolute;left:22%;top:58%;transform:translate(-10px,54px);font:500 10px/1 'IBM Plex Sans',system-ui;color:#5c5c57">РџРѕС‚РµРЅС†С–Р№РЅРѕ РЅРµР±РµР·РїРµС‡РЅР° Р·РѕРЅР°</span>
+              <div style="position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:4px">
+                <span style="width:44px;height:44px;border:1px solid #cfcfca;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font:500 16px/1 'IBM Plex Mono',monospace">+</span>
+                <span style="width:44px;height:44px;border:1px solid #cfcfca;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font:500 16px/1 'IBM Plex Mono',monospace">в€’</span>
+              </div>
+            </div>
+            <div style="padding:12px 14px;display:flex;gap:16px;flex-wrap:wrap">
+              <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84;align-self:center">Р›Р•Р“Р•РќР”Рђ</span>
+              <sc-for list="{{ legend }}" as="lg" hint-placeholder-count="6">
+                <span style="display:inline-flex;align-items:center;gap:7px;font:400 12px/1.2 'IBM Plex Sans',system-ui;color:#44443f"><span style="width:16px;height:16px;border-radius:{{ lg.radius }};border:2px solid {{ lg.border }};background:{{ lg.bg }};display:flex;align-items:center;justify-content:center;font:600 9px/1 'IBM Plex Mono',monospace">{{ lg.glyph }}</span>{{ lg.label }}</span>
+              </sc-for>
+            </div>
+          </section>
+
+          <aside style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+            <header style="padding:12px 14px;border-bottom:1px solid #e6e6e2">
+              <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">Р’РР‘Р РђРќРР™ РћР‘вЂ™Р„РљРў</span>
+              <h2 style="font:600 15px/1.3 'IBM Plex Sans',system-ui;margin:6px 0 0">{{ picked.title }}</h2>
+              <span style="font:400 12px/1.3 'IBM Plex Sans',system-ui;color:#6b6b66">{{ picked.kind }}</span>
+            </header>
+            <dl style="margin:0;padding:6px 14px 12px">
+              <sc-for list="{{ picked.rows }}" as="r" hint-placeholder-count="5">
+                <div style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4">
+                  <dt style="flex:1;font:400 12px/1.4 'IBM Plex Sans',system-ui;color:#6b6b66">{{ r.k }}</dt>
+                  <dd style="margin:0;font:500 12px/1.4 'IBM Plex Sans',system-ui;text-align:right;color:{{ r.vFg }}">{{ r.v }}</dd>
+                </div>
+              </sc-for>
+            </dl>
+            <div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:8px">
+              <button type="button" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РџРѕРєР°Р·Р°С‚Рё РІ РїР°СЃРїРѕСЂС‚С– РіСЂРѕРјР°РґРё</button>
+              <span style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:#8a8a84">API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities/{id}/geo?layers=</span>
+            </div>
+          </aside>
+        </div>
+
+        <sc-if value="{{ isTablet }}">
+        <p style="margin:12px 0 0;padding:11px 13px;border:1px dashed #b9b9b2;border-radius:6px;background:#fbfbf9;font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#55554f">РџР»Р°РЅС€РµС‚: Р±РѕРєРѕРІР° РїР°РЅРµР»СЊ РїРµСЂРµС…РѕРґРёС‚СЊ РїС–Рґ РєР°СЂС‚Сѓ, С€Р°СЂРё Р·РіРѕСЂС‚Р°СЋС‚СЊСЃСЏ РІ РѕРґРёРЅ СЃРїРёСЃРѕРє, Р·РѕРЅР° РєР°СЂС‚Рё Р·Р±РµСЂС–РіР°С” РјС–РЅС–РјСѓРј 420 px РІРёСЃРѕС‚Рё, СѓСЃС– РµР»РµРјРµРЅС‚Рё РєРµСЂСѓРІР°РЅРЅСЏ в‰Ґ 44Г—44 px.</p>
+        </sc-if>
+      </main>
+      </sc-if>
+
+      <!-- в•ђв•ђв•ђ 4. Р—РђР“Р РћР—Р в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS4 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS2 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">в†ђ РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0">Р—Р°РіСЂРѕР·Рё, СЂРµР»РµРІР°РЅС‚РЅС– РґР»СЏ РіСЂРѕРјР°РґРё</h1>
+            <p style="font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#6b6b66;margin:4px 0 0">РћС†С–РЅСЋРІР°РЅРЅСЏ Р№РјРѕРІС–СЂРЅРѕСЃС‚С– С‚Р° РІРїР»РёРІСѓ вЂ” <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span>: РјРµС‚РѕРґРёРєСѓ РІРёР·РЅР°С‡Р°С” РІР»Р°СЃРЅРёРє РїСЂРѕРґСѓРєС‚Сѓ</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ threatCols }};gap:14px;align-items:start">
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ threats }}" as="t" hint-placeholder-count="4">
+              <li>
+                <button type="button" onClick="{{ t.pick }}" aria-pressed="{{ t.on }}" style="width:100%;text-align:left;border:1px solid {{ t.border }};border-left:4px solid {{ t.accent }};border-radius:6px;background:{{ t.bg }};padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:10px">
+                  <span style="display:flex;align-items:flex-start;gap:10px">
+                    <span style="flex:1">
+                      <span style="display:block;font:600 15px/1.3 'IBM Plex Sans',system-ui">{{ t.name }}</span>
+                      <span style="display:block;font:400 12px/1.3 'IBM Plex Sans',system-ui;color:#6b6b66;margin-top:3px">РљР°С‚РµРіРѕСЂС–СЏ: {{ t.cat }}</span>
+                    </span>
+                    <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ t.tagBorder }};background:{{ t.tagBg }};font:500 9px/1.2 'IBM Plex Mono',monospace;color:{{ t.tagFg }}">{{ t.tag }}</span>
+                  </span>
+                  <span style="display:flex;gap:18px;flex-wrap:wrap">
+                    <span style="font:400 12px/1.3 'IBM Plex Sans',system-ui;color:#44443f">Р†РјРѕРІС–СЂРЅС–СЃС‚СЊ: <b style="font-weight:600">{{ t.prob }}</b></span>
+                    <span style="font:400 12px/1.3 'IBM Plex Sans',system-ui;color:#44443f">Р’РїР»РёРІ: <b style="font-weight:600">{{ t.impact }}</b></span>
+                  </span>
+                  <span style="font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#55554f;text-wrap:pretty">{{ t.why }}</span>
+                </button>
+              </li>
+            </sc-for>
+          </ul>
+
+          <aside style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;position:relative">
+            <header style="padding:14px;border-bottom:1px solid #e6e6e2">
+              <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">РџР РћР¤Р†Р›Р¬ Р—РђР“Р РћР—Р</span>
+              <h2 style="font:600 17px/1.3 'IBM Plex Sans',system-ui;margin:6px 0 0">{{ threat.name }}</h2>
+              <span style="font:400 12px/1.4 'IBM Plex Sans',system-ui;color:#6b6b66">{{ threat.cat }} В· С–РјРѕРІС–СЂРЅС–СЃС‚СЊ {{ threat.prob }} В· РІРїР»РёРІ {{ threat.impact }}</span>
+            </header>
+            <div style="padding:14px;display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ threat.blocks }}" as="bl" hint-placeholder-count="4">
+                <section>
+                  <h3 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 7px;letter-spacing:.04em">{{ bl.title }}</h3>
+                  <ul style="margin:0;padding-left:16px;font:400 13px/1.6 'IBM Plex Sans',system-ui;color:#33332f">
+                    <sc-for list="{{ bl.items }}" as="it" hint-placeholder-count="3">
+                      <li>{{ it }}</li>
+                    </sc-for>
+                  </ul>
+                </section>
+              </sc-for>
+              <p style="margin:0;padding:11px 13px;border:1px solid #d9c99f;border-radius:5px;background:#fdf6e7;font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#4a4a44"><b style="font-weight:600">РќРµРїРѕРІРЅС– РґР°РЅС–:</b> РїРµСЂРµР»С–Рє РїРѕРІвЂ™СЏР·Р°РЅРёС… РѕР±вЂ™С”РєС‚С–РІ Р·Р°РїРѕРІРЅРµРЅРѕ РЅР° 60%. РЎРёРјСѓР»СЏС†С–СЋ РјРѕР¶РЅР° СЃС‚РІРѕСЂРёС‚Рё, Р°Р»Рµ С‡Р°СЃС‚РёРЅСѓ РІРІРѕРґС–РІ С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ РІРЅРµСЃРµ РІСЂСѓС‡РЅСѓ.</p>
+              <button type="button" onClick="{{ toS5 }}" style="min-height:44px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:500 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">Р’РёР±СЂР°С‚Рё Р·Р°РіСЂРѕР·Сѓ в†’</button>
+            </div>
+          </aside>
+        </div>
+      </main>
+      </sc-if>
+
+      <!-- в•ђв•ђв•ђ 5. РЎР¦Р•РќРђР Р†Р‡ в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS5 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS4 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">в†ђ Р—Р°РіСЂРѕР·Рё</button>
+          <div style="flex:1 1 320px">
+            <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0">РЎС†РµРЅР°СЂС–С— РґР»СЏ РіСЂРѕРјР°РґРё</h1>
+            <p style="font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#6b6b66;margin:4px 0 0">Р’С–РґРїРѕРІС–РґРЅС–СЃС‚СЊ РєРѕРЅС‚РµРєСЃС‚Сѓ: Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° РіСЂРѕРјР°РґР° В· РџРѕС€РєРѕРґР¶РµРЅРЅСЏ РІРѕРґРѕРїРѕСЃС‚Р°С‡Р°РЅРЅСЏ. РђР»РіРѕСЂРёС‚Рј Р°РІС‚РѕРїС–РґР±РѕСЂСѓ вЂ” <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span></p>
+          </div>
+        </div>
+
+        <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:{{ scenarioCols }};gap:14px">
+          <sc-for list="{{ scenarios }}" as="s" hint-placeholder-count="3">
+            <li style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;display:flex;flex-direction:column">
+              <header style="padding:14px;border-bottom:1px solid #e6e6e2;display:flex;gap:10px;align-items:flex-start">
+                <div style="flex:1">
+                  <h2 style="font:600 16px/1.3 'IBM Plex Sans',system-ui;margin:0 0 4px">{{ s.name }}</h2>
+                  <span style="font:400 12px/1.3 'IBM Plex Sans',system-ui;color:#6b6b66">РўРёРї: {{ s.type }}</span>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid {{ s.stBorder }};border-radius:4px;background:{{ s.stBg }};font:500 10px/1.2 'IBM Plex Mono',monospace;color:{{ s.stFg }}"><span aria-hidden="true">{{ s.stGlyph }}</span>{{ s.readiness }} В· MOCK</span>
+              </header>
+              <div style="padding:14px;display:flex;flex-direction:column;gap:12px;flex:1">
+                <dl style="margin:0;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">РўР РР’РђР›Р†РЎРўР¬ В· MOCK</dt><dd style="margin:0;font:500 13px/1.2 'IBM Plex Sans',system-ui">{{ s.dur }}</dd></div>
+                  <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">РЎРљР›РђР”РќР†РЎРўР¬ В· MOCK</dt><dd style="margin:0;font:500 13px/1.2 'IBM Plex Sans',system-ui">{{ s.complexity }}</dd></div>
+                  <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">РЈР§РђРЎРќРРљР В· PDR</dt><dd style="margin:0;font:500 13px/1.2 'IBM Plex Sans',system-ui;color:{{ s.pFg }}">{{ s.participants }}</dd></div>
+                  <div><dt style="font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;margin-bottom:3px">Р РћР›Р† В· PDR</dt><dd style="margin:0;font:500 13px/1.2 'IBM Plex Sans',system-ui;color:{{ s.rFg }}">{{ s.roles }}</dd></div>
+                </dl>
+                <section>
+                  <h3 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 6px">РќРђР’Р§РђР›Р¬РќР† Р¦Р†Р›Р†</h3>
+                  <ul style="margin:0;padding-left:16px;font:400 13px/1.6 'IBM Plex Sans',system-ui">
+                    <sc-for list="{{ s.goals }}" as="g" hint-placeholder-count="3">
+                      <li>{{ g }}</li>
+                    </sc-for>
+                  </ul>
+                </section>
+                <p style="margin:0;padding:11px 12px;border:1px solid #dcdcd8;border-left:3px solid #6f6f69;border-radius:5px;background:#fafaf8;font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#44443f"><b style="font-weight:600">Р§РѕРјСѓ РїС–РґС…РѕРґРёС‚СЊ: </b>{{ s.why }}</p>
+                <button type="button" onClick="{{ s.choose }}" style="margin-top:auto;min-height:44px;border:1px solid {{ s.btnBorder }};border-radius:5px;background:{{ s.btnBg }};color:{{ s.btnFg }};font:500 14px/1 'IBM Plex Sans',system-ui;cursor:{{ s.cursor }}">{{ s.btnLabel }}</button>
+              </div>
+            </li>
+          </sc-for>
+        </ul>
+      </main>
+      </sc-if>
+
+      <!-- в•ђв•ђв•ђ 6. SIMULATION CONTEXT SNAPSHOT в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS6 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS5 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">в†ђ РЎС†РµРЅР°СЂС–С—</button>
+          <div style="flex:1 1 320px">
+            <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">РљРћРќРўР РћР›Р¬РќРђ РўРћР§РљРђ РџР•Р Р•Р” РЎРўР’РћР Р•РќРќРЇРњ РЎР•РЎР†Р‡</span>
+            <h1 style="font:600 22px/1.25 'IBM Plex Sans',system-ui;margin:6px 0 0">Simulation Context Snapshot</h1>
+            <p style="font:400 13px/1.5 'IBM Plex Sans',system-ui;color:#55554f;margin:5px 0 0;max-width:70ch;text-wrap:pretty">РџРµСЂРµРІС–СЂС‚Рµ, СЏРєС– СЃР°РјРµ РґР°РЅС– РіСЂРѕРјР°РґРё, Р·Р°РіСЂРѕР·Рё С‚Р° СЃС†РµРЅР°СЂС–СЋ Р±СѓРґРµ Р·Р°С„С–РєСЃРѕРІР°РЅРѕ РІ СЃРµСЃС–С—. РџС–СЃР»СЏ СЃС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С— СЃРЅРµРїС€РѕС‚ РЅРµ Р·РјС–РЅСЋС”С‚СЊСЃСЏ.</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ snapCols3 }};gap:14px;margin-bottom:14px">
+          <sc-for list="{{ snapPicks }}" as="p" hint-placeholder-count="3">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;padding:14px">
+              <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ p.kind }}</span>
+              <h2 style="font:600 15px/1.3 'IBM Plex Sans',system-ui;margin:7px 0 4px">{{ p.name }}</h2>
+              <p style="font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#6b6b66;margin:0 0 10px">{{ p.meta }}</p>
+              <button type="button" onClick="{{ p.change }}" style="min-height:40px;padding:0 11px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">Р—РјС–РЅРёС‚Рё</button>
+            </section>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ snapCols2 }};gap:14px;align-items:start">
+          <sc-for list="{{ snapBlocks }}" as="b" hint-placeholder-count="5">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0">{{ b.title }}</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid {{ b.tagBorder }};background:{{ b.tagBg }};font:500 9px/1.2 'IBM Plex Mono',monospace;color:{{ b.tagFg }}">{{ b.tag }}</span>
+              </header>
+              <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="4">
+                  <li style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4;font:400 13px/1.5 'IBM Plex Sans',system-ui;color:#55554f"><span style="flex:1">{{ r.k }}</span><span style="font-weight:500;color:{{ r.vFg }};text-align:right">{{ r.v }}</span></li>
+                </sc-for>
+              </ul>
+            </section>
+          </sc-for>
+        </div>
+
+        <section style="margin-top:14px;border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px 16px">
+          <h2 style="font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0 0 8px;color:#5f4708">вљ  Р”Р°РЅС–, СЏРєС– СѓРІС–Р№РґСѓС‚СЊ Сѓ СЃРµСЃС–СЋ Р· РѕР±РјРµР¶РµРЅРЅСЏРјРё (3)</h2>
+          <ul style="margin:0;padding-left:18px;font:400 13px/1.7 'IBM Plex Sans',system-ui;color:#4a4a44">
+            <li>РњС–СЃС‚РєС–СЃС‚СЊ СѓРєСЂРёС‚С‚С–РІ вЂ” РЅРµРїС–РґС‚РІРµСЂРґР¶РµРЅРµ РґР¶РµСЂРµР»Рѕ (РѕРЅРѕРІР»РµРЅРѕ 2024)</li>
+            <li>РџРѕРІвЂ™СЏР·Р°РЅС– РѕР±вЂ™С”РєС‚Рё Р·Р°РіСЂРѕР·Рё вЂ” Р·Р°РїРѕРІРЅРµРЅРѕ 60%</li>
+            <li>РЎРєР»Р°Рґ СЂРѕР»РµР№ СѓС‡Р°СЃРЅРёРєС–РІ вЂ” <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED</span></li>
+          </ul>
+        </section>
+
+        <div style="margin-top:16px;padding:16px;border:1px solid #cfcfca;border-radius:6px;background:#fbfbf9;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <p style="flex:1 1 320px;margin:0;font:400 12px/1.5 'IBM Plex Sans',system-ui;color:#55554f">РџРѕРІРµСЂРЅРµРЅРЅСЏ РЅР°Р·Р°Рґ РЅРµ РІРёРґР°Р»СЏС” СЃРЅРµРїС€РѕС‚, Р°Р»Рµ Р·РјС–РЅР° РіСЂРѕРјР°РґРё Р°Р±Рѕ Р·Р°РіСЂРѕР·Рё СЃРєРёРґР°С” РІРёР±СЂР°РЅРёР№ СЃС†РµРЅР°СЂС–Р№. РџСЂРѕ С†Рµ РїРѕРїРµСЂРµРґР¶Р°С” РјРѕРґР°Р»СЊРЅРµ РІС–РєРЅРѕ.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" onClick="{{ toS5 }}" style="min-height:44px;padding:0 14px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">Р—РјС–РЅРёС‚Рё РІРёР±С–СЂ</button>
+            <button type="button" onClick="{{ createSession }}" style="min-height:44px;padding:0 18px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:600 14px/1 'IBM Plex Sans',system-ui;cursor:pointer">РЎС‚РІРѕСЂРёС‚Рё СЃРёРјСѓР»СЏС†С–Р№РЅСѓ СЃРµСЃС–СЋ</button>
+          </div>
+        </div>
+
+        <sc-if value="{{ created }}">
+        <section style="margin-top:14px;border:1px solid #a9c3b0;border-radius:6px;background:#eef5f0;padding:16px">
+          <h2 style="font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0 0 6px;color:#22503a">вњ“ РЎРµСЃС–СЋ СЃС‚РІРѕСЂРµРЅРѕ В· РєРѕРґ РїСЂРёС”РґРЅР°РЅРЅСЏ ABX-4471 <span style="font:500 10px/1 'IBM Plex Mono',monospace">MOCK DATA</span></h2>
+          <p style="margin:0;font:400 13px/1.6 'IBM Plex Sans',system-ui;color:#3a463d">РќР°СЃС‚СѓРїРЅС– РµРєСЂР°РЅРё РїРѕС‚РѕРєСѓ (lobby, РїРµСЂРµРІС–СЂРєР° РіРѕС‚РѕРІРЅРѕСЃС‚С–, Р°РєС‚РёРІРЅР° СЃРёРјСѓР»СЏС†С–СЏ, РѕС†С–РЅСЋРІР°РЅРЅСЏ, AAR, Р·РІС–С‚) вЂ” РїРѕР·Р° РјРµР¶Р°РјРё РїРµСЂС€РѕРіРѕ РЅР°Р±РѕСЂСѓ wireframes С– РїРѕС‚СЂРµР±СѓСЋС‚СЊ РїРѕРіРѕРґР¶РµРЅРЅСЏ С†С–С”С— Р»РѕРіС–РєРё.</p>
+        </section>
+        </sc-if>
+      </main>
+      </sc-if>
+
+      <!-- в•ђв•ђв•ђ 7. РЎР•РЎР†РЇ (Р§Р•Р РќР•РўРљРђ, Р•РўРђРџ 2) в•ђв•ђв•ђ -->
+      <sc-if value="{{ onS7 }}">
+      <main style="padding:20px 20px 28px">
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+          <button type="button" onClick="{{ toS6 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">в†ђ Context Snapshot</button>
+          <div style="flex:1 1 320px">
+            <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">РљР РћРљ 5 В· РЎР•РЎР†РЇ</span>
+            <h1 style="font:600 22px/1.25 'IBM Plex Sans',system-ui;margin:6px 0 0">РЎРµСЃС–СЋ СЃС‚РІРѕСЂРµРЅРѕ В· lobby</h1>
+            <p style="font:400 13px/1.5 'IBM Plex Sans',system-ui;color:#55554f;margin:5px 0 0;max-width:70ch;text-wrap:pretty">Р›РёС€Рµ РґРµРјРѕРЅСЃС‚СЂР°С†С–СЏ success-РїРµСЂРµС…РѕРґСѓ РїС–СЃР»СЏ СЃС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С—. Р¦Рµ РЅРµ РїРѕРіРѕРґР¶РµРЅРёР№ wireframe: СЃРєР»Р°Рґ lobby, СЂРѕР»С–, РіРѕС‚РѕРІРЅС–СЃС‚СЊ, СЂР°СѓРЅРґРё С‚Р° СЂС–С€РµРЅРЅСЏ РїСЂРѕС”РєС‚СѓСЋС‚СЊСЃСЏ РЅР° РµС‚Р°РїС– 2 РїС–СЃР»СЏ РїРѕРіРѕРґР¶РµРЅРЅСЏ РїРµСЂС€РѕРіРѕ РЅР°Р±РѕСЂСѓ.</p>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:4px;background:#f2f2ef;border:1px dashed #b9b9b2;font:500 10px/1 'IBM Plex Mono',monospace;color:#5c5c57">PREVIEW вЂ” STAGE 2, NOT APPROVED WIREFRAME</span>
+        </div>
+
+        <section style="border:1px solid #a9c3b0;border-radius:6px;background:#eef5f0;padding:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+          <div style="flex:1 1 300px">
+            <h2 style="font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0 0 6px;color:#22503a">вњ“ РЎРµСЃС–СЏ РіРѕС‚РѕРІР° РґРѕ РїСЂРёС”РґРЅР°РЅРЅСЏ СѓС‡Р°СЃРЅРёРєС–РІ</h2>
+            <p style="margin:0;font:400 13px/1.6 'IBM Plex Sans',system-ui;color:#3a463d">РЎРЅРµРїС€РѕС‚ Р·Р°С„С–РєСЃРѕРІР°РЅРѕ С– РЅРµ Р·РјС–РЅСЋС”С‚СЊСЃСЏ. РЈС‡Р°СЃРЅРёРєРё РїСЂРёС”РґРЅСѓСЋС‚СЊСЃСЏ Р·Р° РєРѕРґРѕРј РЅР° prototype.local/join (Р°РґСЂРµСЃР° РґРµРјРѕРЅСЃС‚СЂР°С†С–Р№РЅР°)</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="padding:10px 16px;border:1px solid #1b1b1a;border-radius:5px;background:#fff;font:600 22px/1 'IBM Plex Mono',monospace;letter-spacing:.08em">ABX-4471</span>
+            <span style="width:64px;height:64px;border:1px dashed #b9b9b2;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#8a8a84;text-align:center">QR<br>MOCK</span>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РЎРєРѕРїС–СЋРІР°С‚Рё РєРѕРґ</button>
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РќР°РґС–СЃР»Р°С‚Рё Р·Р°РїСЂРѕС€РµРЅРЅСЏ</button>
+            </div>
+          </div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:{{ sessionCols }};gap:14px;align-items:start">
+          <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+            <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+              <h2 style="flex:1;font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0">РЈС‡Р°СЃРЅРёРєРё РІ lobby В· 4 Р· 6</h2>
+              <span style="padding:3px 6px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">Р РћР›Р† вЂ” PRODUCT DECISION</span>
+            </header>
+            <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+              <sc-for list="{{ lobby }}" as="p" hint-placeholder-count="6">
+                <li style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed #e8e8e4">
+                  <span style="width:32px;height:32px;border-radius:50%;background:#eceae6;border:1px solid #d5d5d1"></span>
+                  <span style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font:500 13px/1.3 'IBM Plex Sans',system-ui;color:{{ p.nameFg }}">{{ p.name }}</span>
+                    <span style="font:400 11.5px/1.3 'IBM Plex Sans',system-ui;color:#6b6b66">{{ p.role }}</span>
+                  </span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid {{ p.stBorder }};border-radius:4px;background:{{ p.stBg }};font:500 10px/1.2 'IBM Plex Mono',monospace;color:{{ p.stFg }}"><span aria-hidden="true">{{ p.stGlyph }}</span>{{ p.status }}</span>
+                </li>
+              </sc-for>
+            </ul>
+            <div style="padding:0 14px 14px;display:flex;gap:10px;flex-wrap:wrap">
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РџРµСЂРµРІС–СЂРёС‚Рё РіРѕС‚РѕРІРЅС–СЃС‚СЊ</button>
+              <button type="button" style="min-height:44px;padding:0 13px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РџСЂРёР·РЅР°С‡РёС‚Рё СЂРѕР»СЊ РІСЂСѓС‡РЅСѓ</button>
+            </div>
+          </section>
+
+          <aside style="display:flex;flex-direction:column;gap:14px">
+            <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
+              <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
+                <h2 style="flex:1;font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0">Р—Р°С„С–РєСЃРѕРІР°РЅРёР№ РєРѕРЅС‚РµРєСЃС‚ СЃРµСЃС–С—</h2>
+                <span style="padding:3px 6px;border-radius:3px;border:1px solid #b9b9b2;background:#f2f2ef;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#5c5c57">SNAPSHOT</span>
+              </header>
+              <ul style="list-style:none;margin:0;padding:6px 14px 12px">
+                <sc-for list="{{ sessionSnapRows }}" as="r" hint-placeholder-count="5">
+                  <li style="display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e8e8e4;font:400 12.5px/1.5 'IBM Plex Sans',system-ui;color:#55554f"><span style="flex:1">{{ r.k }}</span><span style="font-weight:500;color:{{ r.vFg }};text-align:right">{{ r.v }}</span></li>
+                </sc-for>
+              </ul>
+              <div style="padding:0 14px 14px">
+                <button type="button" onClick="{{ toS6 }}" style="min-height:40px;padding:0 11px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui;cursor:pointer">Р’С–РґРєСЂРёС‚Рё СЃРЅРµРїС€РѕС‚</button>
+              </div>
+            </section>
+
+            <section style="border:1px solid #d9c99f;border-radius:6px;background:#fdf6e7;padding:14px">
+              <h2 style="font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0 0 8px;color:#5f4708">! РќРµ РјРѕР¶РЅР° Р·Р°РїСѓСЃС‚РёС‚Рё СЃРёРјСѓР»СЏС†С–СЋ</h2>
+              <ul style="margin:0;padding-left:18px;font:400 12.5px/1.7 'IBM Plex Sans',system-ui;color:#4a4a44">
+                <li>2 СѓС‡Р°СЃРЅРёРєРё С‰Рµ РЅРµ РїС–РґС‚РІРµСЂРґРёР»Рё РіРѕС‚РѕРІРЅС–СЃС‚СЊ</li>
+                <li>Р РѕР»СЊ В«РљРѕРјСѓРЅС–РєР°С†С–С—В» РЅРµ РїСЂРёР·РЅР°С‡РµРЅРѕ</li>
+              </ul>
+            </section>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <button type="button" disabled="{{ true }}" style="min-height:48px;border:1px solid #c9c9c4;border-radius:5px;background:#efeeea;color:#8a8a84;font:600 14px/1 'IBM Plex Sans',system-ui;cursor:not-allowed">Р—Р°РїСѓСЃС‚РёС‚Рё СЃРёРјСѓР»СЏС†С–СЋ (РЅРµРґРѕСЃС‚СѓРїРЅРѕ)</button>
+              <button type="button" style="min-height:44px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 13px/1 'IBM Plex Sans',system-ui;cursor:pointer">РЎРєР°СЃСѓРІР°С‚Рё СЃРµСЃС–СЋ</button>
+              <span style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:#8a8a84">API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED: POST /sessions В· GET /sessions/{id}/participants В· POST /sessions/{id}/start</span>
+            </div>
+          </aside>
+        </div>
+
+        <p style="margin:14px 0 0;padding:12px 14px;border:1px dashed #b9b9b2;border-radius:6px;background:#fbfbf9;font:400 12.5px/1.6 'IBM Plex Sans',system-ui;color:#55554f">Р”Р°Р»С– РІ РїРѕС‚РѕС†С– (РµС‚Р°Рї 2, РЅРµ СЃРїСЂРѕС”РєС‚РѕРІР°РЅРѕ): Р°РєС‚РёРІРЅР° СЃРёРјСѓР»СЏС†С–СЏ Р· inject-РїРѕРґС–СЏРјРё С‚Р° СЂС–С€РµРЅРЅСЏРјРё СѓС‡Р°СЃРЅРёРєС–РІ в†’ Р·Р°РІРµСЂС€РµРЅРЅСЏ в†’ РѕС†С–РЅСЋРІР°РЅРЅСЏ в†’ AAR/РґРµР±СЂРёС„С–РЅРі в†’ РїС–РґСЃСѓРјРєРѕРІРёР№ Р·РІС–С‚ в†’ Р°СЂС…С–РІ. РњРµС…Р°РЅС–РєР° СЂР°СѓРЅРґС–РІ, СЃРєР»Р°Рґ СЂРѕР»РµР№ С– РјРµС‚РѕРґРёРєР° РѕС†С–РЅСЋРІР°РЅРЅСЏ РїРѕС‚СЂРµР±СѓСЋС‚СЊ СЂС–С€РµРЅРЅСЏ РІР»Р°СЃРЅРёРєР° РїСЂРѕРґСѓРєС‚Сѓ.</p>
+      </main>
+      </sc-if>
+
+    </div>
+    </div>
+  </div>
+
+  <!-- СЃРїРµС†РёС„С–РєР°С†С–СЏ РµРєСЂР°РЅР° -->
+  <section style="max-width:1340px;margin:18px auto 0;border:1px solid #cfcfca;border-radius:8px;background:#fff">
+    <header style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #e6e6e2">
+      <h2 style="flex:1;font:600 14px/1.2 'IBM Plex Sans',system-ui;margin:0">РЎРїРµС†РёС„С–РєР°С†С–СЏ РµРєСЂР°РЅР° В· {{ spec.title }}</h2>
+      <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:#8a8a84">Р РћР›Р¬: {{ spec.role }}</span>
+    </header>
+    <div style="padding:16px;display:grid;grid-template-columns:{{ specCols }};gap:16px">
+      <sc-for list="{{ spec.blocks }}" as="b" hint-placeholder-count="6">
+        <section>
+          <h3 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 8px;letter-spacing:.04em">{{ b.title }}</h3>
+          <ul style="margin:0;padding-left:16px;font:400 13px/1.6 'IBM Plex Sans',system-ui;color:#33332f">
+            <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+              <li>{{ it }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ FLOW + SITEMAP в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ -->
+<sc-if value="{{ isFlow }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0 0 4px">РќР°СЃРєСЂС–Р·РЅРёР№ user flow В· community-first</h1>
+    <p style="font:400 13px/1.5 'IBM Plex Sans',system-ui;color:#55554f;margin:0 0 18px;max-width:80ch">РЁР»СЏС… РїРѕС‡РёРЅР°С”С‚СЊСЃСЏ Р· РіСЂРѕРјР°РґРё, Р° РЅРµ Р· Р±С–Р±Р»С–РѕС‚РµРєРё СЃС†РµРЅР°СЂС–С—РІ. РЎС†РµРЅР°СЂС–Р№ Р·Р°РІР¶РґРё РїРѕРІвЂ™СЏР·Р°РЅРёР№ С–Р· РєРѕРЅС‚РµРєСЃС‚РѕРј РіСЂРѕРјР°РґРё С‚Р° РІРёР±СЂР°РЅРѕСЋ Р·Р°РіСЂРѕР·РѕСЋ. Р—Р°С‚С–РЅРµРЅС– РєСЂРѕРєРё вЂ” РїРѕР·Р° РјРµР¶Р°РјРё РїРµСЂС€РѕРіРѕ РЅР°Р±РѕСЂСѓ wireframes.</p>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ flowLanes }}" as="lane" hint-placeholder-count="4">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:13px">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:11px">
+            <h2 style="font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0">{{ lane.title }}</h2>
+            <span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:#8a8a84">{{ lane.actor }}</span>
+          </div>
+          <ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch">
+            <sc-for list="{{ lane.nodes }}" as="n" hint-placeholder-count="5">
+              <li style="display:flex;align-items:center;gap:8px">
+                <span style="display:flex;flex-direction:column;gap:4px;min-width:126px;padding:10px 11px;border:1px {{ n.style }} {{ n.border }};border-radius:5px;background:{{ n.bg }}">
+                  <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ n.tag }}</span>
+                  <span style="font:{{ n.font }};color:{{ n.fg }}">{{ n.label }}</span>
+                </span>
+                <sc-if value="{{ n.notLast }}"><span aria-hidden="true" style="color:#b5b5af;font-size:15px">в†’</span></sc-if>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </sc-for>
+    </div>
+    <p style="margin:16px 0 0;padding:12px 14px;border:1px solid #dcdcd8;border-radius:6px;background:#fafaf8;font:400 12px/1.6 'IBM Plex Sans',system-ui;color:#44443f"><b style="font-weight:600">РўРѕС‡РєРё РІС‚СЂР°С‚Рё РґР°РЅРёС…: </b>Р·РјС–РЅР° РіСЂРѕРјР°РґРё СЃРєРёРґР°С” Р·Р°РіСЂРѕР·Сѓ, СЃС†РµРЅР°СЂС–Р№ С– СЃРЅРµРїС€РѕС‚; Р·РјС–РЅР° Р·Р°РіСЂРѕР·Рё СЃРєРёРґР°С” СЃС†РµРЅР°СЂС–Р№; РїС–СЃР»СЏ СЃС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С— СЃРЅРµРїС€РѕС‚ Р·Р°РјРѕСЂРѕР¶СѓС”С‚СЊСЃСЏ. РљРѕР¶РµРЅ С‚Р°РєРёР№ РїРµСЂРµС…С–Рґ СЃСѓРїСЂРѕРІРѕРґР¶СѓС”С‚СЊСЃСЏ РјРѕРґР°Р»СЊРЅРёРј РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏРј С–Р· РїРµСЂРµСЂР°С…СѓРІР°РЅРЅСЏРј С‚РѕРіРѕ, С‰Рѕ Р±СѓРґРµ СЃРєРёРЅСѓС‚Рѕ.</p>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0 0 16px">Sitemap РїР»Р°С‚С„РѕСЂРјРё</h1>
+    <div style="display:grid;grid-template-columns:{{ sitemapCols }};gap:14px;align-items:start">
+      <sc-for list="{{ sitemap }}" as="s" hint-placeholder-count="4">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9">
+          <header style="padding:11px 13px;border-bottom:1px solid #e6e6e2;display:flex;gap:8px;align-items:center">
+            <h2 style="flex:1;font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0">{{ s.title }}</h2>
+            <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ s.tag }}</span>
+          </header>
+          <ul style="list-style:none;margin:0;padding:8px 13px 12px;display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ s.items }}" as="i" hint-placeholder-count="5">
+              <li style="font:400 12.5px/1.45 'IBM Plex Sans',system-ui;color:{{ i.fg }};padding-left:11px;border-left:2px solid #dcdcd8">{{ i.label }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0 0 6px">РђРґР°РїС‚Р°С†С–СЏ: desktop / tablet / mobile</h1>
+    <div style="display:grid;grid-template-columns:{{ sitemapCols }};gap:14px;margin-top:12px">
+      <sc-for list="{{ responsive }}" as="r" hint-placeholder-count="3">
+        <section style="border:1px solid #e0e0dc;border-radius:6px;background:#fbfbf9;padding:14px">
+          <h2 style="font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0 0 4px">{{ r.title }}</h2>
+          <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ r.w }}</span>
+          <ul style="margin:10px 0 0;padding-left:16px;font:400 12.5px/1.6 'IBM Plex Sans',system-ui;color:#44443f">
+            <sc-for list="{{ r.items }}" as="i" hint-placeholder-count="4">
+              <li>{{ i }}</li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РЎРўРђРќР в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ -->
+<sc-if value="{{ isStates }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto">
+  <h1 style="font:600 20px/1.25 'IBM Plex Sans',system-ui;margin:0 0 4px">РЎРёСЃС‚РµРјРЅС– СЃС‚Р°РЅРё</h1>
+  <p style="font:400 13px/1.5 'IBM Plex Sans',system-ui;color:#55554f;margin:0 0 18px;max-width:80ch">РљРѕР¶РµРЅ СЃС‚Р°РЅ РјР°С” С‚РµРєСЃС‚РѕРІСѓ РѕР·РЅР°РєСѓ С‚Р° С–РєРѕРЅРєСѓ-РіР»РёС„ вЂ” СЃС‚Р°С‚СѓСЃ РЅС–РєРѕР»Рё РЅРµ РїРµСЂРµРґР°С”С‚СЊСЃСЏ Р»РёС€Рµ РєРѕР»СЊРѕСЂРѕРј. РџРѕРІС–РґРѕРјР»РµРЅРЅСЏ РїСЂРѕ РїРѕРјРёР»РєРё СЂРѕР·РјС–С‰СѓСЋС‚СЊСЃСЏ РїРѕСЂСѓС‡ С–Р· РІС–РґРїРѕРІС–РґРЅРёРј РµР»РµРјРµРЅС‚РѕРј.</p>
+
+  <div style="display:grid;grid-template-columns:{{ stateCols }};gap:14px;margin-bottom:22px">
+    <sc-for list="{{ stateCards }}" as="s" hint-placeholder-count="6">
+      <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff;overflow:hidden">
+        <header style="padding:11px 13px;border-bottom:1px solid #e6e6e2;display:flex;gap:8px;align-items:center">
+          <h2 style="flex:1;font:600 13px/1.2 'IBM Plex Sans',system-ui;margin:0">{{ s.title }}</h2>
+          <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#8a8a84">{{ s.where }}</span>
+        </header>
+        <div style="padding:14px;min-height:150px;background:#fbfbf9">
+          <sc-if value="{{ s.isSkeleton }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="height:14px;width:55%;border-radius:3px;background:#e4e4e0;animation:shim 1.4s ease-in-out infinite"></span>
+              <span style="height:56px;border-radius:5px;background:#e8e8e4;animation:shim 1.4s ease-in-out infinite .1s"></span>
+              <span style="height:56px;border-radius:5px;background:#e8e8e4;animation:shim 1.4s ease-in-out infinite .2s"></span>
+              <span style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:#8a8a84">Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏвЂ¦ skeleton, Р±РµР· СЃРїС–РЅРµСЂР° РЅР° РІРµСЃСЊ РµРєСЂР°РЅ</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ s.isMessage }}">
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:12px;border:1px {{ s.borderStyle }} {{ s.border }};border-radius:6px;background:{{ s.bg }}">
+              <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/1.3 'IBM Plex Sans',system-ui;color:{{ s.fg }}"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">{{ s.glyph }}</span>{{ s.headline }}</span>
+              <span style="font:400 12.5px/1.55 'IBM Plex Sans',system-ui;color:#44443f">{{ s.body }}</span>
+              <span style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ s.actions }}" as="a" hint-placeholder-count="2">
+                  <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #c6c6c0;border-radius:5px;background:#fff;font:500 12px/1 'IBM Plex Sans',system-ui">{{ a }}</span>
+                </sc-for>
+              </span>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-for>
+  </div>
+
+  <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+    <h2 style="font:600 15px/1.2 'IBM Plex Sans',system-ui;margin:0 0 12px">РЎС‚Р°РЅРё РїРѕ РµРєСЂР°РЅР°С…</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font:400 12.5px/1.5 'IBM Plex Sans',system-ui;min-width:820px">
+        <thead><tr>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">Р•РљР РђРќ</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">LOADING</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">EMPTY</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">ERROR</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">WARNING / РќР•РџРћР’РќР† Р”РђРќР†</th>
+          <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1 'IBM Plex Mono',monospace;color:#5c5c57">SUCCESS</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ stateTable }}" as="r" hint-placeholder-count="6">
+            <tr>
+              <td style="padding:10px;border-bottom:1px solid #ececea;font-weight:600;vertical-align:top">{{ r.screen }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.loading }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.empty }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.error }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.warning }}</td>
+              <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#44443f">{{ r.success }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ Р”РћРљРЈРњР•РќРўРђР¦Р†РЇ в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ -->
+<sc-if value="{{ isDocs }}">
+<div style="padding:26px 28px 60px;max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+  <sc-for list="{{ docTables }}" as="t" hint-placeholder-count="4">
+    <section style="border:1px solid #cfcfca;border-radius:8px;background:#fff;padding:20px">
+      <h1 style="font:600 18px/1.25 'IBM Plex Sans',system-ui;margin:0 0 4px">{{ t.title }}</h1>
+      <p style="font:400 12.5px/1.5 'IBM Plex Sans',system-ui;color:#6b6b66;margin:0 0 14px;max-width:80ch">{{ t.note }}</p>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font:400 12.5px/1.5 'IBM Plex Sans',system-ui;min-width:760px">
+          <thead><tr>
+            <sc-for list="{{ t.cols }}" as="c" hint-placeholder-count="4">
+              <th style="text-align:left;padding:9px 10px;border-bottom:2px solid #cfcfca;font:500 11px/1.2 'IBM Plex Mono',monospace;color:#5c5c57">{{ c }}</th>
+            </sc-for>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="6">
+              <tr>
+                <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
+                  <td style="padding:10px;border-bottom:1px solid #ececea;vertical-align:top;color:#33332f">{{ cell }}</td>
+                </sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const D = "#1b1b1a", MUT = "#6b6b66", WARN_FG = "#7a5a12";
+const TAGS = {
+  mock: { tag: "MOCK DATA", tagBg: "#f2f2ef", tagBorder: "#b9b9b2", tagFg: "#5c5c57" },
+  api: { tag: "API REQUIRED В· PROPOSED", tagBg: "#eef2f7", tagBorder: "#a6bcd4", tagFg: "#22456b" },
+  pdr: { tag: "PRODUCT DECISION", tagBg: "#fdf6e7", tagBorder: "#d9c99f", tagFg: WARN_FG }
+};
+
+class Component extends DCLogic {
+  state = {
+    view: "proto", screen: 1, device: "desktop",
+    threatIdx: 0, scenarioIdx: 0, pinIdx: 0, created: false
+  };
+
+  go(view) { return () => this.setState({ view }); }
+  toScreen(n) { return () => this.setState({ screen: n, created: false }); }
+
+  renderVals() {
+    const S = this.state;
+    const view = S.view, tablet = S.device === "tablet";
+    const tabDefs = [["proto", "РџСЂРѕС‚РѕС‚РёРї В· 6 РµРєСЂР°РЅС–РІ"], ["flow", "User flow + sitemap"], ["states", "РЎРёСЃС‚РµРјРЅС– СЃС‚Р°РЅРё"], ["docs", "Р”РѕРєСѓРјРµРЅС‚Р°С†С–СЏ"]];
+
+    const tabs = tabDefs.map(([id, label]) => ({
+      label, go: this.go(id), current: view === id ? "page" : "false",
+      bg: view === id ? D : "#fff", fg: view === id ? "#fff" : "#33332f"
+    }));
+    const devices = [["desktop", "Desktop 1280"], ["tablet", "Tablet 834"]].map(([id, label]) => ({
+      label, on: S.device === id, go: () => this.setState({ device: id }),
+      bg: S.device === id ? "#e4e4e0" : "#fff", fg: "#33332f"
+    }));
+
+    const stepDefs = ["Р“СЂРѕРјР°РґР°", "Р—Р°РіСЂРѕР·Р°", "РЎС†РµРЅР°СЂС–Р№", "РљРѕРЅС‚РµРєСЃС‚", "РЎРµСЃС–СЏ"];
+    const screenToStep = { 1: 1, 2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5 };
+    const cur = screenToStep[S.screen];
+    const steps = stepDefs.map((label, i) => {
+      const n = i + 1, done = n < cur, active = n === cur;
+      return {
+        n, label, go: n === 1 ? this.toScreen(1) : n === 2 ? this.toScreen(4) : n === 3 ? this.toScreen(5) : n === 4 ? this.toScreen(6) : this.toScreen(7),
+        glyph: done ? "вњ“" : active ? "в—Џ" : "в—‹",
+        border: active ? D : "#cfcfca", bg: active ? "#e9e9e5" : "#fff",
+        fg: n > cur ? "#8a8a84" : "#1b1b1a",
+        font: (active ? "600" : "400") + " 13px/1 'IBM Plex Sans',system-ui",
+        notLast: n < stepDefs.length
+      };
+    });
+
+    const globalNav = ["Р“СЂРѕРјР°РґРё", "РЎС†РµРЅР°СЂС–С—", "РђРєС‚РёРІРЅС– СЃРµСЃС–С—", "РђСЂС…С–РІ", "Р—РІС–С‚Рё"].map((label, i) => ({
+      label, bg: i === 0 ? "#eceae6" : "transparent",
+      font: (i === 0 ? "600" : "400") + " 13px/1 'IBM Plex Sans',system-ui", fg: i === 0 ? D : "#55554f"
+    }));
+
+    const threats = [
+      { name: "РџРѕС€РєРѕРґР¶РµРЅРЅСЏ СЃРёСЃС‚РµРјРё РІРѕРґРѕРїРѕСЃС‚Р°С‡Р°РЅРЅСЏ", cat: "РўРµС…РЅРѕРіРµРЅРЅР° В· РєСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°", prob: "РІРёСЃРѕРєР°", impact: "Р·РЅР°С‡РЅРёР№", why: "РћРґРёРЅ РІРѕРґРѕР·Р°Р±С–СЂ РѕР±СЃР»СѓРіРѕРІСѓС” Р±С–Р»СЊС€С–СЃС‚СЊ РЅР°СЃРµР»РµРЅРёС… РїСѓРЅРєС‚С–РІ (MOCK DATA); СЂРµР·РµСЂРІРЅС– РґР¶РµСЂРµР»Р° РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅС–." },
+      { name: "РўСЂРёРІР°Р»Р° РІС–РґСЃСѓС‚РЅС–СЃС‚СЊ РµР»РµРєС‚СЂРѕРµРЅРµСЂРіС–С— (>24 РіРѕРґ)", cat: "РўРµС…РЅРѕРіРµРЅРЅР° В· РµРЅРµСЂРіРµС‚РёРєР°", prob: "РІРёСЃРѕРєР°", impact: "Р·РЅР°С‡РЅРёР№", why: "Р”РІС– РїС–РґСЃС‚Р°РЅС†С–С—, РІС–РґСЃСѓС‚РЅС– РґР°РЅС– РїСЂРѕ РіРµРЅРµСЂР°С‚РѕСЂРё РІ Р·Р°РєР»Р°РґР°С… РѕСЃРІС–С‚Рё." },
+      { name: "РњР°СЃРѕРІРёР№ РїСЂРёС—Р·Рґ Р’РџРћ", cat: "РЎРѕС†С–Р°Р»СЊРЅР° В· РїРµСЂРµРјС–С‰РµРЅРЅСЏ РЅР°СЃРµР»РµРЅРЅСЏ", prob: "СЃРµСЂРµРґРЅСЏ", impact: "РїРѕРјС–СЂРЅРёР№", why: "Р“СЂРѕРјР°РґР° РЅР° С‚СЂР°РЅР·РёС‚РЅРѕРјСѓ РЅР°РїСЂСЏРјРєСѓ; РЅР°СЏРІРЅС– 3 РјС–СЃС†СЏ С‚РёРјС‡Р°СЃРѕРІРѕРіРѕ СЂРѕР·РјС–С‰РµРЅРЅСЏ." },
+      { name: "Р›Р°РЅРґС€Р°С„С‚РЅР° РїРѕР¶РµР¶Р° Сѓ СЃС‚РµРїРѕРІС–Р№ Р·РѕРЅС–", cat: "РџСЂРёСЂРѕРґРЅР°", prob: "СЃРµСЂРµРґРЅСЏ", impact: "РїРѕРјС–СЂРЅРёР№", why: "РџРѕРЅР°Рґ 60% С‚РµСЂРёС‚РѕСЂС–С— вЂ” СЃС–Р»СЊРіРѕСЃРїСѓРіС–РґРґСЏ; РЅР°Р№Р±Р»РёР¶С‡Р° РїРѕР¶РµР¶РЅР° С‡Р°СЃС‚РёРЅР° 24 РєРј." }
+    ].map((t, i) => {
+      const on = i === S.threatIdx, tg = i === 0 ? TAGS.mock : i === 3 ? TAGS.pdr : TAGS.mock;
+      return Object.assign({}, t, tg, {
+        on, pick: () => this.setState({ threatIdx: i }),
+        border: on ? D : "#d5d5d1", accent: on ? D : "#c9c9c4",
+        bg: on ? "#fafaf8" : "#fff"
+      });
+    });
+    const t0 = threats[S.threatIdx];
+    const threat = {
+      name: t0.name, cat: t0.cat, prob: t0.prob, impact: t0.impact,
+      blocks: [
+        { title: "РћР‘ТђР РЈРќРўРЈР’РђРќРќРЇ Р Р•Р›Р•Р’РђРќРўРќРћРЎРўР†", items: [t0.why, "Р”Р¶РµСЂРµР»Рѕ: РїР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё, СЂРѕР·РґС–Р» В«РљСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°В» (12.03.2026)"] },
+        { title: "РЈР РђР—Р›РР’Р† РўР•Р РРўРћР Р†Р‡", items: ["СЃРјС‚ Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚Рµ (С†РµРЅС‚СЂ)", "СЃ. РњСѓСЂР°С…С–РІРєР°, СЃ. РџСЂРёС€РёР± вЂ” РІС–РґРґР°Р»РµРЅС–", "3 РЅР°СЃРµР»РµРЅС– РїСѓРЅРєС‚Рё Р±РµР· РґР°РЅРёС…"] },
+        { title: "РЈР РђР—Р›РР’Р† Р“Р РЈРџР", items: ["РћСЃРѕР±Рё Р· С–РЅРІР°Р»С–РґРЅС–СЃС‚СЋ вЂ” 412", "Р›СЋРґРё 65+ вЂ” 2 140", "Р”С–С‚Рё РґРѕ 6 СЂРѕРєС–РІ вЂ” 780", "РњР°Р»РѕРјРѕР±С–Р»СЊРЅС– РѕРґРёРЅРѕРєС– вЂ” РЅРµРјР°С” РґР°РЅРёС…"] },
+        { title: "РџРћР’вЂ™РЇР—РђРќР† РћР‘вЂ™Р„РљРўР", items: ["Р’РѕРґРѕР·Р°Р±С–СЂ В«Р¦РµРЅС‚СЂР°Р»СЊРЅРёР№В»", "РќР°СЃРѕСЃРЅР° СЃС‚Р°РЅС†С–СЏ в„–2", "РћРїРѕСЂРЅР° Р»С–РєР°СЂРЅСЏ", "Р›С–С†РµР№ в„–1 (РїСѓРЅРєС‚ РЅРµР·Р»Р°РјРЅРѕСЃС‚С–)"] }
+      ]
+    };
+
+    const scenarios = [
+      { name: "РђРІР°СЂС–СЏ РЅР° РІРѕРґРѕР·Р°Р±РѕСЂС–: РїРµСЂС€С– 24 РіРѕРґРёРЅРё", type: "РўРµС…РЅРѕРіРµРЅРЅР° РєСЂРёР·РѕРІР° СЃРёС‚СѓР°С†С–СЏ", dur: "90вЂ“120 С…РІ", complexity: "СЃРµСЂРµРґРЅСЏ", participants: "6вЂ“10", roles: "РІРёР·РЅР°С‡РµРЅС–: 5", readiness: "Р“РѕС‚РѕРІРёР№", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a", goals: ["РљРѕРѕСЂРґРёРЅР°С†С–СЏ РјС–Р¶ РћРњРЎ, РІРѕРґРѕРєР°РЅР°Р»РѕРј С– СЃРѕС†СЃР»СѓР¶Р±РѕСЋ", "РџСЂС–РѕСЂРёС‚РµР·Р°С†С–СЏ РїС–РґРІРѕР·Сѓ РІРѕРґРё РґР»СЏ РІСЂР°Р·Р»РёРІРёС… РіСЂСѓРї", "РљРѕРјСѓРЅС–РєР°С†С–СЏ Р· РЅР°СЃРµР»РµРЅРЅСЏРј"], why: "РџСЂСЏРјРѕ РІС–РґРїРѕРІС–РґР°С” РІРёР±СЂР°РЅС–Р№ Р·Р°РіСЂРѕР·С–; РІРёРєРѕСЂРёСЃС‚РѕРІСѓС” РЅР°СЏРІРЅС– РґР°РЅС– РїСЂРѕ РІРѕРґРѕР·Р°Р±С–СЂ, СѓРєСЂРёС‚С‚СЏ С‚Р° РІСЂР°Р·Р»РёРІС– РіСЂСѓРїРё." },
+        { name: "Р’С‚СЂР°С‚Р° РІРѕРґРѕ- С‚Р° РµР»РµРєС‚СЂРѕРїРѕСЃС‚Р°С‡Р°РЅРЅСЏ РѕРґРЅРѕС‡Р°СЃРЅРѕ", type: "РљРѕРјР±С–РЅРѕРІР°РЅР° РєСЂРёР·РѕРІР° СЃРёС‚СѓР°С†С–СЏ", dur: "120вЂ“150 С…РІ", complexity: "РІРёСЃРѕРєР°", participants: "РЅРµ РІРёР·РЅР°С‡РµРЅРѕ", roles: "РЅРµ РІРёР·РЅР°С‡РµРЅС–", readiness: "РџРѕС‚СЂРµР±СѓС” РґРѕРѕРїСЂР°С†СЋРІР°РЅРЅСЏ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG, goals: ["Р РѕР±РѕС‚Р° Р·Р° СѓРјРѕРІ РїРѕРґРІС–Р№РЅРѕРіРѕ РґРµС„С–С†РёС‚Сѓ СЂРµСЃСѓСЂСЃС–РІ", "Р РѕР·РїРѕРґС–Р» РѕР±РјРµР¶РµРЅРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂРЅРѕРіРѕ СЂРµСЃСѓСЂСЃСѓ"], why: "Р§Р°СЃС‚РєРѕРІРѕ РІС–РґРїРѕРІС–РґР°С” Р·Р°РіСЂРѕР·С–; Р±СЂР°РєСѓС” РґР°РЅРёС… РїСЂРѕ РіРµРЅРµСЂР°С‚РѕСЂРё вЂ” С‡Р°СЃС‚РёРЅСѓ РІРІРѕРґС–РІ С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ РІРЅРµСЃРµ РІСЂСѓС‡РЅСѓ." },
+        { name: "РљРѕРјСѓРЅС–РєР°С†С–СЏ РІ СѓРјРѕРІР°С… РїРµСЂРµР±РѕС—РІ Р·РІвЂ™СЏР·РєСѓ", type: "РљРѕРјСѓРЅС–РєР°С†С–Р№РЅР° РєСЂРёР·Р°", dur: "60 С…РІ", complexity: "РЅРёР·СЊРєР°", participants: "4вЂ“8", roles: "РІРёР·РЅР°С‡РµРЅС–: 3", readiness: "Р“РѕС‚РѕРІРёР№", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a", goals: ["Р РµР·РµСЂРІРЅС– РєР°РЅР°Р»Рё С–РЅС„РѕСЂРјСѓРІР°РЅРЅСЏ", "Р„РґРёРЅС–СЃС‚СЊ РїРѕРІС–РґРѕРјР»РµРЅСЊ"], why: "Р”РѕРґР°С‚РєРѕРІРёР№ РјРѕРґСѓР»СЊ: РїС–РґС…РѕРґРёС‚СЊ СЏРє РєРѕСЂРѕС‚РєР° СЃРµСЃС–СЏ РїРµСЂРµРґ РѕСЃРЅРѕРІРЅРѕСЋ СЃРёРјСѓР»СЏС†С–С”СЋ." }
+    ].map((s, i) => {
+      const chosen = i === S.scenarioIdx;
+      return Object.assign({}, s, {
+        pFg: s.participants === "РЅРµ РІРёР·РЅР°С‡РµРЅРѕ" ? "#8a8a84" : D,
+        rFg: s.roles === "РЅРµ РІРёР·РЅР°С‡РµРЅС–" ? "#8a8a84" : D,
+        choose: () => this.setState({ scenarioIdx: i, screen: 6, created: false }),
+        btnLabel: chosen ? "РџРµСЂРµРіР»СЏРЅСѓС‚Рё РєРѕРЅС‚РµРєСЃС‚ СЃРёРјСѓР»СЏС†С–С— в†’" : "Р’РёР±СЂР°С‚Рё С– РїРµСЂРµРіР»СЏРЅСѓС‚Рё РєРѕРЅС‚РµРєСЃС‚ в†’",
+        btnBg: chosen ? D : "#fff", btnFg: chosen ? "#fff" : D, btnBorder: D, cursor: "pointer"
+      });
+    });
+    const sc = scenarios[S.scenarioIdx];
+
+    const comms = [
+      { name: "Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° СЃРµР»РёС‰РЅР°", oblast: "РњРёРєРѕР»Р°С—РІСЃСЊРєР° РѕР±Р».", code: "UA48020010000012345", pop: "16 633", np: "41", shelters: "9", completeness: 78, status: "Р”РђРќР† РђРљРўРЈРђР›Р¬РќР†", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+      { name: "Р“РѕСЂРѕС…С–РІСЃСЊРєР° РјС–СЃСЊРєР°", oblast: "Р’РѕР»РёРЅСЃСЊРєР° РѕР±Р».", code: "UA07020030000067890", pop: "23 480", np: "31", shelters: "18", completeness: 64, status: "РџРћРўР Р•Р‘РЈР„ РћРќРћР’Р›Р•РќРќРЇ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG },
+      { name: "Р’РѕР·РЅРµСЃРµРЅСЃСЊРєР° РјС–СЃСЊРєР°", oblast: "РњРёРєРѕР»Р°С—РІСЃСЊРєР° РѕР±Р».", code: "UA48040070000011223", pop: "34 060", np: "6", shelters: "22", completeness: 71, status: "РџРћРўР Р•Р‘РЈР„ РћРќРћР’Р›Р•РќРќРЇ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG },
+      { name: "РќРѕРІРѕРІРѕСЂРѕРЅС†РѕРІСЃСЊРєР° СЃС–Р»СЊСЃСЊРєР°", oblast: "РҐРµСЂСЃРѕРЅСЃСЊРєР° РѕР±Р».", code: "UA65060090000033445", pop: "9 870", np: "12", shelters: "5", completeness: 41, status: "Р§Р•Р РќР•РўРљРђ", stGlyph: "в—‹", stBg: "#f2f2ef", stBorder: "#b9b9b2", stFg: "#5c5c57" },
+      { name: "Р‘РµСЂС€Р°РґСЃСЊРєР° РјС–СЃСЊРєР°", oblast: "Р’С–РЅРЅРёС†СЊРєР° РѕР±Р».", code: "UA05020050000055667", pop: "41 200", np: "27", shelters: "26", completeness: 83, status: "Р”РђРќР† РђРљРўРЈРђР›Р¬РќР†", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+      { name: "РЎР»Р°РІСѓС‚РёС†СЊРєР° РјС–СЃСЊРєР°", oblast: "РљРёС—РІСЃСЊРєР° РѕР±Р».", code: "UA32120110000077889", pop: "24 700", np: "1", shelters: "31", completeness: 57, status: "РџРћРўР Р•Р‘РЈР„ РћРќРћР’Р›Р•РќРќРЇ", stGlyph: "!", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG }
+    ].map((c) => Object.assign({}, c, { open: this.toScreen(2) }));
+
+    const na = { vFg: "#8a8a84" };
+    const passport = [
+      { title: "РќР°СЃРµР»РµРЅРЅСЏ С‚Р° РЅР°СЃРµР»РµРЅС– РїСѓРЅРєС‚Рё", ...TAGS.mock, rows: [{ k: "Р—Р°РіР°Р»СЊРЅРµ РЅР°СЃРµР»РµРЅРЅСЏ", v: "16 633" }, { k: "РќР°СЃРµР»РµРЅС– РїСѓРЅРєС‚Рё", v: "41" }, { k: "РђРґРјС–РЅ. С†РµРЅС‚СЂ", v: "СЃРјС‚ Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚Рµ" }, { k: "Р©С–Р»СЊРЅС–СЃС‚СЊ (СЂРѕР·СЂР°С…СѓРЅРѕРє, MOCK)", v: "14,7 РѕСЃС–Р±/РєРјВІ" }, { k: "Р’РџРћ РІ РіСЂРѕРјР°РґС–", v: "РґР°РЅС– СѓС‚РѕС‡РЅСЋСЋС‚СЊСЃСЏ", ...na }] },
+      { title: "РљСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°", ...TAGS.mock, rows: [{ k: "Р’РѕРґРѕР·Р°Р±РѕСЂРё / РЅР°СЃРѕСЃРЅС–", v: "1 / 3" }, { k: "Р•Р»РµРєС‚СЂРѕРїС–РґСЃС‚Р°РЅС†С–С—", v: "2" }, { k: "РљРѕС‚РµР»СЊРЅС–", v: "4" }, { k: "РњРѕСЃС‚Рё С‚Р° РїРµСЂРµС—Р·РґРё", v: "6" }, { k: "РўРµС…РЅС–С‡РЅРёР№ СЃС‚Р°РЅ РІРѕРґРѕРіРѕРЅС–РІ", v: "РЅРµРјР°С” РґР°РЅРёС…", ...na }] },
+      { title: "РЎРѕС†С–Р°Р»СЊРЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°", ...TAGS.mock, rows: [{ k: "Р—Р°РєР»Р°РґС–РІ РѕСЃРІС–С‚Рё", v: "11" }, { k: "РњРµРґРёС‡РЅРёС… Р·Р°РєР»Р°РґС–РІ", v: "1 Р»С–РєР°СЂРЅСЏ, 9 Р¤РђРџ" }, { k: "РџСѓРЅРєС‚С–РІ РЅРµР·Р»Р°РјРЅРѕСЃС‚С–", v: "3" }, { k: "РЈСЃС‚Р°РЅРѕРІ СЃРѕС†Р·Р°С…РёСЃС‚Сѓ", v: "2" }] },
+      { title: "Р”РѕСЃС‚СѓРїРЅС– СЂРµСЃСѓСЂСЃРё", ...TAGS.api, rows: [{ k: "РЈРєСЂРёС‚С‚СЏ / РјС–СЃС†СЊ", v: "9 / РїРѕС‚СЂРµР±СѓС” РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ", ...na }, { k: "Р“РµРЅРµСЂР°С‚РѕСЂРё", v: "РЅРµ С–РЅРІРµРЅС‚Р°СЂРёР·РѕРІР°РЅРѕ", ...na }, { k: "РђРІС‚РѕС†РёСЃС‚РµСЂРЅРё РґР»СЏ РІРѕРґРё", v: "2" }, { k: "РџРѕР¶РµР¶РЅС– РїС–РґСЂРѕР·РґС–Р»Рё", v: "1 (24 РєРј)" }, { k: "Р’РѕР»РѕРЅС‚РµСЂСЃСЊРєС– РєРѕРјР°РЅРґРё", v: "4" }] },
+      { title: "Р’СЂР°Р·Р»РёРІС– РіСЂСѓРїРё", ...TAGS.mock, rows: [{ k: "Р›СЋРґРё 65+", v: "2 140" }, { k: "РћСЃРѕР±Рё Р· С–РЅРІР°Р»С–РґРЅС–СЃС‚СЋ", v: "412" }, { k: "Р”С–С‚Рё РґРѕ 6 СЂРѕРєС–РІ", v: "780" }, { k: "РњР°Р»РѕРјРѕР±С–Р»СЊРЅС– РѕРґРёРЅРѕРєС–", v: "РїРѕС‚СЂРµР±СѓС” РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ", ...na }] },
+      { title: "РћСЃРЅРѕРІРЅС– СЂРёР·РёРєРё", ...TAGS.pdr, rows: [{ k: "РџРѕС€РєРѕРґР¶РµРЅРЅСЏ РІРѕРґРѕРїРѕСЃС‚Р°С‡Р°РЅРЅСЏ", v: "РІРёСЃРѕРєР° / Р·РЅР°С‡РЅРёР№" }, { k: "Р’С–РґСЃСѓС‚РЅС–СЃС‚СЊ Рµ/Рµ > 24 РіРѕРґ", v: "РІРёСЃРѕРєР° / Р·РЅР°С‡РЅРёР№" }, { k: "РџСЂРёС—Р·Рґ Р’РџРћ", v: "СЃРµСЂРµРґРЅСЏ / РїРѕРјС–СЂРЅРёР№" }, { k: "Р›Р°РЅРґС€Р°С„С‚РЅР° РїРѕР¶РµР¶Р°", v: "СЃРµСЂРµРґРЅСЏ / РїРѕРјС–СЂРЅРёР№" }, { k: "РњРµС‚РѕРґРёРєР° РѕС†С–РЅСЋРІР°РЅРЅСЏ", v: "РЅРµ РІРёР·РЅР°С‡РµРЅР°", ...na }] }
+    ];
+
+    const pinDefs = [
+      { label: "СЃРјС‚ Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚Рµ", glyph: "Рќ", x: 46, y: 34, radius: "50%", border: "#5c5c57", bg: "#e4e4e0", kind: "РќР°СЃРµР»РµРЅРёР№ РїСѓРЅРєС‚ В· Р°РґРјС–РЅ. С†РµРЅС‚СЂ", rows: [{ k: "РќР°СЃРµР»РµРЅРЅСЏ", v: "6 940" }, { k: "РЈРєСЂРёС‚С‚СЏ", v: "4" }, { k: "РџСѓРЅРєС‚ РЅРµР·Р»Р°РјРЅРѕСЃС‚С–", v: "С‚Р°Рє" }] },
+      { label: "Р’РѕРґРѕР·Р°Р±С–СЂ", glyph: "Р’", x: 27, y: 61, radius: "4px", border: "#1b1b1a", bg: "#fff", kind: "РљСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР° В· РІРѕРґРѕРїРѕСЃС‚Р°С‡Р°РЅРЅСЏ", rows: [{ k: "РћР±СЃР»СѓРіРѕРІСѓС”", v: "Р±С–Р»СЊС€С–СЃС‚СЊ РќРџ (MOCK)", vFg: "#8a8a84" }, { k: "Р РµР·РµСЂРІРЅРµ РґР¶РµСЂРµР»Рѕ", v: "РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ", vFg: "#8a8a84" }, { k: "РЎС‚Р°РЅ", v: "РїРѕС‚СЂРµР±СѓС” РѕР±СЃС‚РµР¶РµРЅРЅСЏ" }, { k: "РћРЅРѕРІР»РµРЅРѕ", v: "12.03.2026" }] },
+      { label: "РћРїРѕСЂРЅР° Р»С–РєР°СЂРЅСЏ", glyph: "Рњ", x: 52, y: 46, radius: "4px", border: "#1b1b1a", bg: "#f2f2ef", kind: "РњРµРґРёС‡РЅРёР№ Р·Р°РєР»Р°Рґ", rows: [{ k: "Р›С–Р¶РѕРє", v: "120" }, { k: "Р“РµРЅРµСЂР°С‚РѕСЂ", v: "РЅРµРјР°С” РґР°РЅРёС…", vFg: "#8a8a84" }] },
+      { label: "РЈРєСЂРёС‚С‚СЏ в„–3", glyph: "РЈ", x: 63, y: 27, radius: "4px", border: "#5c5c57", bg: "#fff", kind: "РЈРєСЂРёС‚С‚СЏ", rows: [{ k: "РњС–СЃС‚РєС–СЃС‚СЊ", v: "180 (РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ)", vFg: "#8a8a84" }, { k: "Р”РѕСЃС‚СѓРїРЅС–СЃС‚СЊ", v: "С‡Р°СЃС‚РєРѕРІРѕ Р±РµР·Р±Р°СЂвЂ™С”СЂРЅРµ" }] },
+      { label: "РџС–РґСЃС‚Р°РЅС†С–СЏ в„–1", glyph: "Р•", x: 72, y: 58, radius: "4px", border: "#1b1b1a", bg: "#fff", kind: "РљСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР° В· РµРЅРµСЂРіРµС‚РёРєР°", rows: [{ k: "Р–РёРІРёС‚СЊ", v: "9 РќРџ (MOCK)", vFg: "#8a8a84" }, { k: "Р РµР·РµСЂРІ", v: "РЅРµРјР°С” РґР°РЅРёС…", vFg: "#8a8a84" }] },
+      { label: "СЃ. РњСѓСЂР°С…С–РІРєР°", glyph: "Рќ", x: 20, y: 26, radius: "50%", border: "#5c5c57", bg: "#e4e4e0", kind: "РќР°СЃРµР»РµРЅРёР№ РїСѓРЅРєС‚", rows: [{ k: "РќР°СЃРµР»РµРЅРЅСЏ", v: "610" }, { k: "РЈРєСЂРёС‚С‚СЏ", v: "0", vFg: "#8a8a84" }] },
+      { label: "СЃ. РџСЂРёС€РёР±", glyph: "Рќ", x: 80, y: 38, radius: "50%", border: "#5c5c57", bg: "#e4e4e0", kind: "РќР°СЃРµР»РµРЅРёР№ РїСѓРЅРєС‚", rows: [{ k: "РќР°СЃРµР»РµРЅРЅСЏ", v: "480" }, { k: "Р”РѕСЂРѕРіР°", v: "Т‘СЂСѓРЅС‚РѕРІР° 7 РєРј" }] }
+    ];
+    const pins = pinDefs.map((p, i) => Object.assign({}, p, { pick: () => this.setState({ pinIdx: i }) }));
+    const pk = pinDefs[S.pinIdx];
+    const picked = { title: pk.label, kind: pk.kind, rows: pk.rows.concat([{ k: "Р”Р¶РµСЂРµР»Рѕ", v: "MOCK DATA", vFg: "#8a8a84" }]) };
+
+    const layers = [["РќР°СЃРµР»РµРЅС– РїСѓРЅРєС‚Рё", "41", "Рќ"], ["РљСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°", "9", "Рљ"], ["РЈРєСЂРёС‚С‚СЏ", "9", "РЈ"], ["РњРµРґРёС‡РЅС– Р·Р°РєР»Р°РґРё", "10", "Рњ"], ["Р”РѕСЂРѕРіРё", "вЂ”", "Р”"], ["Р—РѕРЅРё СЂРёР·РёРєСѓ", "3", "Р "]].map(([label, count, glyph], i) => ({
+      label, count, glyph, on: i < 4,
+      border: i < 4 ? D : "#cfcfca", bg: i < 4 ? "#e9e9e5" : "#fff", fg: i < 4 ? D : "#6b6b66"
+    }));
+    const legend = [
+      { label: "РќР°СЃРµР»РµРЅРёР№ РїСѓРЅРєС‚", glyph: "Рќ", radius: "50%", border: "#5c5c57", bg: "#e4e4e0" },
+      { label: "РљСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°", glyph: "Рљ", radius: "3px", border: "#1b1b1a", bg: "#fff" },
+      { label: "РЈРєСЂРёС‚С‚СЏ", glyph: "РЈ", radius: "3px", border: "#5c5c57", bg: "#fff" },
+      { label: "РњРµРґРёС‡РЅРёР№ Р·Р°РєР»Р°Рґ", glyph: "Рњ", radius: "3px", border: "#1b1b1a", bg: "#f2f2ef" },
+      { label: "Р—РѕРЅР° СЂРёР·РёРєСѓ", glyph: "", radius: "50%", border: "#9a9a93", bg: "#00000008" }
+    ];
+
+    const snapPicks = [
+      { kind: "Р“Р РћРњРђР”Рђ", name: "Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° СЃРµР»РёС‰РЅР°", meta: "РњРёРєРѕР»Р°С—РІСЃСЊРєР° РѕР±Р». В· 16 633 РѕСЃРѕР±Рё В· 41 РќРџ В· РїРѕРІРЅРѕС‚Р° РґР°РЅРёС… 78% (MOCK)", change: this.toScreen(1) },
+      { kind: "Р—РђР“Р РћР—Рђ", name: t0.name, meta: t0.cat + " В· С–РјРѕРІС–СЂРЅС–СЃС‚СЊ " + t0.prob + " В· РІРїР»РёРІ " + t0.impact, change: this.toScreen(4) },
+      { kind: "РЎР¦Р•РќРђР Р†Р™", name: sc.name, meta: sc.type + " В· " + sc.dur + " В· СЃРєР»Р°РґРЅС–СЃС‚СЊ " + sc.complexity, change: this.toScreen(5) }
+    ];
+    const snapBlocks = [
+      { title: "РљР»СЋС‡РѕРІС– РїРѕРєР°Р·РЅРёРєРё РіСЂРѕРјР°РґРё", ...TAGS.mock, rows: [{ k: "РќР°СЃРµР»РµРЅРЅСЏ", v: "16 633" }, { k: "РќР°СЃРµР»РµРЅС– РїСѓРЅРєС‚Рё", v: "41" }, { k: "Р’СЂР°Р·Р»РёРІС– РіСЂСѓРїРё, СЂР°Р·РѕРј", v: "3 332 (MOCK)", vFg: "#8a8a84" }] },
+      { title: "РљСЂРёС‚РёС‡РЅС– РѕР±вЂ™С”РєС‚Рё РІ СЃРµСЃС–С—", ...TAGS.mock, rows: [{ k: "Р’РѕРґРѕР·Р°Р±С–СЂ В«Р¦РµРЅС‚СЂР°Р»СЊРЅРёР№В»", v: "РІРєР»СЋС‡РµРЅРѕ" }, { k: "РќР°СЃРѕСЃРЅР° СЃС‚Р°РЅС†С–СЏ в„–2", v: "РІРєР»СЋС‡РµРЅРѕ" }, { k: "РћРїРѕСЂРЅР° Р»С–РєР°СЂРЅСЏ", v: "РІРєР»СЋС‡РµРЅРѕ" }, { k: "Р›С–С†РµР№ в„–1", v: "РІРєР»СЋС‡РµРЅРѕ" }] },
+      { title: "Р РµСЃСѓСЂСЃРё", ...TAGS.api, rows: [{ k: "РђРІС‚РѕС†РёСЃС‚РµСЂРЅРё", v: "2" }, { k: "РЈРєСЂРёС‚С‚СЏ / РјС–СЃС†СЊ", v: "9 / РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ", vFg: "#8a8a84" }, { k: "Р“РµРЅРµСЂР°С‚РѕСЂРё", v: "РЅРµ С–РЅРІРµРЅС‚Р°СЂРёР·РѕРІР°РЅРѕ", vFg: "#8a8a84" }, { k: "Р’РѕР»РѕРЅС‚РµСЂСЃСЊРєС– РєРѕРјР°РЅРґРё", v: "4" }] },
+      { title: "Р’СЂР°Р·Р»РёРІРѕСЃС‚С–", ...TAGS.mock, rows: [{ k: "РќРџ Р±РµР· СѓРєСЂРёС‚С‚С–РІ", v: "3" }, { k: "РћРґРёРЅ РІРѕРґРѕР·Р°Р±С–СЂ РЅР° 11 РќРџ", v: "С‚Р°Рє" }, { k: "РџРѕР¶РµР¶РЅР° С‡Р°СЃС‚РёРЅР°", v: "24 РєРј" }] },
+      { title: "РќР°РІС‡Р°Р»СЊРЅС– С†С–Р»С– СЃС†РµРЅР°СЂС–СЋ", ...TAGS.mock, rows: sc.goals.map((g) => ({ k: g, v: "" })) },
+      { title: "Р”Р¶РµСЂРµР»Рѕ С‚Р° Р°РєС‚СѓР°Р»СЊРЅС–СЃС‚СЊ", ...TAGS.mock, rows: [{ k: "РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё", v: "12.03.2026" }, { k: "Р“РµРѕРґР°РЅС–", v: "MOCK DATA", vFg: "#8a8a84" }, { k: "РџСЂРѕС„С–Р»СЊ Р·Р°РіСЂРѕР·Рё", v: "12.03.2026" }, { k: "РЎС†РµРЅР°СЂС–Р№, РІРµСЂСЃС–СЏ", v: "v1.2" }] }
+    ];
+
+    const specs = {
+      1: { title: "РљР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["Р—РЅР°Р№С‚Рё С‚Р° РІРёР±СЂР°С‚Рё РіСЂРѕРјР°РґСѓ, РґР»СЏ СЏРєРѕС— РіРѕС‚СѓРІР°С‚РёРјРµС‚СЊСЃСЏ СЃРёРјСѓР»СЏС†С–СЏ"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["В«Р’С–РґРєСЂРёС‚Рё РіСЂРѕРјР°РґСѓВ» вЂ” РѕРґРЅР° РЅР° РєР°СЂС‚РєСѓ"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["РџРѕС€СѓРє", "Р¤С–Р»СЊС‚СЂ Р·Р° РѕР±Р»Р°СЃС‚СЋ С‚Р° СЃС‚Р°С‚СѓСЃРѕРј РґР°РЅРёС…", "РЎРєРёРЅСѓС‚Рё С„С–Р»СЊС‚СЂРё"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["РЎРїРёСЃРѕРє РіСЂРѕРјР°Рґ: РЅР°Р·РІР°, РѕР±Р»Р°СЃС‚СЊ, РєРѕРґ, РЅР°СЃРµР»РµРЅРЅСЏ, РќРџ, СѓРєСЂРёС‚С‚СЏ, РїРѕРІРЅРѕС‚Р° РґР°РЅРёС…, СЃС‚Р°С‚СѓСЃ", "API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["communityId в†’ РїР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["РЇРє СЂРѕР·СЂР°С…РѕРІСѓС”С‚СЊСЃСЏ В«РїРѕРІРЅРѕС‚Р° РґР°РЅРёС…В»?", "Р§Рё С” РіСЂРѕРјР°РґРё Р· РѕР±РјРµР¶РµРЅРёРј РґРѕСЃС‚СѓРїРѕРј?"] }
+      ] },
+      2: { title: "РџСЂРѕС„С–Р»СЊ / РїР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["РћС‚СЂРёРјР°С‚Рё СЃС‚РёСЃР»РёР№ СЃС‚СЂСѓРєС‚СѓСЂРѕРІР°РЅРёР№ РєРѕРЅС‚РµРєСЃС‚ РіСЂРѕРјР°РґРё"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["В«РџРµСЂРµР№С‚Рё РґРѕ Р·Р°РіСЂРѕР·В»"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ", "РџРѕРІРµСЂРЅРµРЅРЅСЏ РґРѕ РєР°С‚Р°Р»РѕРіСѓ"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["6 Р±Р»РѕРєС–РІ РїР°СЃРїРѕСЂС‚Р° + РґР°С‚Р° РѕРЅРѕРІР»РµРЅРЅСЏ + РїРµСЂРµР»С–Рє РЅРµРїРѕРІРЅРёС… РґР°РЅРёС…", "Р¤Р°РєС‚РёС‡РЅС– РґР°РЅС– РІС–РґРѕРєСЂРµРјР»РµРЅС– РІС–Рґ РїСЂРёРїСѓС‰РµРЅСЊ: СЃС–СЂРёР№ С‚РµРєСЃС‚ + РїРѕР·РЅР°С‡РєР° РґР¶РµСЂРµР»Р°"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["communityId, РєРѕРЅС‚РµРєСЃС‚ СЂРёР·РёРєС–РІ в†’ РµРєСЂР°РЅ Р·Р°РіСЂРѕР·"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["РҐС‚Рѕ РІС–РґРїРѕРІС–РґР°С” Р·Р° Р°РєС‚СѓР°Р»С–Р·Р°С†С–СЋ РґР°РЅРёС…?", "Р§Рё РїРѕС‚СЂС–Р±РЅРµ РІРµСЂСЃС–РѕРЅСѓРІР°РЅРЅСЏ РїР°СЃРїРѕСЂС‚Р°?"] }
+      ] },
+      3: { title: "Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["РџРѕРєР°Р·Р°С‚Рё С‚РµСЂРёС‚РѕСЂС–Р°Р»СЊРЅРёР№ РєРѕРЅС‚РµРєСЃС‚, РєСЂРёС‚РёС‡РЅС– РѕР±вЂ™С”РєС‚Рё, СЂРµСЃСѓСЂСЃРё С‚Р° Р·РѕРЅРё СЂРёР·РёРєСѓ"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["Р’РёР±С–СЂ РѕР±вЂ™С”РєС‚Р° РЅР° РєР°СЂС‚С– в†’ Р±РѕРєРѕРІР° РїР°РЅРµР»СЊ"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["РџРµСЂРµРјРёРєР°С‡С– С€Р°СЂС–РІ", "РњР°СЃС€С‚Р°Р±СѓРІР°РЅРЅСЏ", "РџРµСЂРµС…С–Рґ РґРѕ Р·Р°РіСЂРѕР·"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["РЁР°СЂРё: РќРџ, РєСЂРёС‚РёС‡РЅР° С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°, СѓРєСЂРёС‚С‚СЏ, РјРµРґР·Р°РєР»Р°РґРё, РґРѕСЂРѕРіРё, Р·РѕРЅРё СЂРёР·РёРєСѓ", "MOCK DATA: РєР°СЂС‚Р° СЃС…РµРјР°С‚РёС‡РЅР°, РЅРµ РіРµРѕРґР°РЅС–", "API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED: GET /communities/{id}/geo"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["Р’РёР±СЂР°РЅС– РѕР±вЂ™С”РєС‚Рё СЏРє РєРѕРЅС‚РµРєСЃС‚ Р·Р°РіСЂРѕР·Рё"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["Р”Р¶РµСЂРµР»Рѕ РіРµРѕРґР°РЅРё: OSM, Р”Р—Рљ С‡Рё РІР»Р°СЃРЅРёР№ С€Р°СЂ?", "Р§Рё РјРѕР¶РЅР° СЂРµРґР°РіСѓРІР°С‚Рё РѕР±вЂ™С”РєС‚Рё РІ С–РЅС‚РµСЂС„РµР№СЃС–?"] }
+      ] },
+      4: { title: "Р’РёР±С–СЂ С– РїСЂРѕС„С–Р»СЊ Р·Р°РіСЂРѕР·Рё", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["Р’РёР·РЅР°С‡РёС‚Рё Р·Р°РіСЂРѕР·Сѓ, РґР»СЏ СЏРєРѕС— РіРѕС‚СѓРІР°С‚РёРјРµС‚СЊСЃСЏ СЃРёРјСѓР»СЏС†С–СЏ"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["В«Р’РёР±СЂР°С‚Рё Р·Р°РіСЂРѕР·СѓВ»"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["РџРµСЂРµРіР»СЏРґ РїСЂРѕС„С–Р»СЋ", "РџРѕРІРµСЂРЅРµРЅРЅСЏ РґРѕ РїР°СЃРїРѕСЂС‚Р°"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["РџРµСЂРµР»С–Рє СЂРµР»РµРІР°РЅС‚РЅРёС… Р·Р°РіСЂРѕР·: РєР°С‚РµРіРѕСЂС–СЏ, С–РјРѕРІС–СЂРЅС–СЃС‚СЊ, РІРїР»РёРІ, РѕР±Т‘СЂСѓРЅС‚СѓРІР°РЅРЅСЏ", "РЈСЂР°Р·Р»РёРІС– С‚РµСЂРёС‚РѕСЂС–С— С‚Р° РіСЂСѓРїРё, РїРѕРІвЂ™СЏР·Р°РЅС– РѕР±вЂ™С”РєС‚Рё"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["threatId + РїРѕРІвЂ™СЏР·Р°РЅС– РѕР±вЂ™С”РєС‚Рё в†’ РґРѕР±С–СЂ СЃС†РµРЅР°СЂС–СЋ"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["PRODUCT DECISION: РјРµС‚РѕРґРёРєР° РѕС†С–РЅСЋРІР°РЅРЅСЏ Р·Р°РіСЂРѕР·", "Р§Рё РјРѕР¶Рµ С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ РґРѕРґР°С‚Рё РІР»Р°СЃРЅСѓ Р·Р°РіСЂРѕР·Сѓ?"] }
+      ] },
+      5: { title: "Р’РёР±С–СЂ СЃС†РµРЅР°СЂС–СЋ РґР»СЏ РіСЂРѕРјР°РґРё", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["Р’РёР±СЂР°С‚Рё СЃС†РµРЅР°СЂС–Р№, С‰Рѕ РІС–РґРїРѕРІС–РґР°С” РіСЂРѕРјР°РґС– С‚Р° Р·Р°РіСЂРѕР·С–"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["В«РџРµСЂРµРіР»СЏРЅСѓС‚Рё РєРѕРЅС‚РµРєСЃС‚ СЃРёРјСѓР»СЏС†С–С—В»"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["РџРѕРІРµСЂРЅРµРЅРЅСЏ РґРѕ Р·Р°РіСЂРѕР·", "РџРѕСЂС–РІРЅСЏРЅРЅСЏ СЃС†РµРЅР°СЂС–С—РІ"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["РќР°Р·РІР°, С‚РёРї, РЅР°РІС‡Р°Р»СЊРЅС– С†С–Р»С–, С‚СЂРёРІР°Р»С–СЃС‚СЊ, СЃРєР»Р°РґРЅС–СЃС‚СЊ, СЃС‚Р°С‚СѓСЃ РіРѕС‚РѕРІРЅРѕСЃС‚С–", "РљС–Р»СЊРєС–СЃС‚СЊ СѓС‡Р°СЃРЅРёРєС–РІ С– СЂРѕР»С– РїРѕРєР°Р·СѓСЋС‚СЊСЃСЏ Р»РёС€Рµ СЏРєС‰Рѕ РІРёР·РЅР°С‡РµРЅС– РІ РґР°РЅРёС…"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["scenarioId в†’ Simulation Context Snapshot"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["PRODUCT DECISION: Р°РІС‚РѕРјР°С‚РёС‡РЅРёР№ РїС–РґР±С–СЂ СЃС†РµРЅР°СЂС–С—РІ", "PRODUCT DECISION: СЃРєР»Р°Рґ СЂРѕР»РµР№ С– РєС–Р»СЊРєС–СЃС‚СЊ СЂР°СѓРЅРґС–РІ"] }
+      ] },
+      7: { title: "РЎРµСЃС–СЏ В· lobby (С‡РµСЂРЅРµС‚РєР°, РµС‚Р°Рї 2)", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["РџРѕРєР°Р·Р°С‚Рё, С‰Рѕ С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ РѕС‚СЂРёРјСѓС” РїС–СЃР»СЏ РєРѕРЅС‚СЂРѕР»СЊРЅРѕС— С‚РѕС‡РєРё: РєРѕРґ, СЃРєР»Р°Рґ СѓС‡Р°СЃРЅРёРєС–РІ, РіРѕС‚РѕРІРЅС–СЃС‚СЊ"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["В«Р—Р°РїСѓСЃС‚РёС‚Рё СЃРёРјСѓР»СЏС†С–СЋВ» вЂ” РЅРµРґРѕСЃС‚СѓРїРЅР°, РїРѕРєРё РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ РіРѕС‚РѕРІРЅС–СЃС‚СЊ С– СЂРѕР»Рё"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["РЎРєРѕРїС–СЋРІР°С‚Рё РєРѕРґ / РЅР°РґС–СЃР»Р°С‚Рё Р·Р°РїСЂРѕС€РµРЅРЅСЏ", "РџРµСЂРµРІС–СЂРёС‚Рё РіРѕС‚РѕРІРЅС–СЃС‚СЊ", "РџСЂРёР·РЅР°С‡РёС‚Рё СЂРѕР»СЊ РІСЂСѓС‡РЅСѓ", "РЎРєР°СЃСѓРІР°С‚Рё СЃРµСЃС–СЋ", "Р’С–РґРєСЂРёС‚Рё СЃРЅРµРїС€РѕС‚"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["sessionId, РєРѕРґ РїСЂРёС”РґРЅР°РЅРЅСЏ, СЃРїРёСЃРѕРє СѓС‡Р°СЃРЅРёРєС–РІ Р·С– СЃС‚Р°С‚СѓСЃРѕРј РіРѕС‚РѕРІРЅРѕСЃС‚С–, Р·Р°С„С–РєСЃРѕРІР°РЅРёР№ СЃРЅРµРїС€РѕС‚", "API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED: POST /sessions, GET /sessions/{id}/participants, POST /sessions/{id}/start"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["sessionId в†’ Р°РєС‚РёРІРЅР° СЃРёРјСѓР»СЏС†С–СЏ (РµС‚Р°Рї 2)"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["PRODUCT DECISION: СЃРєР»Р°Рґ СЂРѕР»РµР№ С– СЃРїРѕСЃС–Р± С—С… РїСЂРёР·РЅР°С‡РµРЅРЅСЏ", "Р§Рё РјРѕР¶РЅР° СЃС‚Р°СЂС‚СѓРІР°С‚Рё Р±РµР· РїРѕРІРЅРѕС— РіРѕС‚РѕРІРЅРѕСЃС‚С–?", "Р©Рѕ Р±Р°С‡РёС‚СЊ СѓС‡Р°СЃРЅРёРє Сѓ lobby"] }
+      ] },
+      6: { title: "Simulation Context Snapshot", role: "Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ", blocks: [
+        { title: "РњР•РўРђ", items: ["РљРѕРЅС‚СЂРѕР»СЊРЅР° С‚РѕС‡РєР°: РїРѕРєР°Р·Р°С‚Рё, СЏРєС– РґР°РЅС– Р±СѓРґРµ Р·Р°С„С–РєСЃРѕРІР°РЅРѕ РІ СЃРµСЃС–С—"] },
+        { title: "Р“РћР›РћР’РќРђ Р”Р†РЇ", items: ["В«РЎС‚РІРѕСЂРёС‚Рё СЃРёРјСѓР»СЏС†С–Р№РЅСѓ СЃРµСЃС–СЋВ»"] },
+        { title: "Р”Р РЈР“РћР РЇР”РќР† Р”Р†Р‡", items: ["В«Р—РјС–РЅРёС‚РёВ» РіСЂРѕРјР°РґСѓ / Р·Р°РіСЂРѕР·Сѓ / СЃС†РµРЅР°СЂС–Р№", "Р—РјС–РЅРёС‚Рё РІРёР±С–СЂ"] },
+        { title: "Р”РђРќР† Р•РљР РђРќРђ", items: ["РђРіСЂРµРіР°С†С–СЏ РіСЂРѕРјР°РґРё, Р·Р°РіСЂРѕР·Рё С‚Р° СЃС†РµРЅР°СЂС–СЋ + РґР¶РµСЂРµР»Р° Р№ РґР°С‚Рё + Р±Р»РѕРє РЅРµРїРѕРІРЅРёС… РґР°РЅРёС…"] },
+        { title: "РџР•Р Р•Р”РђР„РўР¬РЎРЇ Р”РђР›Р†", items: ["snapshotId в†’ СЃС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С—, lobby, РєРѕРґ РїСЂРёС”РґРЅР°РЅРЅСЏ"] },
+        { title: "Р’Р†Р”РљР РРўР† РџРРўРђРќРќРЇ", items: ["Р§Рё РјРѕР¶РЅР° СЃС‚РІРѕСЂРёС‚Рё СЃРµСЃС–СЋ Р·Р° РєСЂРёС‚РёС‡РЅРѕ РЅРµРїРѕРІРЅРёС… РґР°РЅРёС…?", "Р§Рё Р·Р±РµСЂС–РіР°С”С‚СЊСЃСЏ СЃРЅРµРїС€РѕС‚ СЏРє РѕРєСЂРµРјР° СЃСѓС‚РЅС–СЃС‚СЊ РґР»СЏ Р·РІС–С‚Сѓ?"] }
+      ] }
+    };
+
+    const nodeS = (label, tag, mode) => ({
+      label, tag,
+      style: mode === "future" ? "dashed" : "solid",
+      border: mode === "current" ? D : "#cfcfca",
+      bg: mode === "current" ? "#e9e9e5" : mode === "future" ? "#fbfbf9" : "#fff",
+      fg: mode === "future" ? "#8a8a84" : D,
+      font: (mode === "current" ? "600" : "400") + " 12.5px/1.35 'IBM Plex Sans',system-ui"
+    });
+    const flowLanesRaw = [
+      { title: "РџС–РґРіРѕС‚РѕРІРєР° РєРѕРЅС‚РµРєСЃС‚Сѓ вЂ” РµС‚Р°Рї 1 (СЃРїСЂРѕС”РєС‚РѕРІР°РЅРѕ)", actor: "С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ", nodes: [nodeS("РљР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ", "Р•РљР РђРќ 1", "current"), nodeS("РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё", "Р•РљР РђРќ 2", "current"), nodeS("Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ", "Р•РљР РђРќ 3", "current"), nodeS("РџСЂРѕС„С–Р»СЊ Р·Р°РіСЂРѕР·Рё", "Р•РљР РђРќ 4", "current"), nodeS("Р”РѕР±С–СЂ СЃС†РµРЅР°СЂС–СЋ", "Р•РљР РђРќ 5", "current"), nodeS("Context Snapshot", "Р•РљР РђРќ 6", "current")] },
+      { title: "РЎС‚РІРѕСЂРµРЅРЅСЏ С‚Р° РїСЂРѕРІРµРґРµРЅРЅСЏ СЃРµСЃС–С—", actor: "С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ", nodes: [nodeS("РЎС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С—", "Р•РўРђРџ 2", "future"), nodeS("РљРѕРґ РїСЂРёС”РґРЅР°РЅРЅСЏ", "Р•РўРђРџ 2", "future"), nodeS("Lobby", "Р•РўРђРџ 2", "future"), nodeS("РџРµСЂРµРІС–СЂРєР° РіРѕС‚РѕРІРЅРѕСЃС‚С–", "Р•РўРђРџ 2", "future"), nodeS("РђРєС‚РёРІРЅР° СЃРёРјСѓР»СЏС†С–СЏ: inject в†’ СЂС–С€РµРЅРЅСЏ", "Р•РўРђРџ 2", "future"), nodeS("Р—Р°РІРµСЂС€РµРЅРЅСЏ", "Р•РўРђРџ 2", "future")] },
+      { title: "РЁР»СЏС… СѓС‡Р°СЃРЅРёРєР°", actor: "СѓС‡Р°СЃРЅРёРє", nodes: [nodeS("Р’РІС–Рґ РєРѕРґСѓ СЃРµСЃС–С—", "Р•РўРђРџ 2", "future"), nodeS("Р†РјвЂ™СЏ С‚Р° СЂРѕР»СЊ", "Р•РўРђРџ 2", "future"), nodeS("Lobby В· РіРѕС‚РѕРІРЅС–СЃС‚СЊ", "Р•РўРђРџ 2", "future"), nodeS("РђРєС‚РёРІРЅР° РїРѕРґС–СЏ", "Р•РўРђРџ 2", "future"), nodeS("РџРѕРґР°РЅРЅСЏ СЂС–С€РµРЅРЅСЏ", "Р•РўРђРџ 2", "future"), nodeS("Р”РµР±СЂРёС„С–РЅРі", "Р•РўРђРџ 2", "future")] },
+      { title: "Р—Р°РІРµСЂС€РµРЅРЅСЏ С‚Р° РЅР°РІС‡Р°Р»СЊРЅРёР№ СЂРµР·СѓР»СЊС‚Р°С‚", actor: "С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ + СѓС‡Р°СЃРЅРёРєРё", nodes: [nodeS("РћС†С–РЅСЋРІР°РЅРЅСЏ", "Р•РўРђРџ 2", "future"), nodeS("AAR / РґРµР±СЂРёС„С–РЅРі", "Р•РўРђРџ 2", "future"), nodeS("РџС–РґСЃСѓРјРєРѕРІРёР№ Р·РІС–С‚", "Р•РўРђРџ 2", "future"), nodeS("РђСЂС…С–РІ СЃРµСЃС–Р№", "Р•РўРђРџ 2", "future")] }
+    ];
+    const flowLanes = flowLanesRaw.map((l) => Object.assign({}, l, {
+      nodes: l.nodes.map((n, i) => Object.assign({}, n, { notLast: i < l.nodes.length - 1 }))
+    }));
+
+    const sitemap = [
+      { title: "Р“СЂРѕРјР°РґРё", tag: "Р•РўРђРџ 1", items: [{ label: "РљР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ", fg: D }, { label: "РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё", fg: D }, { label: "Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ", fg: D }, { label: "Р—Р°РіСЂРѕР·Рё РіСЂРѕРјР°РґРё", fg: D }] },
+      { title: "РЎС†РµРЅР°СЂС–С—", tag: "Р•РўРђРџ 1 / 2", items: [{ label: "РЎС†РµРЅР°СЂС–С— РґР»СЏ РіСЂРѕРјР°РґРё", fg: D }, { label: "Simulation Context Snapshot", fg: D }, { label: "Р‘С–Р±Р»С–РѕС‚РµРєР° СЃС†РµРЅР°СЂС–С—РІ (РІС‚РѕСЂРёРЅРЅРёР№ РІС…С–Рґ)", fg: MUT }] },
+      { title: "РђРєС‚РёРІРЅС– СЃРµСЃС–С—", tag: "Р•РўРђРџ 2", items: [{ label: "РЎС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С—", fg: MUT }, { label: "Lobby С‚Р° РіРѕС‚РѕРІРЅС–СЃС‚СЊ", fg: MUT }, { label: "РђРєС‚РёРІРЅР° СЃРёРјСѓР»СЏС†С–СЏ", fg: MUT }, { label: "Р–СѓСЂРЅР°Р» СЃРµСЃС–С—", fg: MUT }] },
+      { title: "РђСЂС…С–РІ С– Р·РІС–С‚Рё", tag: "Р•РўРђРџ 2", items: [{ label: "РђСЂС…С–РІ СЃРµСЃС–Р№", fg: MUT }, { label: "РћС†С–РЅСЋРІР°РЅРЅСЏ", fg: MUT }, { label: "AAR / РґРµР±СЂРёС„С–РЅРі", fg: MUT }, { label: "РџС–РґСЃСѓРјРєРѕРІРёР№ Р·РІС–С‚", fg: MUT }] },
+      { title: "РЈС‡Р°СЃРЅРёРє", tag: "Р•РўРђРџ 2", items: [{ label: "РџСЂРёС”РґРЅР°РЅРЅСЏ Р·Р° РєРѕРґРѕРј", fg: MUT }, { label: "Р†РјвЂ™СЏ С‚Р° СЂРѕР»СЊ", fg: MUT }, { label: "Lobby СѓС‡Р°СЃРЅРёРєР°", fg: MUT }, { label: "РђРєС‚РёРІРЅР° РїРѕРґС–СЏ С‚Р° СЂС–С€РµРЅРЅСЏ", fg: MUT }, { label: "Р”РµР±СЂРёС„С–РЅРі", fg: MUT }] },
+      { title: "РђРґРјС–РЅС–СЃС‚СЂСѓРІР°РЅРЅСЏ (MVP)", tag: "PDR", items: [{ label: "Р“СЂРѕРјР°РґРё", fg: MUT }, { label: "РЎС†РµРЅР°СЂС–С—", fg: MUT }, { label: "РљРѕСЂРёСЃС‚СѓРІР°С‡С– С‚Р° С„Р°СЃРёР»С–С‚Р°С‚РѕСЂРё", fg: MUT }, { label: "Р”РѕСЃС‚СѓРїРё", fg: MUT }, { label: "РђСЂС…С–РІ СЃРµСЃС–Р№", fg: MUT }] }
+    ];
+
+    const responsive = [
+      { title: "Desktop", w: "в‰Ґ 1280 px", items: ["РљР°С‚Р°Р»РѕРі: 3 РєРѕР»РѕРЅРєРё РєР°СЂС‚РѕРє", "РџР°СЃРїРѕСЂС‚: 2 РєРѕР»РѕРЅРєРё Р±Р»РѕРєС–РІ", "РљР°СЂС‚Р° + Р±РѕРєРѕРІР° РїР°РЅРµР»СЊ 2:1", "Р—Р°РіСЂРѕР·Рё: СЃРїРёСЃРѕРє + РїСЂРѕС„С–Р»СЊ", "Snapshot: 3 + 2 РєРѕР»РѕРЅРєРё"] },
+      { title: "Tablet", w: "834вЂ“1279 px, Р»Р°РЅРґС€Р°С„С‚ РґР»СЏ С„Р°СЃРёР»С–С‚Р°С†С–С—", items: ["РљР°С‚Р°Р»РѕРі: 2 РєРѕР»РѕРЅРєРё", "РџР°СЃРїРѕСЂС‚: 1 РєРѕР»РѕРЅРєР°", "РљР°СЂС‚Р° РЅР° РІСЃСЋ С€РёСЂРёРЅСѓ, РїР°РЅРµР»СЊ РѕР±вЂ™С”РєС‚Р° вЂ” РїС–Рґ РєР°СЂС‚РѕСЋ", "РЁР°СЂРё Р·РіРѕСЂС‚Р°СЋС‚СЊСЃСЏ Сѓ СЃРїРёСЃРѕРє", "РљРЅРѕРїРєРё Р№ РїС–РЅ-С‚Р°СЂРіРµС‚Рё в‰Ґ 44Г—44 px"] },
+      { title: "Mobile вЂ” РїСЂРёРЅС†РёРї", w: "< 640 px, С‡РёС‚Р°РЅРЅСЏ, РЅРµ С„Р°СЃРёР»С–С‚Р°С†С–СЏ", items: ["РћРґРёРЅ СЃС‚РѕРІРїРµС†СЊ; Р±Р»РѕРєРё-Р°РєРѕСЂРґРµРѕРЅРё", "РљСЂРѕРєРѕРІР° РЅР°РІС–РіР°С†С–СЏ СЃС‚Р°С” РєРѕРјРїР°РєС‚РЅРёРј С–РЅРґРёРєР°С‚РѕСЂРѕРј В«РљСЂРѕРє 2 Р· 5В»", "РљР°СЂС‚Р°: СЃРїСЂРѕС‰РµРЅРёР№ СЂРµР¶РёРј Р·С– СЃРїРёСЃРєРѕРј РѕР±вЂ™С”РєС‚С–РІ Р·Р°РјС–СЃС‚СЊ С–РЅС‚РµСЂР°РєС‚РёРІРЅРёС… РїС–РЅС–РІ", "Р“РѕР»РѕРІРЅР° РґС–СЏ С„С–РєСЃСѓС”С‚СЊСЃСЏ РІ РЅРёР¶РЅС–Р№ РїР°РЅРµР»С–", "РЎС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С— РґРѕСЃС‚СѓРїРЅРµ, РїСЂРѕРІРµРґРµРЅРЅСЏ СЃРёРјСѓР»СЏС†С–С— вЂ” СЂРµРєРѕРјРµРЅРґРѕРІР°РЅРѕ Р· РїР»Р°РЅС€РµС‚Р° Р°Р±Рѕ РЅРѕСѓС‚Р±СѓРєР°"] }
+    ];
+
+    const stateCards = [
+      { title: "Loading", where: "Р•РљР РђРќР 1вЂ“6", isSkeleton: true },
+      { title: "Empty", where: "Р•РљР РђРќ 1", isMessage: true, glyph: "в—‹", headline: "Р“СЂРѕРјР°Рґ Р·Р° С‚Р°РєРёРјРё СѓРјРѕРІР°РјРё РЅРµ Р·РЅР°Р№РґРµРЅРѕ", body: "РЎРїСЂРѕР±СѓР№С‚Рµ Р·РјС–РЅРёС‚Рё РѕР±Р»Р°СЃС‚СЊ Р°Р±Рѕ СЃРєРёРЅСѓС‚Рё С„С–Р»СЊС‚СЂРё. РЇРєС‰Рѕ РіСЂРѕРјР°РґРё РЅРµРјР°С” РІ СЃРёСЃС‚РµРјС– вЂ” РЅР°РґС–С€Р»С–С‚СЊ Р·Р°РїРёС‚ РЅР° С—С— РґРѕРґР°РІР°РЅРЅСЏ.", actions: ["РЎРєРёРЅСѓС‚Рё С„С–Р»СЊС‚СЂРё", "Р—Р°РїРёС‚ РЅР° РґРѕРґР°РІР°РЅРЅСЏ РіСЂРѕРјР°РґРё"], border: "#c9c9c4", borderStyle: "dashed", bg: "#fbfbf9", fg: D },
+      { title: "Error", where: "Р•РљР РђРќР 1, 3", isMessage: true, glyph: "вњ•", headline: "РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё РґР°РЅС– РіСЂРѕРјР°РґРё", body: "РџРѕРјРёР»РєР° Р·вЂ™С”РґРЅР°РЅРЅСЏ Р· СЃРµСЂРІС–СЃРѕРј РґР°РЅРёС…. РџРѕРІС–РґРѕРјР»РµРЅРЅСЏ СЂРѕР·РјС–С‰СѓС”С‚СЊСЃСЏ РЅР° РјС–СЃС†С– Р±Р»РѕРєСѓ, СЂРµС€С‚Р° РµРєСЂР°РЅР° Р·Р°Р»РёС€Р°С”С‚СЊСЃСЏ РґРѕСЃС‚СѓРїРЅРѕСЋ.", actions: ["РџРѕРІС‚РѕСЂРёС‚Рё СЃРїСЂРѕР±Сѓ", "РџРѕРІС–РґРѕРјРёС‚Рё Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂР°"], border: "#c9a5a1", borderStyle: "solid", bg: "#f9efee", fg: "#7a2f28" },
+      { title: "Warning В· РЅРµРїРѕРІРЅС– РґР°РЅС–", where: "Р•РљР РђРќР 2, 4, 6", isMessage: true, glyph: "!", headline: "Р§Р°СЃС‚РёРЅР° РґР°РЅРёС… РЅРµРїРѕРІРЅР° Р°Р±Рѕ РЅРµРїС–РґС‚РІРµСЂРґР¶РµРЅР°", body: "РЎРёРјСѓР»СЏС†С–СЋ СЃС‚РІРѕСЂРёС‚Рё РјРѕР¶РЅР°. РќРµРїРѕРІРЅС– РїРѕР»СЏ РїРѕР·РЅР°С‡РµРЅС– СЃС–СЂРёРј С‚РµРєСЃС‚РѕРј С– РїС–РґРїРёСЃРѕРј РґР¶РµСЂРµР»Р°, Р° РЅРµ Р»РёС€Рµ РєРѕР»СЊРѕСЂРѕРј.", actions: ["РџРѕРєР°Р·Р°С‚Рё РїРµСЂРµР»С–Рє (4)", "РџСЂРѕРґРѕРІР¶РёС‚Рё"], border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN_FG },
+      { title: "Success", where: "Р•РљР РђРќ 6", isMessage: true, glyph: "вњ“", headline: "РЎРёРјСѓР»СЏС†С–Р№РЅСѓ СЃРµСЃС–СЋ СЃС‚РІРѕСЂРµРЅРѕ", body: "РљРѕРґ РїСЂРёС”РґРЅР°РЅРЅСЏ ABX-4471. РЎРЅРµРїС€РѕС‚ Р·Р°С„С–РєСЃРѕРІР°РЅРѕ С– РЅРµ Р·РјС–РЅСЋС”С‚СЊСЃСЏ. Р”Р°Р»С– вЂ” lobby (РµС‚Р°Рї 2).", actions: ["РџРµСЂРµР№С‚Рё РґРѕ lobby", "РЎРєРѕРїС–СЋРІР°С‚Рё РєРѕРґ"], border: "#a9c3b0", borderStyle: "solid", bg: "#eef5f0", fg: "#22503a" },
+      { title: "Warning В· РІС‚СЂР°С‚Р° РІРёР±РѕСЂСѓ", where: "РџР•Р Р•РҐРћР”Р РќРђР—РђР”", isMessage: true, glyph: "!", headline: "Р—РјС–РЅР° РіСЂРѕРјР°РґРё СЃРєРёРЅРµ Р·Р°РіСЂРѕР·Сѓ С‚Р° СЃС†РµРЅР°СЂС–Р№", body: "РњРѕРґР°Р»СЊРЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ РїРµСЂРµСЂР°С…РѕРІСѓС”, С‰Рѕ СЃР°РјРµ Р±СѓРґРµ СЃРєРёРЅСѓС‚Рѕ, РїРµСЂРµРґ С‚РёРј СЏРє РєРѕСЂРёСЃС‚СѓРІР°С‡ РїРѕРІРµСЂРЅРµС‚СЊСЃСЏ РЅР°Р·Р°Рґ.", actions: ["Р—РјС–РЅРёС‚Рё РіСЂРѕРјР°РґСѓ", "Р—Р°Р»РёС€РёС‚РёСЃСЏ"], border: "#d9c99f", borderStyle: "solid", bg: "#fdf6e7", fg: WARN_FG }
+    ];
+
+    const stateTable = [
+      { screen: "1. РљР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ", loading: "Skeleton 6 РєР°СЂС‚РѕРє + РІРёРјРєРЅРµРЅС– С„С–Р»СЊС‚СЂРё", empty: "В«Р“СЂРѕРјР°Рґ РЅРµ Р·РЅР°Р№РґРµРЅРѕВ» + СЃРєРёРЅСѓС‚Рё С„С–Р»СЊС‚СЂРё", error: "РџРѕРјРёР»РєР° СЃРїРёСЃРєСѓ, С„С–Р»СЊС‚СЂРё РґРѕСЃС‚СѓРїРЅС–, РєРЅРѕРїРєР° В«РџРѕРІС‚РѕСЂРёС‚РёВ»", warning: "РџРѕРІРЅРѕС‚Р° РґР°РЅРёС… < 50% в†’ РїС–РґРїРёСЃ В«РћР±РјРµР¶РµРЅРѕ РїСЂРёРґР°С‚РЅР° РґР»СЏ СЃРёРјСѓР»СЏС†С–С—В»", success: "вЂ”" },
+      { screen: "2. РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё", loading: "Skeleton РїРѕ Р±Р»РѕРєР°С…, С€Р°РїРєР° Р· РЅР°Р·РІРѕСЋ РІР¶Рµ РІРёРґРёРјР°", empty: "Р‘Р»РѕРє Р±РµР· РґР°РЅРёС…: В«Р”Р°РЅС– РЅРµ РІРЅРµСЃРµРЅС–В» + С…С‚Рѕ РІС–РґРїРѕРІС–РґР°Р»СЊРЅРёР№", error: "РџРѕРјРёР»РєР° РѕРєСЂРµРјРѕРіРѕ Р±Р»РѕРєСѓ, СЂРµС€С‚Р° РїР°СЃРїРѕСЂС‚Р° С‡РёС‚Р°С”С‚СЊСЃСЏ", warning: "Р‘Р°РЅРµСЂ В«Р”Р°РЅС– РѕРЅРѕРІР»РµРЅРѕ 12.03.2026 В· С‡Р°СЃС‚РєРѕРІРѕ РЅРµРїРѕРІРЅС–В» + РїРµСЂРµР»С–Рє", success: "РўРѕСЃС‚ В«Р”Р°РЅС– РѕРЅРѕРІР»РµРЅРѕВ» РїС–СЃР»СЏ СЃРёРЅС…СЂРѕРЅС–Р·Р°С†С–С—" },
+      { screen: "3. Р“РµРѕРїСЂРѕСЃС‚РѕСЂРѕРІРёР№ РѕРіР»СЏРґ", loading: "РџР»РµР№СЃС…РѕР»РґРµСЂ РєР°СЂС‚Рё + РїСЂРѕРіСЂРµСЃ С€Р°СЂС–РІ", empty: "В«Р“РµРѕРґР°РЅС– РґР»СЏ РіСЂРѕРјР°РґРё РІС–РґСЃСѓС‚РЅС–В» + СЃРїРёСЃРѕРє РѕР±вЂ™С”РєС‚С–РІ С‚РµРєСЃС‚РѕРј", error: "В«РљР°СЂС‚Р° РЅРµРґРѕСЃС‚СѓРїРЅР°В» + СЂРµР·РµСЂРІРЅРёР№ РїРµСЂРµР»С–Рє РѕР±вЂ™С”РєС‚С–РІ", warning: "РџРѕР·РЅР°С‡РєР° MOCK DATA РЅР° РєР°СЂС‚С–; С€Р°СЂ Р±РµР· РґР°РЅРёС… РІРёРјРєРЅРµРЅРѕ Р· РїС–РґРїРёСЃРѕРј", success: "вЂ”" },
+      { screen: "4. Р—Р°РіСЂРѕР·Рё", loading: "Skeleton СЃРїРёСЃРєСѓ + РїРѕСЂРѕР¶РЅСЏ РїР°РЅРµР»СЊ РїСЂРѕС„С–Р»СЋ", empty: "В«Р—Р°РіСЂРѕР·Рё РґР»СЏ РіСЂРѕРјР°РґРё РЅРµ РІРёР·РЅР°С‡РµРЅС–В» + Р·Р°РїРёС‚ РґРѕ Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂР°", error: "РџРѕРјРёР»РєР° РїСЂРѕС„С–Р»СЋ Р·Р°РіСЂРѕР·Рё, СЃРїРёСЃРѕРє Р·Р°Р»РёС€Р°С”С‚СЊСЃСЏ Р°РєС‚РёРІРЅРёРј", warning: "В«РџРѕРІвЂ™СЏР·Р°РЅС– РѕР±вЂ™С”РєС‚Рё Р·Р°РїРѕРІРЅРµРЅРѕ 60%В»", success: "РџС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ РІРёР±РѕСЂСѓ РІ РєРѕРЅС‚РµРєСЃС‚РЅС–Р№ СЃРјСѓР·С–" },
+      { screen: "5. РЎС†РµРЅР°СЂС–С—", loading: "Skeleton 3 РєР°СЂС‚РѕРє", empty: "В«РќРµРјР°С” СЃС†РµРЅР°СЂС–С—РІ РґР»СЏ С†С–С”С— Р·Р°РіСЂРѕР·РёВ» + РїРµСЂРµР№С‚Рё РґРѕ С–РЅС€РёС… Р·Р°РіСЂРѕР·", error: "РџРѕРјРёР»РєР° Р·Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ Р±С–Р±Р»С–РѕС‚РµРєРё + РїРѕРІС‚РѕСЂРёС‚Рё", warning: "РЎС‚Р°С‚СѓСЃ В«РџРѕС‚СЂРµР±СѓС” РґРѕРѕРїСЂР°С†СЋРІР°РЅРЅСЏВ»; СѓС‡Р°СЃРЅРёРєРё/СЂРѕР»С– В«РЅРµ РІРёР·РЅР°С‡РµРЅС–В»", success: "РљР°СЂС‚РєР° РІРёР±СЂР°РЅРѕРіРѕ СЃС†РµРЅР°СЂС–СЋ РїРѕР·РЅР°С‡РµРЅР° РІ РєРѕРЅС‚РµРєСЃС‚РЅС–Р№ СЃРјСѓР·С–" },
+      { screen: "6. Snapshot", loading: "Skeleton Р°РіСЂРµРіР°С†С–С—, РєРЅРѕРїРєР° СЃС‚РІРѕСЂРµРЅРЅСЏ РІРёРјРєРЅРµРЅР°", empty: "РќРµ Р·Р°СЃС‚РѕСЃРѕРІСѓС”С‚СЊСЃСЏ вЂ” СЃРЅРµРїС€РѕС‚ Р·Р°РІР¶РґРё РјР°С” РІРёР±С–СЂ", error: "В«РќРµ РІРґР°Р»РѕСЃСЏ Р·С–Р±СЂР°С‚Рё СЃРЅРµРїС€РѕС‚В» + РїРѕРІС‚РѕСЂРёС‚Рё, Р±РµР· С‡Р°СЃС‚РєРѕРІРѕРіРѕ СЃС‚РІРѕСЂРµРЅРЅСЏ", warning: "Р‘Р»РѕРє В«Р”Р°РЅС– Р· РѕР±РјРµР¶РµРЅРЅСЏРјРё (3)В» РїРµСЂРµРґ РіРѕР»РѕРІРЅРѕСЋ РґС–С”СЋ", success: "РџР°РЅРµР»СЊ В«РЎРµСЃС–СЋ СЃС‚РІРѕСЂРµРЅРѕ В· РєРѕРґ ABX-4471В»" }
+    ];
+
+    const docTables = [
+      { title: "РўР°Р±Р»РёС†СЏ РєРѕРјРїРѕРЅРµРЅС‚С–РІ", note: "РљРѕРјРїРѕРЅРµРЅС‚Рё, РїРѕС‚СЂС–Р±РЅС– РґР»СЏ С€РµСЃС‚Рё РµРєСЂР°РЅС–РІ. РЎС‚Р°РЅРё РїРµСЂРµР»С–С‡РµРЅС– РґР»СЏ РєРѕР¶РЅРѕРіРѕ; СѓСЃС– С–РЅС‚РµСЂР°РєС‚РёРІРЅС– РµР»РµРјРµРЅС‚Рё вЂ” РЅРµ РјРµРЅС€Рµ 44Г—44 px, Р· РІРёРґРёРјРёРј keyboard focus.", cols: ["РљРћРњРџРћРќР•РќРў", "РўРРџ", "РЎРўРђРќР", "Р”Р• Р’РРљРћР РРЎРўРћР’РЈР„РўР¬РЎРЇ"], rows: [
+        { cells: ["AppHeader + GlobalNav", "РЅР°РІС–РіР°С†С–СЏ", "default, active, focus", "СѓСЃС– РµРєСЂР°РЅРё"] },
+        { cells: ["ContextBar (РіСЂРѕРјР°РґР° / Р·Р°РіСЂРѕР·Р° / СЃС†РµРЅР°СЂС–Р№)", "РЅР°РІС–РіР°С†С–СЏ", "empty, partial, full", "РµРєСЂР°РЅРё 2вЂ“6"] },
+        { cells: ["StepIndicator (5 РєСЂРѕРєС–РІ)", "РЅР°РІС–РіР°С†С–СЏ", "done, current, upcoming, disabled", "РµРєСЂР°РЅРё 1вЂ“6"] },
+        { cells: ["SearchField", "С„РѕСЂРјР°", "default, focus, filled, disabled, error", "РµРєСЂР°РЅ 1"] },
+        { cells: ["FilterSelect", "С„РѕСЂРјР°", "default, open, selected, disabled", "РµРєСЂР°РЅ 1"] },
+        { cells: ["CommunityCard", "РґР°РЅС–", "default, hover, focus, low-completeness", "РµРєСЂР°РЅ 1"] },
+        { cells: ["CompletenessMeter", "С–РЅРґРёРєР°С‚РѕСЂ", "0вЂ“49 / 50вЂ“79 / 80вЂ“100 + С‚РµРєСЃС‚РѕРІРёР№ РїС–РґРїРёСЃ", "РµРєСЂР°РЅРё 1, 6"] },
+        { cells: ["StatusBadge", "С–РЅРґРёРєР°С‚РѕСЂ", "Р°РєС‚СѓР°Р»СЊРЅРѕ, РїРѕС‚СЂРµР±СѓС” РѕРЅРѕРІР»РµРЅРЅСЏ, С‡РµСЂРЅРµС‚РєР° (РіР»РёС„ + С‚РµРєСЃС‚)", "РµРєСЂР°РЅРё 1, 5"] },
+        { cells: ["DataBlock (dl-СЃРµРєС†С–СЏ)", "РґР°РЅС–", "loaded, partial, empty, error", "РµРєСЂР°РЅРё 2, 6"] },
+        { cells: ["DataSourceTag", "РјРµС‚Р°", "MOCK DATA / API REQUIRED вЂ” PROPOSED / PRODUCT DECISION REQUIRED", "РµРєСЂР°РЅРё 2вЂ“6"] },
+        { cells: ["MapCanvas + MapPin", "РєР°СЂС‚Р°", "loading, loaded, mock, error, selected", "РµРєСЂР°РЅ 3"] },
+        { cells: ["LayerToggle", "РєРµСЂСѓРІР°РЅРЅСЏ", "on, off, no-data (РІРёРјРєРЅРµРЅРѕ Р· РїС–РґРїРёСЃРѕРј)", "РµРєСЂР°РЅ 3"] },
+        { cells: ["MapLegend", "РґРѕРІС–РґРєР°", "default", "РµРєСЂР°РЅ 3"] },
+        { cells: ["ObjectSidePanel", "РґР°РЅС–", "empty, loaded, error", "РµРєСЂР°РЅ 3"] },
+        { cells: ["ThreatListItem", "РґР°РЅС–", "default, selected, incomplete", "РµРєСЂР°РЅ 4"] },
+        { cells: ["ThreatProfilePanel", "РґР°РЅС–", "loaded, partial, error", "РµРєСЂР°РЅ 4"] },
+        { cells: ["ScenarioCard", "РґР°РЅС–", "РіРѕС‚РѕРІРёР№, РїРѕС‚СЂРµР±СѓС” РґРѕРѕРїСЂР°С†СЋРІР°РЅРЅСЏ, РІРёР±СЂР°РЅРёР№", "РµРєСЂР°РЅ 5"] },
+        { cells: ["RelevanceNote", "РїРѕСЏСЃРЅРµРЅРЅСЏ", "default", "РµРєСЂР°РЅ 5"] },
+        { cells: ["SnapshotSummary", "РґР°РЅС–", "complete, with-warnings", "РµРєСЂР°РЅ 6"] },
+        { cells: ["IncompleteDataPanel", "РїРѕРїРµСЂРµРґР¶РµРЅРЅСЏ", "0 / 1+ РїСѓРЅРєС‚С–РІ", "РµРєСЂР°РЅРё 2, 6"] },
+        { cells: ["PrimaryActionBar", "РґС–СЏ", "enabled, disabled, loading", "РµРєСЂР°РЅРё 2вЂ“6"] },
+        { cells: ["ConfirmDialog (РІС‚СЂР°С‚Р° РІРёР±РѕСЂСѓ)", "РґС–Р°Р»РѕРі", "default, focus-trap", "РїРµСЂРµС…РѕРґРё РЅР°Р·Р°Рґ"] },
+        { cells: ["Skeleton", "СЃС‚Р°РЅ", "text, card, map", "СѓСЃС– РµРєСЂР°РЅРё"] },
+        { cells: ["InlineMessage", "СЃС‚Р°РЅ", "info, warning, error, success", "СѓСЃС– РµРєСЂР°РЅРё"] }
+      ] },
+      { title: "Р’РёРєРѕСЂРёСЃС‚Р°РЅС– mock-РґР°РЅС–", note: "РЈСЃРµ РЅРёР¶С‡Рµ вЂ” РґРµРјРѕРЅСЃС‚СЂР°С†С–Р№РЅРµ РЅР°РїРѕРІРЅРµРЅРЅСЏ РґР»СЏ РїРµСЂРµРІС–СЂРєРё Р»РѕРіС–РєРё, Р° РЅРµ РґР°РЅС– РіСЂРѕРјР°РґРё. РџРѕР·РЅР°С‡РєРё REAL DATA Сѓ РїСЂРѕС‚РѕС‚РёРїС– РЅРµ РІРёРєРѕСЂРёСЃС‚РѕРІСѓСЋС‚СЊСЃСЏ: Р±СѓРґСЊ-СЏРєРёР№ РїРѕРєР°Р·РЅРёРє Р±РµР· РїС–РґС‚РІРµСЂРґР¶РµРЅРѕРіРѕ РґР¶РµСЂРµР»Р° РјР°С” С‚РµРі MOCK DATA. Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° РіСЂРѕРјР°РґР° вЂ” Р»РёС€Рµ РїСЂРёРєР»Р°Рґ РЅР°РїРѕРІРЅРµРЅРЅСЏ.", cols: ["Р‘Р›РћРљ", "Р©Рћ Р—РђРњРћРљРђРќРћ", "РџРћР—РќРђР§РљРђ Р’ UI"], rows: [
+        { cells: ["Р‘Р°Р·РѕРІС– РґР°РЅС– Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєРѕС— РіСЂРѕРјР°РґРё", "РЅР°СЃРµР»РµРЅРЅСЏ 16 633, РЅР°СЃРµР»РµРЅРёС… РїСѓРЅРєС‚С–РІ 41 вЂ” РЅР°РґР°РЅС– Р·Р°РјРѕРІРЅРёРєРѕРј; СЂРµС€С‚Р° РїРѕРєР°Р·РЅРёРєС–РІ РіСЂРѕРјР°РґРё вЂ” РІРёРіР°РґР°РЅС–", "СЂРµС€С‚Р° РїРѕР»С–РІ вЂ” MOCK DATA"] },
+        { cells: ["РЎРїРёСЃРѕРє РіСЂРѕРјР°Рґ (6 Р·Р°РїРёСЃС–РІ)", "РЅР°Р·РІРё, РєРѕРґРё, РЅР°СЃРµР»РµРЅРЅСЏ, РќРџ, СѓРєСЂРёС‚С‚СЏ, РїРѕРІРЅРѕС‚Р° РґР°РЅРёС…", "MOCK DATA Сѓ С€Р°РїС†С– СЃРїРёСЃРєСѓ"] },
+        { cells: ["Р РѕР»С–, РєС–Р»СЊРєС–СЃС‚СЊ СѓС‡Р°СЃРЅРёРєС–РІ, С‚СЂРёРІР°Р»С–СЃС‚СЊ, СЂР°СѓРЅРґРё, РіРѕС‚РѕРІРЅС–СЃС‚СЊ СЃС†РµРЅР°СЂС–С—РІ", "СѓСЃС– Р·РЅР°С‡РµРЅРЅСЏ РґРµРјРѕРЅСЃС‚СЂР°С†С–Р№РЅС– Р°Р±Рѕ РЅРµ РІРёР·РЅР°С‡РµРЅС–", "MOCK DATA / PRODUCT DECISION REQUIRED"] },
+        { cells: ["Lobby С‚Р° СЃРїРёСЃРѕРє СѓС‡Р°СЃРЅРёРєС–РІ", "С–РјРµРЅР°, СЂРѕР»Рё, СЃС‚Р°С‚СѓСЃРё РіРѕС‚РѕРІРЅРѕСЃС‚С–", "PREVIEW вЂ” STAGE 2, NOT APPROVED WIREFRAME"] },
+        { cells: ["РџР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё", "С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°, СЂРµСЃСѓСЂСЃРё, РІСЂР°Р·Р»РёРІС– РіСЂСѓРїРё, СЂРёР·РёРєРё", "С‚РµРі РЅР° РєРѕР¶РЅРѕРјСѓ Р±Р»РѕС†С–"] },
+        { cells: ["РљР°СЂС‚Р° РіСЂРѕРјР°РґРё", "СЃС…РµРјР°С‚РёС‡РЅС– РїС–МЃРЅРё С‚Р° Р·РѕРЅР° СЂРёР·РёРєСѓ, Р±РµР· СЂРµР°Р»СЊРЅРёС… РєРѕРѕСЂРґРёРЅР°С‚", "В«MOCK DATA В· СЃС…РµРјР°С‚РёС‡РЅР° РєР°СЂС‚Р°, РЅРµ РіРµРѕРґР°РЅС–В»"] },
+        { cells: ["РџСЂРѕС„С–Р»С– Р·Р°РіСЂРѕР· (4)", "РєР°С‚РµРіРѕСЂС–СЏ, С–РјРѕРІС–СЂРЅС–СЃС‚СЊ, РІРїР»РёРІ, РѕР±Т‘СЂСѓРЅС‚СѓРІР°РЅРЅСЏ", "С‚РµРі MOCK / PRODUCT DECISION"] },
+        { cells: ["РЎС†РµРЅР°СЂС–С— (3)", "РЅР°Р·РІРё, С†С–Р»С–, С‚СЂРёРІР°Р»С–СЃС‚СЊ, СЃРєР»Р°РґРЅС–СЃС‚СЊ, РіРѕС‚РѕРІРЅС–СЃС‚СЊ", "СЃС‚Р°С‚СѓСЃ-Р±РµР№РґР¶ РЅР° РєР°СЂС‚С†С–"] },
+        { cells: ["РљРѕРґ СЃРµСЃС–С— ABX-4471", "РґРµРјРѕРЅСЃС‚СЂР°С†С–СЏ success-СЃС‚Р°РЅСѓ", "РїС–РґРїРёСЃ MOCK DATA"] },
+        { cells: ["Р”Р°С‚Рё Р°РєС‚СѓР°Р»СЊРЅРѕСЃС‚С– (12.03.2026)", "РґРµРјРѕРЅСЃС‚СЂР°С†С–СЏ Р»РѕРіС–РєРё В«СЃРІС–Р¶РѕСЃС‚С–В» РґР°РЅРёС…", "Сѓ С€Р°РїС†С– РїР°СЃРїРѕСЂС‚Р° С‚Р° СЃРЅРµРїС€РѕС‚С–"] }
+      ] },
+      { title: "РџРѕС‚СЂС–Р±РЅС– API В· API REQUIRED вЂ” PROPOSED CONTRACT, NOT IMPLEMENTED", note: "Р–РѕРґРµРЅ С–Р· С†РёС… РµРЅРґРїРѕС–РЅС‚С–РІ РЅРµ С–СЃРЅСѓС” С– РЅРµ РїРѕРіРѕРґР¶РµРЅРёР№. Р¦Рµ РїРµСЂРµР»С–Рє СЂРµСЃСѓСЂСЃС–РІ, СЏРєС– РїРѕС‚СЂС–Р±РЅС– С€РµСЃС‚Рё РµРєСЂР°РЅР°Рј, Сѓ РІРёРіР»СЏРґС– РїСЂРѕРїРѕР·РёС†С–С— РґР»СЏ РѕР±РіРѕРІРѕСЂРµРЅРЅСЏ Р· РєРѕРјР°РЅРґРѕСЋ СЂРѕР·СЂРѕР±РєРё. РќР°Р·РІРё, РїР°СЂР°РјРµС‚СЂРё С‚Р° СЃС‚СЂСѓРєС‚СѓСЂР° РІС–РґРїРѕРІС–РґС– вЂ” PRODUCT DECISION REQUIRED.", cols: ["Р•РќР”РџРћР†РќРў В· PROPOSED, NOT IMPLEMENTED", "РџР РР—РќРђР§Р•РќРќРЇ", "Р•РљР РђРќ"], rows: [
+        { cells: ["GET /communities?search&oblast&status", "РєР°С‚Р°Р»РѕРі РіСЂРѕРјР°Рґ С–Р· РїР°РіС–РЅР°С†С–С”СЋ С‚Р° С„С–Р»СЊС‚СЂР°РјРё", "1"] },
+        { cells: ["GET /communities/{id}", "РїР°СЃРїРѕСЂС‚ РіСЂРѕРјР°РґРё: РЅР°СЃРµР»РµРЅРЅСЏ, С–РЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°, СЂРµСЃСѓСЂСЃРё, РіСЂСѓРїРё", "2"] },
+        { cells: ["GET /communities/{id}/data-quality", "РїРѕРІРЅРѕС‚Р° РґР°РЅРёС…, РґР°С‚Р° РѕРЅРѕРІР»РµРЅРЅСЏ, РїРµСЂРµР»С–Рє РЅРµРїРѕРІРЅРёС… РїРѕР»С–РІ", "1, 2, 6"] },
+        { cells: ["GET /communities/{id}/geo?layers=", "РѕР±вЂ™С”РєС‚Рё С€Р°СЂС–РІ РґР»СЏ РєР°СЂС‚Рё", "3"] },
+        { cells: ["GET /communities/{id}/objects/{objectId}", "РґРµС‚Р°Р»С– РѕР±вЂ™С”РєС‚Р° РґР»СЏ Р±РѕРєРѕРІРѕС— РїР°РЅРµР»С–", "3"] },
+        { cells: ["GET /communities/{id}/threats", "СЂРµР»РµРІР°РЅС‚РЅС– Р·Р°РіСЂРѕР·Рё Р· РѕР±Т‘СЂСѓРЅС‚СѓРІР°РЅРЅСЏРј", "4"] },
+        { cells: ["GET /threats/{id}", "РїСЂРѕС„С–Р»СЊ Р·Р°РіСЂРѕР·Рё: С‚РµСЂРёС‚РѕСЂС–С—, РіСЂСѓРїРё, РїРѕРІвЂ™СЏР·Р°РЅС– РѕР±вЂ™С”РєС‚Рё", "4"] },
+        { cells: ["GET /scenarios?communityId&threatId", "СЃС†РµРЅР°СЂС–С—, РІС–РґРїРѕРІС–РґРЅС– РєРѕРЅС‚РµРєСЃС‚Сѓ", "5"] },
+        { cells: ["GET /scenarios/{id}", "С†С–Р»С–, С‚СЂРёРІР°Р»С–СЃС‚СЊ, СЃРєР»Р°РґРЅС–СЃС‚СЊ, РіРѕС‚РѕРІРЅС–СЃС‚СЊ, СЂРѕР»С– (СЏРєС‰Рѕ РІРёР·РЅР°С‡РµРЅС–)", "5"] },
+        { cells: ["POST /snapshots", "Р·Р°С„С–РєСЃСѓРІР°С‚Рё РІРёР±С–СЂ РіСЂРѕРјР°РґРё, Р·Р°РіСЂРѕР·Рё С‚Р° СЃС†РµРЅР°СЂС–СЋ", "6"] },
+        { cells: ["GET /snapshots/{id}", "РїРµСЂРµРіР»СЏРґ СЃРЅРµРїС€РѕС‚Р° РїРµСЂРµРґ СЃС‚РІРѕСЂРµРЅРЅСЏРј СЃРµСЃС–С—", "6"] },
+        { cells: ["POST /sessions", "СЃС‚РІРѕСЂРµРЅРЅСЏ СЃРµСЃС–С— Р·С– СЃРЅРµРїС€РѕС‚Р°, РїРѕРІРµСЂС‚Р°С” РєРѕРґ РїСЂРёС”РґРЅР°РЅРЅСЏ", "6 в†’ РµС‚Р°Рї 2"] }
+      ] },
+      { title: "PRODUCT DECISION REQUIRED", note: "РџРёС‚Р°РЅРЅСЏ, СЏРєС– РЅРµ РјРѕР¶РЅР° Р·Р°РєСЂРёС‚Рё РґРёР·Р°Р№РЅРѕРј вЂ” РїРѕС‚СЂС–Р±РЅРµ СЂС–С€РµРЅРЅСЏ РІР»Р°СЃРЅРёРєР° РїСЂРѕРґСѓРєС‚Сѓ РґРѕ РµС‚Р°РїСѓ 2.", cols: ["РџРРўРђРќРќРЇ", "Р§РћРњРЈ Р‘Р›РћРљРЈР„", "Р”Р• Р’РџР›РР’РђР„"], rows: [
+        { cells: ["РњРµС‚РѕРґРёРєР° РѕС†С–РЅСЋРІР°РЅРЅСЏ Р·Р°РіСЂРѕР· (С–РјРѕРІС–СЂРЅС–СЃС‚СЊ / РІРїР»РёРІ)", "РІРёР·РЅР°С‡Р°С” С€РєР°Р»Сѓ, РїС–РґРїРёСЃРё С‚Р° СЃРѕСЂС‚СѓРІР°РЅРЅСЏ РїРµСЂРµР»С–РєСѓ Р·Р°РіСЂРѕР·", "РµРєСЂР°РЅРё 2, 4"] },
+        { cells: ["РђРІС‚РѕРјР°С‚РёС‡РЅРёР№ РїС–РґР±С–СЂ СЃС†РµРЅР°СЂС–С—РІ", "С‡Рё СЃРёСЃС‚РµРјР° СЂРµРєРѕРјРµРЅРґСѓС”, С‡Рё С„Р°СЃРёР»С–С‚Р°С‚РѕСЂ С€СѓРєР°С” СЃР°Рј", "РµРєСЂР°РЅ 5"] },
+        { cells: ["РЎРєР»Р°Рґ СЂРѕР»РµР№ СѓС‡Р°СЃРЅРёРєС–РІ", "РІРїР»РёРІР°С” РЅР° РєР°СЂС‚РєСѓ СЃС†РµРЅР°СЂС–СЋ, lobby С‚Р° СЂРѕР·РїРѕРґС–Р» С–РЅС„РѕСЂРјР°С†С–С—", "РµРєСЂР°РЅРё 5, 6, РµС‚Р°Рї 2"] },
+        { cells: ["РљС–Р»СЊРєС–СЃС‚СЊ СЂР°СѓРЅРґС–РІ С– РїРµСЂРµС…РѕРґРё РјС–Р¶ РЅРёРјРё", "СЃС‚СЂСѓРєС‚СѓСЂР° Р°РєС‚РёРІРЅРѕС— СЃРёРјСѓР»СЏС†С–С—", "РµС‚Р°Рї 2"] },
+        { cells: ["РњРµС‚РѕРґРёРєР° РѕС†С–РЅСЋРІР°РЅРЅСЏ СѓС‡Р°СЃРЅРёРєС–РІ", "С„РѕСЂРјР° РѕС†С–РЅСЋРІР°РЅРЅСЏ С‚Р° Р·РІС–С‚", "РµС‚Р°Рї 2"] },
+        { cells: ["РЎС‚СЂСѓРєС‚СѓСЂР° AAR / РґРµР±СЂРёС„С–РЅРіСѓ", "СЃРєР»Р°Рґ РµРєСЂР°РЅР° С‚Р° РїРѕР»С–РІ Р·РІС–С‚Сѓ", "РµС‚Р°Рї 2"] },
+        { cells: ["РџСЂР°РІР° Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂР° РІ MVP", "РѕР±СЃСЏРі Р°РґРјС–РЅ-СЂРѕР·РґС–Р»Сѓ", "Р°РґРјС–РЅС–СЃС‚СЂСѓРІР°РЅРЅСЏ"] },
+        { cells: ["Р§Рё РјРѕР¶РЅР° СЃС‚РІРѕСЂРёС‚Рё СЃРµСЃС–СЋ Р·Р° РєСЂРёС‚РёС‡РЅРѕ РЅРµРїРѕРІРЅРёС… РґР°РЅРёС…", "РїРѕРІРµРґС–РЅРєР° РіРѕР»РѕРІРЅРѕС— РґС–С— РЅР° РµРєСЂР°РЅС– 6", "РµРєСЂР°РЅ 6"] },
+        { cells: ["Р РѕР·СЂР°С…СѓРЅРѕРє В«РїРѕРІРЅРѕС‚Рё РґР°РЅРёС…В»", "С–РЅРґРёРєР°С‚РѕСЂ Сѓ РєР°С‚Р°Р»РѕР·С– С‚Р° СЃРЅРµРїС€РѕС‚С–", "РµРєСЂР°РЅРё 1, 6"] },
+        { cells: ["Р”Р¶РµСЂРµР»Рѕ РіРµРѕРґР°РЅРё С‚Р° РјРѕР¶Р»РёРІС–СЃС‚СЊ СЂРµРґР°РіСѓРІР°РЅРЅСЏ РѕР±вЂ™С”РєС‚С–РІ", "С„СѓРЅРєС†С–РѕРЅР°Р»СЊРЅС–СЃС‚СЊ РєР°СЂС‚Рё", "РµРєСЂР°РЅ 3"] }
+      ] }
+    ];
+
+    return {
+      tabs, devices, steps, globalNav,
+      isProto: view === "proto", isFlow: view === "flow", isStates: view === "states", isDocs: view === "docs",
+      isTablet: tablet,
+      frameStyle: "width:" + (tablet ? 834 : 1280) + "px;max-width:100%;margin:0 auto;background:#fff;border:1px solid #cfcfca;border-radius:4px;overflow:hidden",
+      frameLabel: tablet ? "TABLET В· 834 Г— 1112" : "DESKTOP В· 1280 Г— auto",
+      routePath: ["/communities", "/communities/berezneguvate", "/communities/berezneguvate/geo", "/communities/berezneguvate/threats", "/communities/berezneguvate/scenarios", "/snapshot/draft", "/sessions/abx-4471/lobby"][S.screen - 1],
+      sessionCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.15fr) minmax(320px,1fr)",
+      onS7: S.screen === 7,
+      lobby: [
+        { name: "РћР»РµРЅР° РўРєР°С‡", role: "РљРµСЂС–РІРЅРёРє С€С‚Р°Р±Сѓ В· РћРњРЎ", status: "Р“РћРўРћР’РР™", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "Р†РіРѕСЂ РњРµР»СЊРЅРёРє", role: "Р’РѕРґРѕРєР°РЅР°Р»", status: "Р“РћРўРћР’РР™", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "РќР°С‚Р°Р»С–СЏ Р‘РѕРЅРґР°СЂ", role: "РЎРѕС†С–Р°Р»СЊРЅР° СЃР»СѓР¶Р±Р°", status: "Р“РћРўРћР’РР™", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "РЎРµСЂРіС–Р№ РљСЂР°РІРµС†СЊ", role: "РњРµРґРёС†РёРЅР°", status: "Р“РћРўРћР’РР™", stGlyph: "вњ“", stBg: "#eef5f0", stBorder: "#a9c3b0", stFg: "#22503a" },
+        { name: "РњР°СЂС–СЏ Р›РёСЃРµРЅРєРѕ", role: "СЂРѕР»СЊ РЅРµ РїСЂРёР·РЅР°С‡РµРЅР°", status: "РћР§Р†РљРЈР„", stGlyph: "в—‹", stBg: "#fdf6e7", stBorder: "#d9c99f", stFg: WARN_FG },
+        { name: "Р’С–Р»СЊРЅРµ РјС–СЃС†Рµ", role: "РљРѕРјСѓРЅС–РєР°С†С–С— вЂ” РЅРµ РїСЂРёС”РґРЅР°РІСЃСЏ", status: "РќР• Р’ LOBBY", stBg: "#f2f2ef", stBorder: "#b9b9b2", stFg: "#5c5c57", stGlyph: "вЂ”", nameFg: "#8a8a84" }
+      ].map((p) => Object.assign({ nameFg: D }, p)),
+      sessionSnapRows: [
+        { k: "Р“СЂРѕРјР°РґР°", v: "Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° СЃРµР»РёС‰РЅР°", vFg: D },
+        { k: "Р—Р°РіСЂРѕР·Р°", v: t0.name, vFg: D },
+        { k: "РЎС†РµРЅР°СЂС–Р№", v: sc.name, vFg: D },
+        { k: "РўСЂРёРІР°Р»С–СЃС‚СЊ", v: sc.dur, vFg: D },
+        { k: "Р”Р°РЅС– Р· РѕР±РјРµР¶РµРЅРЅСЏРјРё", v: "3 РїСѓРЅРєС‚Рё", vFg: "#8a8a84" },
+        { k: "РЎС‚РІРѕСЂРµРЅРѕ", v: "12.03.2026, 10:24 В· MOCK", vFg: "#8a8a84" }
+      ],
+      catalogCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      passportCols: tablet ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))",
+      geoCols: tablet ? "minmax(0,1fr)" : "minmax(0,2fr) minmax(280px,1fr)",
+      threatCols: tablet ? "minmax(0,1fr)" : "minmax(0,1.15fr) minmax(320px,1fr)",
+      scenarioCols: tablet ? "minmax(0,1fr)" : "repeat(3,minmax(0,1fr))",
+      snapCols3: tablet ? "minmax(0,1fr)" : "repeat(3,minmax(0,1fr))",
+      snapCols2: tablet ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))",
+      specCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      sitemapCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      stateCols: tablet ? "repeat(2,minmax(0,1fr))" : "repeat(3,minmax(0,1fr))",
+      mapH: tablet ? "440px" : "520px",
+      onS1: S.screen === 1, onS2: S.screen === 2, onS3: S.screen === 3,
+      onS4: S.screen === 4, onS5: S.screen === 5, onS6: S.screen === 6,
+      toS1: this.toScreen(1), toS2: this.toScreen(2), toS3: this.toScreen(3),
+      toS4: this.toScreen(4), toS5: this.toScreen(5), toS6: this.toScreen(6),
+      createSession: () => this.setState({ created: true, screen: 7 }), created: S.created,
+      contextChips: [
+        { k: "Р“Р РћРњРђР”Рђ", v: S.screen >= 2 ? "Р‘РµСЂРµР·РЅРµРіСѓРІР°С‚СЃСЊРєР° СЃРµР»РёС‰РЅР°" : "РЅРµ РІРёР±СЂР°РЅРѕ", fg: S.screen >= 2 ? D : "#8a8a84" },
+        { k: "Р—РђР“Р РћР—Рђ", v: S.screen >= 5 ? t0.name : "РЅРµ РІРёР±СЂР°РЅРѕ", fg: S.screen >= 5 ? D : "#8a8a84" },
+        { k: "РЎР¦Р•РќРђР Р†Р™", v: S.screen >= 6 ? sc.name : "РЅРµ РІРёР±СЂР°РЅРѕ", fg: S.screen >= 6 ? D : "#8a8a84" }
+      ],
+      comms, passport, layers, legend, pins, picked, threats, threat, scenarios,
+      snapPicks, snapBlocks, spec: specs[S.screen],
+      flowLanes, sitemap, responsive, stateCards, stateTable, docTables
+    };
+  }
+}
+
+</script>
+</body>
+</html>
