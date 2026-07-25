@@ -1,4 +1,5 @@
 import os
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +10,7 @@ from .routers import (
     preparedness_profiles,
     risks,
     scenarios,
+    sessions,
     simulations,
 )
 
@@ -34,9 +36,8 @@ for router in (
     risks.router,
     assessments.router,
     scenarios.router,
+    sessions.router,
     simulations.router,
     preparedness_profiles.router,
 ):
     app.include_router(router)
-
-

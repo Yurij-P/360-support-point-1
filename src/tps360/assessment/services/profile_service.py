@@ -1,4 +1,3 @@
-from typing import Any
 from uuid import UUID
 
 from tps360.assessment.domain.profile import CommunityPreparednessProfile
