@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from secrets import token_urlsafe
-from typing import TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 
 from fastapi import APIRouter, Header, HTTPException
@@ -11,6 +11,9 @@ from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.simulation.domain.session import (
     FacilitatedSession,
     Participant,
+    ParticipantDecision,
+    SessionInject,
+    SessionJournalEntry,
     SessionStatus,
 )
 
@@ -32,6 +35,18 @@ class AssignRoleRequest(BaseModel):
     role_id: UUID
 
 
+class SendInjectRequest(BaseModel):
+    title: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class SubmitDecisionRequest(BaseModel):
+    participant_id: UUID
+    selected_action: str = Field(min_length=1)
+    rationale: str | None = None
+
+
 class SessionResponse(BaseModel):
     id: UUID
     community_id: UUID
@@ -39,6 +54,9 @@ class SessionResponse(BaseModel):
     player_capacity: int
     status: SessionStatus
     participants: list[Participant]
+    injects: list[SessionInject]
+    decisions: list[ParticipantDecision]
+    journal: list[SessionJournalEntry]
 
     @classmethod
     def from_domain(cls, session: FacilitatedSession) -> "SessionResponse":
@@ -114,6 +132,56 @@ def start(
     authorize_facilitator(session, facilitator_token)
     domain_action(session.start)
     return SessionResponse.from_domain(session)
+
+
+@router.post("/{session_id}/injects")
+def send_inject(
+    session_id: UUID,
+    request: SendInjectRequest,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> SessionInject:
+    session = item(session_id)
+    authorize_facilitator(session, facilitator_token)
+    return domain_action(
+        lambda: session.send_inject(
+            request.title,
+            request.description,
+            request.payload,
+        )
+    )
+
+
+@router.post("/{session_id}/injects/{inject_id}/decisions")
+def submit_decision(
+    session_id: UUID,
+    inject_id: UUID,
+    request: SubmitDecisionRequest,
+) -> ParticipantDecision:
+    session = item(session_id)
+    return domain_action(
+        lambda: session.submit_decision(
+            inject_id,
+            request.participant_id,
+            request.selected_action,
+            request.rationale,
+        )
+    )
+
+
+@router.post("/{session_id}/complete")
+def complete(
+    session_id: UUID,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> SessionResponse:
+    session = item(session_id)
+    authorize_facilitator(session, facilitator_token)
+    domain_action(session.complete)
+    return SessionResponse.from_domain(session)
+
+
+@router.get("/{session_id}/journal")
+def get_journal(session_id: UUID) -> list[SessionJournalEntry]:
+    return item(session_id).journal
 
 
 def authorize_facilitator(
