@@ -516,7 +516,7 @@ button{font-family:inherit}
               <sc-for list="{{ decisionFields }}" as="f" hint-placeholder-count="8">
                 <label style="display:flex;flex-direction:column;gap:6px;font:500 12px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#44443f">
                   <span style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">{{ f.label }}<span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:{{ f.reqFg }}">{{ f.req }}</span></span>
-                  <span style="display:block;min-height:{{ f.h }};padding:11px 12px;border:1px solid {{ f.border }};border-radius:5px;background:#fff;font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#9a9a94">{{ f.placeholder }}</span>
+                  <textarea data-field="{{ f.key }}" disabled="{{ decisionLocked }}" onInput="{{ updateDecisionField }}" placeholder="{{ f.placeholder }}" style="display:block;min-height:{{ f.h }};padding:11px 12px;border:1px solid {{ f.border }};border-radius:5px;background:#fff;font:400 13px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f;resize:vertical">{{ f.value }}</textarea>
                   <sc-if value="{{ f.err }}">
                     <span style="display:flex;gap:7px;align-items:flex-start;font:400 11.5px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#7a2f28"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✕</span>{{ f.errText }}</span>
                   </sc-if>
@@ -856,6 +856,7 @@ class Component extends DCLogic {
       assignmentSource: "MOCK DATA - facilitator assignment", lifecycle: "JOIN",
       confirmed: false, ready: false, wsTab: "context", submitted: false, reflectSent: false,
       decision: null,
+      decisionDraft: { title: "", description: "", rationale: "" },
       participant: { session_id: "session-demo-abx-4471", participant_id: "participant-demo-001", display_name: "Demo participant", role_id: null, role_version: null, reconnect_status: "new" }
     };
     try {
@@ -863,8 +864,10 @@ class Component extends DCLogic {
       if (!raw) return base;
       const saved = JSON.parse(raw);
       return Object.assign(base, saved, {
-        participant: Object.assign(base.participant, saved.participant || {}),
-        reconnect_status: "restored"
+        participant: Object.assign(base.participant, saved.participant || {}, {
+          reconnect_status: "restored"
+        }),
+        decisionDraft: Object.assign(base.decisionDraft, saved.decisionDraft || {})
       });
     } catch (_error) {
       return base;
@@ -883,6 +886,7 @@ class Component extends DCLogic {
         lifecycle: this.state.lifecycle,
         submitted: this.state.submitted,
         reflectSent: this.state.reflectSent,
+        decisionDraft: this.state.decisionDraft,
         decision: this.state.decision
       }));
     } catch (_error) {
@@ -906,6 +910,17 @@ class Component extends DCLogic {
         reconnect_status: "restored"
       })
     });
+  }
+
+  updateDecisionField() {
+    return (event) => {
+      if (this.state.submitted) return;
+      const field = event.target.getAttribute("data-field");
+      if (!field || !Object.prototype.hasOwnProperty.call(this.state.decisionDraft, field)) return;
+      this.setState({
+        decisionDraft: Object.assign({}, this.state.decisionDraft, { [field]: event.target.value })
+      });
+    };
   }
 
   assignFacilitatorRole(id) {
@@ -1026,7 +1041,15 @@ class Component extends DCLogic {
       }, profile)];
     }));
     this.roleProfiles = roleProfiles;
-    const R = S.roleAssigned && roleProfiles[S.role] ? roleProfiles[S.role] : roleProfiles.ems;
+    const unassignedRole = {
+      role_id: null, role_version: null, short: "Role not assigned", glyph: "?",
+      title: "Role not assigned", org: "", accent: "", desc: "", briefing: "",
+      responsibilities: "", permissions: "", available_data: [], resources: [],
+      allowed_actions: [], restrictions: [], interactions: [], visibility_rules: [],
+      tasks: [], asks: [], contextExtra: [], mapObjects: [],
+      responsible: "Role not assigned"
+    };
+    const R = S.roleAssigned && roleProfiles[S.role] ? roleProfiles[S.role] : unassignedRole;
     const scenario = { scenario_id: "scenario-demo-water-001", version: "demo-1.0", title: "Water supply incident - MOCK DATA", role_profile_ids: Object.keys(roleProfiles) };
     const session = { session_id: "session-demo-abx-4471", scenario_id: scenario.scenario_id, state: S.lifecycle, role_ids: S.roleAssigned ? [S.role] : [] };
     const participant = Object.assign({}, S.participant, { session_id: session.session_id, role_id: S.roleAssigned ? S.role : null, role_version: S.roleAssigned ? R.role_version : null });
@@ -1074,22 +1097,26 @@ class Component extends DCLogic {
     const wsTabDefs = [["context", "Контекст громади"], ["map", "Карта"], ["resources", "Ресурси"]];
     const wsTabs = wsTabDefs.map(([id, label]) => ({ label, on: S.wsTab === id, go: () => this.setState({ wsTab: id }), border: S.wsTab === id ? D : "#cfcfca", bg: S.wsTab === id ? "#e9e9e5" : "#fff", font: (S.wsTab === id ? "600" : "400") + " 12.5px/1 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" }));
 
+    const formValid = Boolean(S.decisionDraft.title.trim() && S.decisionDraft.description.trim() && S.decisionDraft.rationale.trim());
+
     const submit = S.submitted
       ? { label: "Submitted - local MOCK DATA", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
-      : { label: "Submit decision", bg: D, fg: "#fff", border: D };
+      : formValid
+        ? { label: "Submit decision", bg: D, fg: "#fff", border: D }
+        : { label: "Complete required fields", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" };
     const reflect = S.reflectSent
       ? { label: "Відповіді надіслано ✓", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
       : { label: "Надіслати відповіді", bg: D, fg: "#fff", border: D };
 
     const decisionFields = [
-      { label: "Коротка назва рішення", req: "обов’язково", reqFg: "#7a2f28", h: "44px", placeholder: "Напр. підвіз води для віддалених НП", border: "#c6c6c0" },
-      { label: "Опис запропонованого рішення", req: "обов’язково", reqFg: "#7a2f28", h: "88px", placeholder: "Що саме пропонуєте зробити", border: "#c6c6c0" },
-      { label: "Обґрунтування", req: "обов’язково", reqFg: "#7a2f28", h: "76px", placeholder: "Чому це рішення, на які дані спираєтеся", border: "#c9a5a1", err: true, errText: "Заповніть обґрунтування — без нього рішення не подається" },
-      { label: "Заплановані дії та терміни", req: "необов’язково", reqFg: GRAY, h: "76px", placeholder: "Послідовність дій", border: "#c6c6c0" },
-      { label: "Відповідальні", req: "необов’язково", reqFg: GRAY, h: "44px", placeholder: R.responsible + " - ROLE MODEL NOT APPROVED", border: "#c6c6c0" },
-      { label: "Потрібні ресурси", req: "необов’язково", reqFg: GRAY, h: "44px", placeholder: "Техніка, люди, матеріали", border: "#c6c6c0" },
-      { label: "Очікуваний результат", req: "необов’язково", reqFg: GRAY, h: "60px", placeholder: "Що зміниться після виконання", border: "#c6c6c0" },
-      { label: "Ризики та залежності від інших служб", req: "необов’язково", reqFg: GRAY, h: "60px", placeholder: "Від кого залежить, що може піти не так", border: "#c6c6c0" }
+      { key: "title", label: "Коротка назва рішення", req: "обов’язково", value: S.decisionDraft.title, reqFg: "#7a2f28", h: "44px", placeholder: "Напр. підвіз води для віддалених НП", border: "#c6c6c0" },
+      { key: "description", label: "Опис запропонованого рішення", req: "обов’язково", value: S.decisionDraft.description, reqFg: "#7a2f28", h: "88px", placeholder: "Що саме пропонуєте зробити", border: "#c6c6c0" },
+      { key: "rationale", label: "Обґрунтування", req: "обов’язково", value: S.decisionDraft.rationale, reqFg: "#7a2f28", h: "76px", placeholder: "Чому це рішення, на які дані спираєтеся", border: "#c9a5a1", err: !S.decisionDraft.rationale.trim(), errText: "Заповніть обґрунтування — без нього рішення не подається" },
+      { key: "actions", label: "Заплановані дії та терміни", req: "необов’язково", value: "", reqFg: GRAY, h: "76px", placeholder: "Послідовність дій", border: "#c6c6c0" },
+      { key: "responsible", label: "Відповідальні", req: "необов’язково", value: "", reqFg: GRAY, h: "44px", placeholder: R.responsible + " - ROLE MODEL NOT APPROVED", border: "#c6c6c0" },
+      { key: "resources", label: "Потрібні ресурси", req: "необов’язково", value: "", reqFg: GRAY, h: "44px", placeholder: "Техніка, люди, матеріали", border: "#c6c6c0" },
+      { key: "result", label: "Очікуваний результат", req: "необов’язково", value: "", reqFg: GRAY, h: "60px", placeholder: "Що зміниться після виконання", border: "#c6c6c0" },
+      { key: "risks", label: "Ризики та залежності від інших служб", req: "необов’язково", value: "", reqFg: GRAY, h: "60px", placeholder: "Від кого залежить, що може піти не так", border: "#c6c6c0" }
     ];
 
     const specs = {
@@ -1299,16 +1326,16 @@ class Component extends DCLogic {
       toggleConfirm: () => this.setState({ confirmed: !S.confirmed }),
       toggleReady: () => { if (S.roleAssigned) this.setState({ ready: !S.ready }); },
       submitDecision: () => {
-        if (S.submitted) return;
+        if (S.submitted || !formValid) return;
         const decision = {
           decision_id: "decision-demo-001",
           participant_id: participant.participant_id,
           session_id: session.session_id,
           inject_id: "inject-demo-12",
           data: {
-            title: "MOCK DATA - participant decision",
-            description: "MOCK DATA - local decision draft submitted from the participant workspace",
-            rationale: "MOCK DATA - rationale entered by the participant",
+            title: S.decisionDraft.title,
+            description: S.decisionDraft.description,
+            rationale: S.decisionDraft.rationale,
             allowed_actions: allowedActions
           },
           status: "Submitted",
@@ -1319,7 +1346,7 @@ class Component extends DCLogic {
         this.setState({ submitted: true, decision });
       },
       sendReflection: () => this.setState({ reflectSent: true }),
-      submitted: S.submitted, notSubmitted: !S.submitted, reflectSent: S.reflectSent,      decisionStorage: "MOCK DATA - localStorage; API REQUIRED - backend submission",
+      submitted: S.submitted, notSubmitted: !S.submitted, decisionLocked: S.submitted, formValid, updateDecisionField: this.updateDecisionField(), reflectSent: S.reflectSent,      decisionStorage: "MOCK DATA - localStorage; API REQUIRED - backend submission",
       autosave: "Чернетку збережено 10:52",
       scenario, session, participant, sessionState, injects, decisions, allowedActions,
       role: R, roleCatalog, roleProfiles, roleAssignment, lifecycle: S.lifecycle, decision: S.decision,

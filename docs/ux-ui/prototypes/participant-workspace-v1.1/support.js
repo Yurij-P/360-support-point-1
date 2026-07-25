@@ -8,6 +8,7 @@
 (function () {
   const TEMPLATE_SELECTOR = "x-dc";
   const EXPR_RE = /\{\{\s*([^}]+?)\s*\}\}/g;
+  const BOOLEAN_ATTRIBUTES = new Set(["disabled", "checked", "selected", "readonly", "required", "hidden"]);
 
   class DCLogic {
     constructor() {
@@ -126,6 +127,13 @@
           const eventName = rawName.slice(2).toLowerCase();
           node.addEventListener(eventName, (event) => handler(event));
         }
+        return;
+      }
+
+      if (expr && BOOLEAN_ATTRIBUTES.has(rawName.toLowerCase())) {
+        const resolved = resolve(expr, scopes);
+        if (Boolean(resolved)) node.setAttribute(rawName, "");
+        else node.removeAttribute(rawName);
         return;
       }
 
