@@ -31,7 +31,7 @@ Open the HTML file directly in a browser:
 
 `docs/ux-ui/prototypes/community-first-v1.1/TPS360 Wireframes.dc.html`
 
-No dependency installation is required for repository review. Do not execute or modify this artifact as production frontend code.
+No dependency installation is required for repository review. The prototype runtime is local-only and does not load external CDN, analytics, or advertising scripts. Do not execute or modify this artifact as production frontend code.
 
 ## Markers
 
