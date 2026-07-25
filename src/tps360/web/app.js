@@ -3,9 +3,12 @@
 // ==========================================================================
 
 const CONFIG = {
-    communityId: "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3",
-    scenarioId: "s89d6fbd-02c3-4d43-a651-7efd6fbd089c",
-    simulationId: "e72d6fbd-02c3-4d43-a651-7efd6fbd077c"
+    communityId: "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3"
+};
+
+let runtimeIds = {
+    scenarioId: null,
+    simulationId: null
 };
 
 let simulationState = {
@@ -32,89 +35,118 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function initApp() {
     showToast("Ініціалізація системи Операційного штабу...");
-    
-    // 1. Setup local environment / repositories in backend
-    await ensureBackendSetup();
 
-    // 2. Fetch or create simulation
-    await startSimulationSession();
+    try {
+        const setup = await ensureBackendSetup();
+        await startSimulationSession(setup.scenario.id);
+        startClock();
+        startLocalWaterSimulation();
+        setupEventListeners();
+    } catch (e) {
+        console.error("TPS360 startup failed:", e);
+        showApiError("Помилка ініціалізації TPS360", e);
+        setupEventListeners();
+    }
+}
 
-    // 3. Start running clock
-    startClock();
+async function apiFetch(url, options = {}) {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+        throw new Error(await readApiError(res));
+    }
 
-    // 4. Start water depletion simulation (local visual behavior)
-    startLocalWaterSimulation();
+    if (res.status === 204) {
+        return null;
+    }
 
-    // 5. Setup UI event listeners
-    setupEventListeners();
+    return res.json();
+}
+
+async function readApiError(res) {
+    let payload = "";
+
+    try {
+        payload = await res.text();
+        const parsed = JSON.parse(payload);
+
+        if (typeof parsed.detail === "string") {
+            payload = parsed.detail;
+        } else if (Array.isArray(parsed.detail)) {
+            payload = parsed.detail.map(item => item.msg || JSON.stringify(item)).join("; ");
+        } else if (parsed.detail) {
+            payload = JSON.stringify(parsed.detail);
+        }
+    } catch (_) {
+        // Keep raw response text if it is not JSON.
+    }
+
+    return `API ${res.status} ${res.statusText}${payload ? `: ${payload}` : ""}`;
+}
+
+function showApiError(prefix, error) {
+    showToast(`${prefix}: ${error.message}`, "error");
 }
 
 async function ensureBackendSetup() {
-    try {
-        // Create community if not exists
-        await fetch('/communities', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: CONFIG.communityId,
-                name: "Березнегуватська громада",
-                code: "BRZ-01",
-                oblast: "Миколаївська",
-                population: 15400,
-                area_km2: 124.5
-            })
-        });
+    const communityPayload = {
+        id: CONFIG.communityId,
+        name: "Березнегуватська громада",
+        code: "BRZ-01",
+        oblast: "Миколаївська",
+        population: 15400,
+        area_km2: 124.5
+    };
 
-        // Create scenario if not exists
-        await fetch('/scenarios', {
+    let community;
+    try {
+        community = await apiFetch('/communities', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: CONFIG.scenarioId,
-                title: "Аварія системи водопостачання",
-                description: "Критична аварія на магістральному трубопроводі",
-                duration_minutes: 180
-            })
+            body: JSON.stringify(communityPayload)
         });
     } catch (e) {
-        console.warn("Backend seeding skipped or already seeded:", e);
+        if (!e.message.includes("409")) {
+            throw e;
+        }
+        community = await apiFetch(`/communities/${CONFIG.communityId}`);
     }
+
+    const scenario = await apiFetch('/scenarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: "Аварія системи водопостачання",
+            description: "Критична аварія на магістральному трубопроводі",
+            duration_minutes: 180
+        })
+    });
+    runtimeIds.scenarioId = scenario.id;
+
+    return { community, scenario };
 }
 
-async function startSimulationSession() {
-    try {
-        // Try to get simulation if already exists
-        let res = await fetch(`/simulations/${CONFIG.simulationId}`);
-        if (!res.ok) {
-            // Create simulation
-            const simPayload = {
-                id: CONFIG.simulationId,
-                scenario_id: CONFIG.scenarioId,
-                community_id: CONFIG.communityId,
-                status: "draft",
-                started_at: new Date().toISOString()
-            };
-            
-            res = await fetch('/simulations', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(simPayload)
-            });
+async function startSimulationSession(scenarioId) {
+    const simulation = await apiFetch('/simulations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            scenario_id: scenarioId,
+            community_id: CONFIG.communityId,
+            status: "draft",
+            started_at: new Date().toISOString()
+        })
+    });
 
-            if (res.ok) {
-                // Start simulation
-                await fetch(`/simulations/${CONFIG.simulationId}/start`, { method: 'POST' });
-                showToast("Розпочато нову симуляційну сесію");
-            }
-        } else {
-            showToast("Завантажено існуючу симуляційну сесію");
-            const data = await res.json();
-            restoreDecisionsFromState(data);
-        }
-    } catch (e) {
-        console.error("Error setting up simulation session:", e);
-        showToast("Помилка з'єднання з API. Запущено в офлайн-режимі.", "error");
-    }
+    runtimeIds.simulationId = simulation.id;
+    simulationState.id = simulation.id;
+    simulationState.status = simulation.status;
+    simulationState.startedAt = simulation.started_at;
+
+    const startedSimulation = await apiFetch(`/simulations/${simulation.id}/start`, { method: 'POST' });
+    simulationState.status = startedSimulation.status;
+    simulationState.startedAt = startedSimulation.started_at;
+    restoreDecisionsFromState(startedSimulation);
+    showToast("Розпочато нову симуляційну сесію");
 }
 
 function restoreDecisionsFromState(state) {
@@ -188,40 +220,47 @@ function updateResourceUI(type, value) {
 }
 
 async function makeDecision(decisionId) {
+    if (!runtimeIds.simulationId) {
+        showToast("Симуляцію ще не створено. Дочекайтеся підключення до API.", "error");
+        return;
+    }
+
     let actionName = "";
     let desc = "";
     let cost = 0;
-    
+    const nextResources = JSON.parse(JSON.stringify(simulationState.resources));
+
     if (decisionId === 1) {
         actionName = "Ремонтні роботи";
         desc = "Ремонтні роботи на магістралі. Направлено аварійну бригаду.";
         cost = 150000;
-        simulationState.resources.personnel.busy += 15;
-        simulationState.resources.personnel.avail -= 15;
-        simulationState.resources.transport.busy += 2;
-        simulationState.resources.transport.avail -= 2;
+        nextResources.personnel.busy += 15;
+        nextResources.personnel.avail -= 15;
+        nextResources.transport.busy += 2;
+        nextResources.transport.avail -= 2;
     } else if (decisionId === 2) {
         actionName = "Переключення на резерв";
         desc = "Переключення на резервну лінію. Запущено Насосну станцію №2.";
         cost = 50000;
-        simulationState.resources.personnel.busy += 5;
-        simulationState.resources.personnel.avail -= 5;
-        waterDepletionActive = false; // Water stabilizes
+        nextResources.personnel.busy += 5;
+        nextResources.personnel.avail -= 5;
     } else if (decisionId === 3) {
         actionName = "Підвіз води";
         desc = "Організовано підвіз води автоцистернами до лікарні та кварталів.";
         cost = 20000;
-        simulationState.resources.transport.busy += 8;
-        simulationState.resources.transport.avail -= 8;
-        simulationState.resources.water += 150; // Visual boost
+        nextResources.transport.busy += 8;
+        nextResources.transport.avail -= 8;
+        nextResources.water += 150;
+    } else {
+        showToast("Невідоме рішення. Дію не виконано.", "error");
+        return;
     }
 
-    simulationState.resources.budget -= cost;
+    nextResources.budget -= cost;
 
-    // Send decision to backend API
     const decisionPayload = {
         id: uuidv4(),
-        simulation_id: CONFIG.simulationId,
+        simulation_id: runtimeIds.simulationId,
         actor: "Керівник штабу",
         description: desc,
         rationale: "Негайне реагування на падіння тиску",
@@ -229,18 +268,24 @@ async function makeDecision(decisionId) {
     };
 
     try {
-        await fetch(`/simulations/${CONFIG.simulationId}/decisions`, {
+        const updatedSimulation = await apiFetch(`/simulations/${runtimeIds.simulationId}/decisions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(decisionPayload)
         });
-        showToast(`Обрано рішення: ${actionName}`);
-    } catch(e) {
-        console.error("Offline decision registered:", e);
-        showToast(`Обрано рішення (офлайн): ${actionName}`);
-    }
 
-    applyDecisionUI(decisionId, true);
+        simulationState.decisions = updatedSimulation.decisions || [];
+        simulationState.resources = nextResources;
+        if (decisionId === 2) {
+            waterDepletionActive = false;
+        }
+
+        showToast(`Обрано рішення: ${actionName}`);
+        applyDecisionUI(decisionId, true);
+    } catch(e) {
+        console.error("Decision API error:", e);
+        showApiError("Рішення не збережено в API", e);
+    }
 }
 
 function applyDecisionUI(decisionId, animate = true) {
