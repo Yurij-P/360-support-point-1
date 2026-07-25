@@ -70,3 +70,24 @@ test("invalid participant response is surfaced and local session can be cleared"
   client.clearSession();
   assert.equal(client.loadSession(), null);
 });
+test("logout control is wired and clears only participant session storage", async () => {
+  const fs = require("node:fs");
+  const html = fs.readFileSync("./docs/ux-ui/prototypes/participant-workspace-v1.1/TPS360 Participant Wireframes.html", "utf8");
+  assert.match(html, /<button[^>]*onClick="\{\{ logout \}\}"/);
+
+  const storage = memoryStorage();
+  const client = createClient({ storage, request: async () => response(200, {}) });
+  storage.setItem("unrelated", "keep-me");
+  client.saveSession({ session_id: "session-1", participant_id: "participant-1", participant_token: "secret" });
+  client.clearSession();
+
+  assert.equal(client.loadSession(), null);
+  assert.equal(storage.getItem("tps360-participant-session-v1"), null);
+  assert.equal(storage.getItem("unrelated"), "keep-me");
+});
+test("logout implementation removes the workspace session after resetting UI state", () => {
+  const fs = require("node:fs");
+  const html = fs.readFileSync("./docs/ux-ui/prototypes/participant-workspace-v1.1/TPS360 Participant Wireframes.html", "utf8");
+  assert.match(html, /onClick="\{\{ logout \}\}"/);
+  assert.match(html, /window\.localStorage\.removeItem\("tps360-participant-workspace-v1\.1"\)/);
+});
