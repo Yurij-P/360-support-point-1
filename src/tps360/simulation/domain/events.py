@@ -1,6 +1,8 @@
-from dataclasses import dataclass
+﻿from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
+
+from .impact_contracts import ImpactSourceReference, TypedImpactTarget
 
 
 @dataclass(frozen=True)
@@ -327,6 +329,8 @@ class ImpactCreated:
     reason: str
     correlation_id: UUID
     causation_id: UUID | None
+    source: ImpactSourceReference | None = field(default=None, kw_only=True)
+    target: TypedImpactTarget | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True)
@@ -371,8 +375,8 @@ class ImpactFailed(ImpactCreated):
 
 @dataclass(frozen=True)
 class SimulationStateChanged(ImpactCreated):
-    state_version_before: int
-    state_version_after: int
+    state_version_before: int = 0
+    state_version_after: int = 0
 
 
 @dataclass(frozen=True)

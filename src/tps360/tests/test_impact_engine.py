@@ -112,6 +112,7 @@ class _Simulation:
         self.id = SESSION
         self.current_time = NOW
         self.simulation_state = state
+        self.context = type("Context", (), {"includes_resource": lambda _, resource_id: resource_id == RESOURCE})()
 
     @property
     def state(self) -> SimulationState:
@@ -119,6 +120,7 @@ class _Simulation:
 
     def replace_simulation_state(self, state: SimulationState) -> None:
         self.simulation_state = state
+        self.context = type("Context", (), {"includes_resource": lambda _, resource_id: resource_id == RESOURCE})()
 
 
 def test_apply_required_failure_preserves_state_version_and_state_events() -> None:
@@ -190,3 +192,23 @@ def test_full_final_status_transition_protection() -> None:
     for final in (ImpactStatus.APPLIED, ImpactStatus.REVERSED, ImpactStatus.EXPIRED, ImpactStatus.CANCELLED, ImpactStatus.FAILED):
         instance = ImpactInstance(ImpactInstanceId(uuid4()), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units")), SESSION, NOW, uuid4(), None, status=final)
         with pytest.raises(DomainRuleViolation): instance.transition(ImpactStatus.READY)
+
+
+def test_created_event_has_immutable_typed_source_and_target() -> None:
+    from dataclasses import FrozenInstanceError
+
+    from tps360.simulation.domain import ImpactCreated, ImpactEngine
+    simulation = _Simulation(SimulationState(SESSION))
+    item = ImpactEngine(SESSION, SCENARIO).create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units")), uuid4())
+    event = item.audit_trail[0]
+    assert isinstance(event, ImpactCreated) and event.source == source() and event.target == target()
+    with pytest.raises(FrozenInstanceError): event.target = target()  # type: ignore[misc]
+
+
+def test_missing_resource_rejects_before_state_or_events() -> None:
+    from tps360.simulation.domain import ImpactEngine
+    missing = TypedImpactTarget(ImpactTargetType.RESOURCE, UUID(int=99), ImpactAttribute.QUANTITY, SESSION, SCENARIO)
+    simulation = _Simulation(SimulationState(SESSION, 2))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    with pytest.raises(DomainRuleViolation): engine.create(simulation, uuid4(), definition(ImpactChange(missing, ImpactOperation.ADD, 1.0, "units")), uuid4())
+    assert simulation.state.version == 2 and not engine.audit_trail

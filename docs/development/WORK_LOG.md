@@ -91,3 +91,10 @@
 - **Основний commit:** `619b506c7c940a03b08199025e48e389b7c7b141` — `feat(simulation): redesign impact engine contracts and atomic execution`.
 - **Push:** успішно виконано до `origin/main`; локальний HEAD дорівнював `origin/main` після push.
 - **Стан робочого дерева після основного commit:** чистий.
+
+#### Cycle 1 — partial/missing remediation in progress
+
+- Added explicit operation/attribute compatibility matrix and runtime semantics for optional-only no-op state handling.
+- Added FAILED `ImpactResult` creation with unchanged versions on required calculation failure.
+- Remaining required work before this gap-analysis cycle can be closed: execution-level resource membership validation and complete typed event source/target payload migration with contract tests.
+- No commit or push performed for this continuation.

@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from math import isfinite
 from typing import TYPE_CHECKING
@@ -154,6 +154,11 @@ class ImpactEngine:
         self._ensure(simulation)
         if definition.scenario_id != self.scenario_id or definition.source.session_id != self.simulation_id or any(i.id == instance_id for i in self.instances):
             raise DomainRuleViolation("Impact definition scope or instance identifier is invalid.")
+        for change in definition.changes:
+            if change.target.session_id != self.simulation_id or change.target.scenario_id != self.scenario_id:
+                raise DomainRuleViolation("Impact target scope is invalid.")
+            if change.target.target_type.value == "resource" and (change.target.target_id is None or not simulation.context.includes_resource(change.target.target_id)):
+                raise DomainRuleViolation("Impact target resource is unavailable in this simulation scope.")
         item = ImpactInstance(ImpactInstanceId(instance_id), definition, self.simulation_id, simulation.current_time + timedelta(minutes=definition.delay_minutes), correlation_id, causation_id)
         item.transition(ImpactStatus.SCHEDULED if definition.delay_minutes else ImpactStatus.READY)
         self.instances = (*self.instances, item); self._record(item, ImpactCreated(self.simulation_id, self.scenario_id, item.id, definition.version, simulation.current_time, "created", correlation_id, causation_id))
@@ -178,10 +183,11 @@ class ImpactEngine:
         try: applied, skipped, values = self._calculate(before, item.definition.changes)
         except DomainRuleViolation as error:
             item.transition(ImpactStatus.FAILED); self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, str(error), item.correlation_id, item.causation_id)); raise
-        after = before.with_values(values); simulation.replace_simulation_state(after)
+        after = before if not applied else before.with_values(values)
+        if after is not before: simulation.replace_simulation_state(after)
         result = ImpactResult(item.id, self.simulation_id, self.scenario_id, item.definition.source, ImpactStatus.APPLIED, applied, skipped, tuple(x.reason for x in skipped), simulation.current_time, before.version, after.version, item.correlation_id, item.causation_id)
         item.applied_changes, item.result = applied, result; item.transition(ImpactStatus.ACTIVE if item.definition.temporary else ImpactStatus.APPLIED)
-        self._record(item, ImpactApplied(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "applied", item.correlation_id, item.causation_id)); self._record(item, SimulationStateChanged(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "state changed", item.correlation_id, item.causation_id, before.version, after.version))
+        if after is not before: self._record(item, ImpactApplied(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "applied", item.correlation_id, item.causation_id)); self._record(item, SimulationStateChanged(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "state changed", item.correlation_id, item.causation_id, before.version, after.version))
         return result
 
     def cancel(self, instance_id: ImpactInstanceId, occurred_at: datetime) -> None:
@@ -225,6 +231,8 @@ class ImpactEngine:
     def _ensure(self, simulation: Simulation) -> None:
         if simulation.id != self.simulation_id: raise DomainRuleViolation("Impact engine belongs to another simulation.")
     def _record(self, item: ImpactInstance, event: object) -> None:
+        if isinstance(event, ImpactCreated):
+            event = replace(event, source=item.definition.source, target=item.definition.changes[0].target)
         item.audit_trail = (*item.audit_trail, event); self.audit_trail = (*self.audit_trail, event)
 
     def reverse(self, simulation: Simulation, instance_id: UUID) -> None:
