@@ -1,9 +1,11 @@
 from enum import StrEnum
+from hashlib import sha256
+from secrets import compare_digest
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from tps360.core.exceptions import DomainRuleViolation
+from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 
 
 class SessionStatus(StrEnum):
@@ -27,10 +29,21 @@ class FacilitatedSession(BaseModel):
     player_capacity: int = Field(ge=1)
     status: SessionStatus = SessionStatus.LOBBY
     participants: list[Participant] = Field(default_factory=list)
+    facilitator_token_digest: str = Field(exclude=True, repr=False)
+
+    @staticmethod
+    def digest_facilitator_token(token: str) -> str:
+        return sha256(token.encode("utf-8")).hexdigest()
+
+    def accepts_facilitator_token(self, token: str) -> bool:
+        return compare_digest(
+            self.facilitator_token_digest,
+            self.digest_facilitator_token(token),
+        )
 
     def join(self, display_name: str) -> Participant:
-        if self.status is not SessionStatus.LOBBY:
-            raise DomainRuleViolation("Players can join only while the session is in the lobby")
+        if self.status not in {SessionStatus.LOBBY, SessionStatus.READY}:
+            raise DomainRuleViolation("Players can join only before the session starts")
         if len(self.participants) >= self.player_capacity:
             raise DomainRuleViolation("Session player capacity has been reached")
         participant = Participant(display_name=display_name)
@@ -47,17 +60,15 @@ class FacilitatedSession(BaseModel):
         return participant
 
     def start(self) -> None:
-        if not self.participants:
-            raise DomainRuleViolation("A session requires at least one connected player")
-        if any(participant.role_id is None for participant in self.participants):
-            raise DomainRuleViolation("Every connected player must have an assigned role")
+        if self.status is not SessionStatus.READY:
+            raise DomainRuleViolation("Only a ready session can be started")
         self.status = SessionStatus.ACTIVE
 
     def _participant(self, participant_id: UUID) -> Participant:
         for participant in self.participants:
             if participant.id == participant_id:
                 return participant
-        raise DomainRuleViolation("Participant is not connected to this session")
+        raise NotFoundError("Participant is not connected to this session")
 
     def _refresh_readiness(self) -> None:
         has_players = bool(self.participants)
