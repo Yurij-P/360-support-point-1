@@ -98,3 +98,9 @@
 - Added FAILED `ImpactResult` creation with unchanged versions on required calculation failure.
 - Remaining required work before this gap-analysis cycle can be closed: execution-level resource membership validation and complete typed event source/target payload migration with contract tests.
 - No commit or push performed for this continuation.
+
+#### Cycle 1 — typed lifecycle/resource validation checkpoint
+
+- **Основний commit:** `a1afde4367040ecf34a2a904e71d087c36e61439`.
+- **Push:** успішно виконано до `origin/main`; local HEAD дорівнював `origin/main`.
+- **Перевірки:** Impact contracts/engine `40 passed`; full suite `334 passed`; Ruff, MyPy, `git diff --check` passed.
