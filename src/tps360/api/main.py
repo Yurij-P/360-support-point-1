@@ -1,6 +1,7 @@
 import os
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -15,6 +16,15 @@ from .routers import (
 )
 
 app = FastAPI(title="TPS360 API", version="0.1.0")
+
+LOCAL_PARTICIPANT_ORIGINS = ["http://localhost:3001", "http://127.0.0.1:3001"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=LOCAL_PARTICIPANT_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Participant-Token"],
+)
 
 # Serve static files from the web directory
 web_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "web"))

@@ -1,3 +1,11 @@
+## 2.3 - Participant API integration
+
+- Fixed the raw-template rendering cause by executing the component script as JavaScript and starting runtime reconnect after the first render.
+- Added real join and participant polling calls with separate join and participant credentials.
+- Added local participant session persistence and reconnect state handling without exposing the participant token.
+- Removed participant-facing role controls; role profiles come only from facilitator assignment returned by the API.
+- Added local API client tests and documented the local API/frontend launch commands.
+- Added restricted local CORS for the participant preview origins.
 # TPS360 Wireframes — changelog
 
 ## v2.1 · категорії учасників і рольова адаптація (25.07.2026)
