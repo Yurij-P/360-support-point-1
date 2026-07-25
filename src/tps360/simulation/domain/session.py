@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import StrEnum
 from hashlib import sha256
-from secrets import compare_digest
+from secrets import compare_digest, token_urlsafe
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -29,10 +29,27 @@ class SessionJournalEntryType(StrEnum):
     SESSION_COMPLETED = "session_completed"
 
 
+class ParticipantLifecycle(StrEnum):
+    ROLE_PENDING = "role_pending"
+    ROLE_ASSIGNED = "role_assigned"
+
+
 class Participant(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     display_name: str = Field(min_length=1)
     role_id: UUID | None = None
+    lifecycle: ParticipantLifecycle = ParticipantLifecycle.ROLE_PENDING
+    reconnect_status: str = "new"
+    participant_token_digest: str | None = Field(default=None, exclude=True, repr=False)
+
+
+class RoleProfile(BaseModel):
+    role_id: UUID
+    title: str = Field(min_length=1)
+    category: str = Field(min_length=1)
+    briefing: str = Field(min_length=1)
+    allowed_actions: list[str] = Field(default_factory=list)
+    visibility_rules: list[str] = Field(default_factory=list)
 
 
 class SessionInject(BaseModel):
@@ -75,9 +92,15 @@ class FacilitatedSession(BaseModel):
     decisions: list[ParticipantDecision] = Field(default_factory=list)
     journal: list[SessionJournalEntry] = Field(default_factory=list)
     facilitator_token_digest: str = Field(exclude=True, repr=False)
+    join_token_digest: str = Field(default="", exclude=True, repr=False)
+    role_profiles: list[RoleProfile] = Field(default_factory=list)
 
     @staticmethod
     def digest_facilitator_token(token: str) -> str:
+        return sha256(token.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def digest_participant_token(token: str) -> str:
         return sha256(token.encode("utf-8")).hexdigest()
 
     def accepts_facilitator_token(self, token: str) -> bool:
@@ -85,6 +108,34 @@ class FacilitatedSession(BaseModel):
             self.facilitator_token_digest,
             self.digest_facilitator_token(token),
         )
+
+    def accepts_join_token(self, token: str) -> bool:
+        return compare_digest(self.join_token_digest, self.digest_facilitator_token(token))
+
+    def join_participant(
+        self,
+        display_name: str,
+        join_token: str | None = None,
+        participant_token: str | None = None,
+    ) -> tuple[Participant, str | None]:
+        if participant_token is not None:
+            participant = self.participant_for_token(participant_token)
+            participant.reconnect_status = "restored"
+            return participant, None
+        if join_token is None or not self.accepts_join_token(join_token):
+            raise DomainRuleViolation("Join token is invalid")
+        if self.status not in {SessionStatus.LOBBY, SessionStatus.READY}:
+            raise DomainRuleViolation("Players can join only before the session starts")
+        if len(self.participants) >= self.player_capacity:
+            raise DomainRuleViolation("Session player capacity has been reached")
+        token = token_urlsafe(32)
+        participant = Participant(
+            display_name=display_name,
+            participant_token_digest=self.digest_participant_token(token),
+        )
+        self.participants.append(participant)
+        self._refresh_readiness()
+        return participant, token
 
     def join(self, display_name: str) -> Participant:
         if self.status not in {SessionStatus.LOBBY, SessionStatus.READY}:
@@ -100,9 +151,29 @@ class FacilitatedSession(BaseModel):
         if self.status not in {SessionStatus.LOBBY, SessionStatus.READY}:
             raise DomainRuleViolation("Roles can be assigned only before the session starts")
         participant = self._participant(participant_id)
+        if self.role_profiles and not any(profile.role_id == role_id for profile in self.role_profiles):
+            raise DomainRuleViolation("Role is not available in this session")
         participant.role_id = role_id
+        participant.lifecycle = ParticipantLifecycle.ROLE_ASSIGNED
         self._refresh_readiness()
         return participant
+
+    def participant_for_token(self, token: str) -> Participant:
+        token_digest = self.digest_participant_token(token)
+        for participant in self.participants:
+            if participant.participant_token_digest and compare_digest(
+                participant.participant_token_digest, token_digest
+            ):
+                return participant
+        raise DomainRuleViolation("Participant token is invalid")
+
+    def role_profile(self, role_id: UUID | None) -> RoleProfile | None:
+        if role_id is None:
+            return None
+        return next(
+            (profile for profile in self.role_profiles if profile.role_id == role_id),
+            None,
+        )
 
     def start(self) -> None:
         if self.status is not SessionStatus.READY:
