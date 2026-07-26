@@ -37,7 +37,8 @@ class ScenarioTemplateCatalogItem:
     required_topography: tuple[SpatialTopographyFeature, ...] = ()
 
 
-# Default Scenario Templates (Flooding, Landslide, Nuclear, Epizootic, Blackout, Wartime Multi-Hazard)
+# Dynamic catalog templates. Note: Topographical and infrastructure requirements are non-dogmatic.
+# They serve as open spatial criteria evaluated against dynamic OpenStreetMap/GIS layers of any target community.
 SEED_SCENARIOS: dict[str, ScenarioTemplateCatalogItem] = {
     "scen_flooding_v1": ScenarioTemplateCatalogItem(
         id="scen_flooding_v1",
@@ -56,8 +57,8 @@ SEED_SCENARIOS: dict[str, ScenarioTemplateCatalogItem] = {
     ),
     "scen_landslide_v1": ScenarioTemplateCatalogItem(
         id="scen_landslide_v1",
-        title="Зсув ґрунту та каменепад на гірську автодорогу",
-        description="Гірська надзвичайна ситуація: блокування автошляхів та перекриття гірського перевалу (Верховинський тип).",
+        title="Зсув ґрунту та каменепад на автодорогу",
+        description="НС геоморфологічного типу: блокування автошляхів та перекриття транспортних артерій у схилових/гірських зонах.",
         difficulty="HIGH",
         threat_category="NATURAL",
         crisis_velocity=CrisisVelocity.FAST,
@@ -131,7 +132,7 @@ SEED_SCENARIOS: dict[str, ScenarioTemplateCatalogItem] = {
 
 
 class ScenarioCatalogService:
-    """Service managing simulation scenario discovery and community passport compatibility evaluation."""
+    """Generic open service managing simulation scenario discovery and map-based compatibility evaluation for ANY community."""
 
     def __init__(self, scenarios: dict[str, ScenarioTemplateCatalogItem] | None = None) -> None:
         self._scenarios = scenarios if scenarios is not None else SEED_SCENARIOS
@@ -149,6 +150,11 @@ class ScenarioCatalogService:
     def evaluate_compatibility(
         self, scenario_id: str, passport: CommunityPassportReadModel
     ) -> ScenarioCompatibilityResult:
+        """Dynamically evaluates map & spatial compatibility of a scenario against a community's passport.
+        
+        Important Domain Rule: Spatial features and infrastructure requirements are NOT dogmatic or tied to specific community names.
+        They represent dynamic GIS criteria matched against whatever OpenStreetMap/spatial layers exist in the provided passport.
+        """
         scenario = self.get_scenario(scenario_id)
 
         present_categories = set(item.category for item in passport.infrastructure_items)
@@ -157,7 +163,7 @@ class ScenarioCatalogService:
         found_infra = present_categories.intersection(required_infra)
         missing_infra = required_infra - found_infra
 
-        # Spatial topography validation
+        # Dynamic spatial topography validation
         present_topography = set(passport.topography_features)
         required_topo = set(scenario.required_topography)
 
@@ -176,7 +182,7 @@ class ScenarioCatalogService:
                 if req_t not in present_topography:
                     topography_match = False
                     missing_prereqs.append(
-                        f"Неможливо за картографічним рельєфом: даний сценарій вимагає геопросторової риси {req_t.value}, якої немає в картографічних межах громади."
+                        f"Неможливо за картографічними даними: даний сценарій вимагає геопросторової риси {req_t.value}, яка відсутня у топографічному шарі даної громади."
                     )
 
         if missing_infra:
