@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import sessions
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
+from tps360.simulation.domain.decision_payload import validate_decision_payload
 from tps360.simulation.domain.session import (
     FacilitatedSession,
     Participant,
@@ -247,11 +248,15 @@ def submit_decision(
     inject = domain_action(lambda: session._inject(inject_id))
     if not participant_can_access_inject(participant, inject):
         raise HTTPException(403, "Inject is not available to this participant")
+    try:
+        decision_payload = validate_decision_payload(request.decision_payload)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     return domain_action(
         lambda: session.submit_decision(
             inject_id,
             participant.id,
-            request.decision_payload,
+            decision_payload,
         )
     )
 

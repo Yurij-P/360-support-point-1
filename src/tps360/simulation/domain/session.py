@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
+from tps360.simulation.domain.decision_payload import validate_decision_payload
 
 
 def utcnow() -> datetime:
@@ -216,11 +217,16 @@ class FacilitatedSession(BaseModel):
         ):
             raise DomainRuleViolation("Participant already submitted a decision for this inject")
 
+        try:
+            validated_decision_payload = validate_decision_payload(decision_payload)
+        except ValueError as exc:
+            raise DomainRuleViolation(str(exc)) from exc
+
         decision = ParticipantDecision(
             inject_id=inject_id,
             participant_id=participant_id,
             role_id=participant.role_id,
-            decision_payload=decision_payload,
+            decision_payload=validated_decision_payload,
         )
         self.decisions.append(decision)
         self._record(
