@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from .routers import (
     assessments,
     communities,
+    directives,
     preparedness_profiles,
     risks,
     scenarios,
@@ -49,5 +50,7 @@ for router in (
     sessions.router,
     simulations.router,
     preparedness_profiles.router,
+    directives.router,
 ):
     app.include_router(router)
+

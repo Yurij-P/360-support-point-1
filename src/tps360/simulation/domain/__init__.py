@@ -278,6 +278,9 @@ __all__ += [
     "WorkspaceInteractionReference", "WorkspaceResourceReference",
 ]
 
+from .task_directive import DirectivePriority as DirectivePriority
+from .task_directive import DirectiveStatus as DirectiveStatus
+from .task_directive import TaskDirective as TaskDirective
 from .task_execution import ExecutionResourceState as ExecutionResourceState
 from .task_execution import ExecutionTransition as ExecutionTransition
 from .task_execution import ProcessedRound as ProcessedRound
@@ -293,8 +296,9 @@ from .task_execution import TransitionReason as TransitionReason
 from .task_execution import TransitionType as TransitionType
 
 __all__ += [
-    "ExecutionResourceState", "ExecutionTransition", "ProcessedRound", "ResourceReservation",
-    "RoundCommand", "RoundExecutionResult", "TaskExecution", "TaskExecutionState",
-    "TaskExecutionStatus", "TaskResourceAllocation", "TaskRoundExecutionEngine",
-    "TransitionReason", "TransitionType",
+    "DirectivePriority", "DirectiveStatus", "ExecutionResourceState", "ExecutionTransition",
+    "ProcessedRound", "ResourceReservation", "RoundCommand", "RoundExecutionResult",
+    "TaskDirective", "TaskExecution", "TaskExecutionState", "TaskExecutionStatus",
+    "TaskResourceAllocation", "TaskRoundExecutionEngine", "TransitionReason", "TransitionType",
 ]
+
