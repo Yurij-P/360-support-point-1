@@ -91,3 +91,12 @@ def test_facilitator_console_api_endpoints() -> None:
     assert adv_resp.status_code == 200
     ad_data = adv_resp.json()
     assert ad_data["new_round"] == 2
+    assert ad_data["is_session_finished"] is False
+
+    # Advance Round with 100% Mitigation (Dynamic AI completion)
+    comp_resp = client.post(f"/sessions/{sess_id}/rounds/advance?current_round=2&mitigation_score_pct=100.0")
+    assert comp_resp.status_code == 200
+    c_data = comp_resp.json()
+    assert c_data["is_session_finished"] is True
+    assert c_data["status"] == "COMPLETED_SUCCESS"
+

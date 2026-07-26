@@ -230,13 +230,17 @@ def approve_ai_proposal(
 def advance_round(
     session_id: str,
     current_round: int = Query(default=1, ge=1),
+    mitigation_score_pct: float = Query(default=0.0, ge=0.0, le=100.0),
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
 ) -> dict[str, Any]:
     # Resolve pending LEGO decisions execution in round
     role_dashboard_service.resolve_round_execution(session_id=session_id, round_number=current_round)
     return facilitator_console_service.advance_session_round(
-        session_id=session_id, current_round=current_round
+        session_id=session_id,
+        current_round=current_round,
+        mitigation_score_pct=mitigation_score_pct,
     )
+
 
 
 

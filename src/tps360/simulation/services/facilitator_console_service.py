@@ -196,14 +196,32 @@ class FacilitatorConsoleService:
         self._approved_variants[session_id] = matched
         return approved_item
 
-    def advance_session_round(self, session_id: str, current_round: int) -> dict[str, Any]:
-        """Advances the session round by 1, resolves execution state, and returns execution summary."""
+    def advance_session_round(
+        self, session_id: str, current_round: int, mitigation_score_pct: float = 0.0
+    ) -> dict[str, Any]:
+        """Advances the session round or completes the simulation dynamically based on AI evaluation of player decisions and resource investments."""
+        is_completed = mitigation_score_pct >= 100.0
+        if is_completed:
+            return {
+                "session_id": session_id,
+                "current_round": current_round,
+                "total_rounds_played": current_round,
+                "mitigation_score_pct": mitigation_score_pct,
+                "is_session_finished": True,
+                "status": "COMPLETED_SUCCESS",
+                "message": f"ШІ оцінив результативність залучених ресурсів та рішень гравців: кризову подію повністю ліквідовано за {current_round} ранд(ів). Симуляцію успішно завершено!",
+            }
+
         next_round = current_round + 1
         return {
             "session_id": session_id,
             "previous_round": current_round,
             "new_round": next_round,
+            "total_rounds_played": current_round,
+            "mitigation_score_pct": mitigation_score_pct,
+            "is_session_finished": False,
             "clock_simulated_hours": float(next_round * 1.5),
             "status": "ROUND_ADVANCED",
-            "message": f"Раунд симуляції успішно переведено до Раунду {next_round}.",
+            "message": f"Рішення та ресурси розраховано ШІ (рівень ліквідації: {mitigation_score_pct:.1f}%). Симуляцію переведено до Раунду {next_round}.",
         }
+
