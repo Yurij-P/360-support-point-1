@@ -12,7 +12,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check .
       - run: python -m mypy src/tps360
       - run: python -m pytest
+      - run: node --test docs/ux-ui/prototypes/participant-workspace-v1.1/*.test.js
