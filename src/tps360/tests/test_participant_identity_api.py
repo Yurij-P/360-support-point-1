@@ -73,7 +73,7 @@ def test_join_token_is_separate_from_facilitator_token_and_reconnect_is_idempote
     assert profile.json()["reconnect_status"] == "restored"
     assert "facilitator_token" not in profile.json()
     assert "participants" not in profile.json()
-    assert "decisions" not in profile.json()
+    assert profile.json()["decisions"] == []
 
 
 def test_participant_endpoint_requires_valid_participant_token() -> None:

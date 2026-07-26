@@ -65,8 +65,7 @@ class ParticipantDecision(BaseModel):
     inject_id: UUID
     participant_id: UUID
     role_id: UUID
-    selected_action: str = Field(min_length=1)
-    rationale: str | None = None
+    decision_payload: dict[str, Any]
     submitted_at: datetime = Field(default_factory=utcnow)
 
 
@@ -204,8 +203,7 @@ class FacilitatedSession(BaseModel):
         self,
         inject_id: UUID,
         participant_id: UUID,
-        selected_action: str,
-        rationale: str | None = None,
+        decision_payload: dict[str, Any],
     ) -> ParticipantDecision:
         self._require_active("Decisions can be submitted only during an active session")
         self._inject(inject_id)
@@ -222,8 +220,7 @@ class FacilitatedSession(BaseModel):
             inject_id=inject_id,
             participant_id=participant_id,
             role_id=participant.role_id,
-            selected_action=selected_action,
-            rationale=rationale,
+            decision_payload=decision_payload,
         )
         self.decisions.append(decision)
         self._record(

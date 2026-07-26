@@ -118,7 +118,7 @@ button{font-family:inherit}
             <p style="margin:0;min-height:24px;padding:10px 12px;border:1px solid #dcdcd8;border-radius:5px;background:#fafaf8;font:400 12px/1.5 system-ui,-apple-system,Arial,sans-serif;color:#44443f">{{ apiMessage }}</p>
             <p style="margin:0;padding:10px 12px;border:1px dashed #b9b9b2;background:#fbfbf9;font:400 11.5px/1.5 'IBM Plex Mono',monospace;color:#55554f">MOCK DATA local participant session; API REQUIRED for server persistence.</p>
             <button type="button" onClick="{{ joinSession }}" disabled="{{ joinBusy }}" style="min-height:48px;border:1px solid #1b1b1a;border-radius:5px;background:#1b1b1a;color:#fff;font:600 15px/1 system-ui,-apple-system,Arial,sans-serif;cursor:pointer">Join session</button>
-            <span style="font:400 11.5px/1.5 system-ui,-apple-system,Arial,sans-serif;color:#6b6b66;text-align:center">Use an invitation link with ?session_id=... to prefill the session.</span>
+            <span style="font:400 11.5px/1.5 system-ui,-apple-system,Arial,sans-serif;color:#6b6b66;text-align:center">Use an invitation link with ?session_id=… to prefill the session.</span>
           </section>
           <section style="border:1px dashed #b9b9b2;border-radius:6px;background:#fff;padding:16px">
             <h2 style="font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0 0 4px">Стани входу (варіанти повідомлень)</h2>
@@ -441,10 +441,10 @@ button{font-family:inherit}
                 <span style="padding:4px 7px;border-radius:4px;border:1px solid #c9a5a1;background:#f9efee;font:600 10px/1.2 'IBM Plex Mono',monospace;color:#7a2f28">ПОДІЯ ОНОВЛЕНА 10:51</span>
                 <span style="font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:#8a8a84">отримано 10:47 · джерело: диспетчер водоканалу (усне повідомлення)</span>
               </div>
-              <h1 style="font:600 20px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Падіння тиску в мережі, знеструмлення насосної станції №2</h1>
+              <h1 style="font:600 20px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">{{ currentInject.title }}</h1>
             </header>
             <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
-              <p style="margin:0;font:400 13.5px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f;text-wrap:pretty">Демонстраційний опис події для перевірки структури екрана. Диспетчер повідомляє про падіння тиску в центральній мережі та зупинку насосної станції №2. Причина зупинки уточнюється. Кількість відключених споживачів на момент повідомлення невідома.</p>
+              <p style="margin:0;font:400 13.5px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#33332f;text-wrap:pretty">{{ currentInject.description }}</p>
 
               <section>
                 <h2 style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8a8a84;margin:0 0 8px">РІВЕНЬ ПІДТВЕРДЖЕННЯ ІНФОРМАЦІЇ</h2>
@@ -502,15 +502,15 @@ button{font-family:inherit}
           <button type="button" onClick="{{ toP5 }}" style="min-height:40px;padding:0 10px;border:1px solid #d5d5d1;border-radius:5px;background:#fff;font:500 12px/1 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;cursor:pointer">← Подія</button>
           <div style="flex:1 1 300px">
             <h1 style="font:600 20px/1.25 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Підготовка рішення</h1>
-            <p style="font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Пов’язана подія: падіння тиску в мережі, знеструмлення насосної №2 · 10:47</p>
+            <p style="font:400 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#6b6b66;margin:4px 0 0">Пов’язана подія: {{ currentInject.title }}</p>
           </div>
-          <span style="padding:4px 7px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">PRODUCT DECISION REQUIRED — DECISION STRUCTURE AND APPROVAL WORKFLOW</span>
+          <span style="padding:4px 7px;border-radius:3px;border:1px solid #d9c99f;background:#fdf6e7;font:500 9px/1.2 'IBM Plex Mono',monospace;color:#7a5a12">TRANSPORT PROTOTYPE — LEGO DECISION BUILDER WILL FOLLOW</span>
         </div>
 
         <div style="display:grid;grid-template-columns:{{ decisionCols }};gap:14px;align-items:start">
           <section style="border:1px solid #d5d5d1;border-radius:6px;background:#fff">
             <header style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e6e6e2">
-              <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Форма рішення · запропонована структура</h2>
+              <h2 style="flex:1;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;margin:0">Тимчасовий прототип введення рішення</h2>
               <span style="display:inline-flex;align-items:center;gap:6px;font:400 11.5px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#55554f"><span aria-hidden="true" style="font-family:'IBM Plex Mono',monospace">✓</span>{{ autosave }}</span>
             </header>
             <div style="padding:14px;display:flex;flex-direction:column;gap:13px">
@@ -560,7 +560,7 @@ button{font-family:inherit}
             </section>
             </sc-if>
 
-             <span style="font:400 11px/1.55 IBM Plex Mono,monospace;color:#8a8a84">API REQUIRED - PROPOSED CONTRACT, NOT IMPLEMENTED: local decision draft/submission only</span>
+             <span style="font:400 11px/1.55 IBM Plex Mono,monospace;color:#8a8a84">Тимчасовий прототип введення рішення · submit передає opaque decision_payload; LEGO-конструктор буде реалізований окремо</span>
           </aside>
         </div>
       </main>
@@ -887,7 +887,12 @@ class Component extends DCLogic {
         participantToken: saved.participantToken || saved.participant_token || base.participantToken,
         roleProfile: saved.roleProfile || null,
         joinForm: Object.assign(base.joinForm, saved.joinForm || {}),
-        decisionDraft: Object.assign(base.decisionDraft, saved.decisionDraft || {})
+        decisionDraft: Object.assign(base.decisionDraft, saved.decisionDraft || {}),
+        decisions: Array.isArray(saved.decisions) ? saved.decisions : [],
+        injects: Array.isArray(saved.injects) ? saved.injects : [],
+        selectedInjectId: saved.selectedInjectId || null,
+        decisionStatus: saved.decisionStatus || "idle",
+        decisionError: saved.decisionError || ""
       });
     } catch (_error) {
       return base;
@@ -970,7 +975,7 @@ class Component extends DCLogic {
         this.setState({ apiStatus: "invalid", apiMessage: "Enter session ID, join token, and display name." });
         return;
       }
-      this.setState({ joinBusy: true, apiStatus: "loading", apiMessage: "Joining session..." });
+      this.setState({ joinBusy: true, apiStatus: "loading", apiMessage: "Joining session…" });
       try {
         const payload = await this.api.joinSession(form.session_id.trim(), form.join_token.trim(), form.display_name.trim());
         if (!payload.participant_token) throw new Error("Participant token was not returned by API.");
@@ -992,7 +997,7 @@ class Component extends DCLogic {
     const token = this.state.participantToken;
     const sessionId = this.state.participant.session_id;
     if (!token || !sessionId) return;
-    if (isReconnect) this.setState({ apiStatus: "loading", apiMessage: "Restoring participant session..." });
+    if (isReconnect) this.setState({ apiStatus: "loading", apiMessage: "Restoring participant session…" });
     try {
       const payload = await this.api.getParticipant(sessionId, token);
       this.applyParticipantPayload(payload);
@@ -1029,6 +1034,58 @@ class Component extends DCLogic {
     };
   }
 
+
+  submitDecision() {
+    return async () => {
+      if (this.state.submitted || this.state.decisionStatus === "loading") return;
+      const injects = Array.isArray(this.state.injects) ? this.state.injects : [];
+      const inject = injects.find((item) => item.id === this.state.selectedInjectId) || injects[0];
+      const draft = this.state.decisionDraft;
+      const valid = Boolean(inject && draft.title.trim() && draft.description.trim() && draft.rationale.trim());
+      if (!valid) {
+        this.setState({ decisionStatus: "error", decisionError: inject ? "Complete required fields before submitting." : "No active inject is available for decision submission." });
+        return;
+      }
+      const decisionPayload = {
+        schema_version: "participant-decision-draft-0.1",
+        kind: "structured_decision_placeholder",
+        blocks: [],
+        notes: {
+          title: draft.title.trim(),
+          description: draft.description.trim(),
+          rationale: draft.rationale.trim()
+        }
+      };
+      this.setState({ decisionStatus: "loading", decisionError: "", apiMessage: "Submitting participant decision…" });
+      try {
+        const decision = await this.api.submitDecision(
+          this.state.participant.session_id,
+          inject.id,
+          this.state.participantToken,
+          this.state.participant.participant_id,
+          decisionPayload
+        );
+        const decisions = (this.state.decisions || []).filter((item) => item.id !== decision.id).concat([decision]);
+        this.setState({
+          submitted: true,
+          decision,
+          decisions,
+          selectedInjectId: inject.id,
+          decisionStatus: "decision_submitted",
+          apiStatus: "connected",
+          apiMessage: "Decision submitted to facilitator."
+        });
+      } catch (error) {
+        this.setState({
+          submitted: false,
+          decisionStatus: "error",
+          decisionError: (error && error.message) || "Decision submission failed.",
+          apiStatus: "error",
+          apiMessage: (error && error.message) || "Decision submission failed."
+        });
+      }
+    };
+  }
   toScreen(n) {
     return () => {
       if (n >= 3 && !this.state.roleAssigned) return;
@@ -1160,9 +1217,11 @@ class Component extends DCLogic {
     const scenario = { scenario_id: "scenario-server-defined", version: "API REQUIRED", title: "Scenario supplied by session API", role_profile_ids: S.roleAssigned ? [S.role] : [] };
     const session = { session_id: S.participant.session_id || "", scenario_id: scenario.scenario_id, name: S.participant.session_id || "Participant session", context: S.apiStatus === "connected" ? "API connected" : "Participant workspace", state: S.lifecycle, status: S.apiStatus, role_ids: S.roleAssigned ? [S.role] : [] };
     const participant = Object.assign({}, S.participant, { session_id: S.participant.session_id || "", role_id: S.roleAssigned ? S.role : null, role_version: S.roleAssigned ? R.role_version : null });
-    const sessionState = { state: session.state, role_assigned: S.roleAssigned, ready: S.ready, submitted: S.submitted, persistence: "participant API; API REQUIRED for server persistence" };
-    const injects = [{ inject_id: "inject-demo-12", status: "MOCK DATA", event_type: "water-supply" }];
-    const decisions = S.decision ? [S.decision] : [];
+    const sessionState = { state: session.state, role_assigned: S.roleAssigned, ready: S.ready, submitted: S.submitted, persistence: "participant API" };
+    const injects = (Array.isArray(S.injects) ? S.injects : []).map((inject) => Object.assign({ inject_id: inject.id, status: "active", event_type: "session-inject" }, inject));
+    const selectedInject = injects.find((inject) => inject.id === S.selectedInjectId) || injects[0] || null;
+    const currentInject = selectedInject || { id: "", title: "Очікування inject", description: "Фасилітатор ще не надіслав подію для вашої ролі." };
+    const decisions = Array.isArray(S.decisions) ? S.decisions : (S.decision ? [S.decision] : []);
     const allowedActions = S.roleAssigned ? R.allowed_actions : [];
     const roleCatalog = [
       { title: "Орган місцевого самоврядування", items: ["Голова громади", "Заступник голови", "Керівник або спеціаліст із цивільного захисту", "Представник виконавчих органів ради"] },
@@ -1204,13 +1263,15 @@ class Component extends DCLogic {
     const wsTabDefs = [["context", "Контекст громади"], ["map", "Карта"], ["resources", "Ресурси"]];
     const wsTabs = wsTabDefs.map(([id, label]) => ({ label, on: S.wsTab === id, go: () => this.setState({ wsTab: id }), border: S.wsTab === id ? D : "#cfcfca", bg: S.wsTab === id ? "#e9e9e5" : "#fff", font: (S.wsTab === id ? "600" : "400") + " 12.5px/1 system-ui,-apple-system,'Segoe UI',Arial,sans-serif" }));
 
-    const formValid = Boolean(S.decisionDraft.title.trim() && S.decisionDraft.description.trim() && S.decisionDraft.rationale.trim());
+    const formValid = Boolean(selectedInject && S.decisionDraft.title.trim() && S.decisionDraft.description.trim() && S.decisionDraft.rationale.trim());
 
-    const submit = S.submitted
-      ? { label: "Submitted - local MOCK DATA", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
-      : formValid
-        ? { label: "Submit decision", bg: D, fg: "#fff", border: D }
-        : { label: "Complete required fields", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" };
+    const submit = S.submitted || S.decisionStatus === "decision_submitted"
+      ? { label: "Submitted to facilitator", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
+      : S.decisionStatus === "loading"
+        ? { label: "Submitting…", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
+        : formValid
+          ? { label: "Submit decision", bg: D, fg: "#fff", border: D }
+          : { label: selectedInject ? "Complete required fields" : "Waiting for inject", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" };
     const reflect = S.reflectSent
       ? { label: "Відповіді надіслано ✓", bg: "#efeeea", fg: GRAY, border: "#c9c9c4" }
       : { label: "Надіслати відповіді", bg: D, fg: "#fff", border: D };
@@ -1387,7 +1448,7 @@ class Component extends DCLogic {
         { cells: ["GET /sessions/{id}/events?since=", "нові та оновлені події для ролі", "4, 5"] },
         { cells: ["GET /events/{id}", "деталі події, рівні підтвердження, вкладення", "5"] },
         { cells: ["GET /sessions/{id}/geo-fragment", "геопросторовий фрагмент робочого вікна", "4"] },
-        { cells: ["Local decision draft/submission", "MOCK DATA only; backend endpoint is not implemented", "6"] },
+        { cells: ["Participant decision submission", "POST /sessions/{id}/injects/{inject_id}/decisions через X-Participant-Token", "6"] },
         { cells: ["POST /decisions", "подання рішення з ідемпотентним ключем", "6"] },
         { cells: ["GET /participants/{id}/summary", "підсумок участі та подані рішення", "7"] },
         { cells: ["POST /participants/{id}/reflection", "надсилання індивідуальної рефлексії", "7"] }
@@ -1431,30 +1492,11 @@ class Component extends DCLogic {
       toP1: this.toScreen(1), toP2: this.toScreen(2), toP3: this.toScreen(3), toP4: this.toScreen(4), toP5: this.toScreen(5), toP6: this.toScreen(6), toP7: this.toScreen(7), joinSession: this.joinSession(),
       toggleConfirm: () => this.setState({ confirmed: !S.confirmed }),
       toggleReady: () => { if (S.roleAssigned) this.setState({ ready: !S.ready }); },
-      submitDecision: () => {
-        if (S.submitted || !formValid) return;
-        const decision = {
-          decision_id: "decision-demo-001",
-          participant_id: participant.participant_id,
-          session_id: session.session_id,
-          inject_id: "inject-demo-12",
-          data: {
-            title: S.decisionDraft.title,
-            description: S.decisionDraft.description,
-            rationale: S.decisionDraft.rationale,
-            allowed_actions: allowedActions
-          },
-          status: "Submitted",
-          submitted_at: new Date().toISOString(),
-          locked: true,
-          persistence: "MOCK DATA - API REQUIRED"
-        };
-        this.setState({ submitted: true, decision });
-      },
+      submitDecision: this.submitDecision(),
       sendReflection: () => this.setState({ reflectSent: true }),
-      submitted: S.submitted, notSubmitted: !S.submitted, decisionLocked: S.submitted, formValid, updateDecisionField: this.updateDecisionField(), reflectSent: S.reflectSent,      decisionStorage: "MOCK DATA - localStorage; API REQUIRED - backend submission",
+      submitted: S.submitted, notSubmitted: !S.submitted, decisionLocked: S.submitted, formValid, updateDecisionField: this.updateDecisionField(), reflectSent: S.reflectSent,      decisionStorage: S.decisionStatus === "error" ? S.decisionError : (S.decisionStatus === "decision_submitted" ? "decision_submitted - visible to facilitator journal" : "participant API"),
       autosave: "Чернетку збережено 10:52",
-      scenario, session, participant, sessionState, injects, decisions, allowedActions,
+      scenario, session, participant, sessionState, injects, currentInject, decisions, allowedActions,
       role: R, roleCatalog, roleProfiles, roleProfile: S.roleProfile, roleAssignment, lifecycle: S.lifecycle, decision: S.decision,
        joinForm: S.joinForm, joinBusy: S.joinBusy, apiMessage: S.apiMessage, updateJoinField: this.updateJoinField(), joinSession: this.joinSession(), logout: this.logout(),
       conn, joinStates, briefBlocks, techCheck, ready, confirm, wsTabs,

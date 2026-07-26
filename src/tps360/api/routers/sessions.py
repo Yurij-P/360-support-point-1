@@ -46,9 +46,8 @@ class SendInjectRequest(BaseModel):
 
 
 class SubmitDecisionRequest(BaseModel):
-    participant_id: UUID
-    selected_action: str = Field(min_length=1)
-    rationale: str | None = None
+    participant_id: UUID | None = None
+    decision_payload: dict[str, Any]
 
 
 class SessionResponse(BaseModel):
@@ -118,9 +117,13 @@ class ParticipantViewResponse(BaseModel):
     role_id: UUID | None
     role_profile: RoleProfile | None
     session_status: SessionStatus
+    injects: list[SessionInject] = Field(default_factory=list)
+    decisions: list[ParticipantDecision] = Field(default_factory=list)
+
 
 class ParticipantJoinResponse(ParticipantViewResponse):
     participant_token: str | None
+
 
 @router.get("/{session_id}")
 def get_session(
@@ -149,13 +152,17 @@ def join_participant(session_id: UUID, request: JoinSessionRequest) -> Participa
         role_id=participant.role_id,
         role_profile=session.role_profile(participant.role_id),
         session_status=session.status,
+        injects=participant_visible_injects(session, participant),
+        decisions=participant_decisions(session, participant),
         participant_token=participant_token,
     )
+
 
 @router.post("/{session_id}/participants")
 def join(session_id: UUID, request: JoinSessionRequest) -> Participant:
     session = item(session_id)
     return domain_action(lambda: session.join(request.display_name))
+
 
 @router.get("/{session_id}/participant")
 def get_participant(
@@ -173,6 +180,8 @@ def get_participant(
         role_id=participant.role_id,
         role_profile=session.role_profile(participant.role_id),
         session_status=session.status,
+        injects=participant_visible_injects(session, participant),
+        decisions=participant_decisions(session, participant),
     )
 
 
@@ -221,14 +230,20 @@ def submit_decision(
     session_id: UUID,
     inject_id: UUID,
     request: SubmitDecisionRequest,
+    participant_token: str | None = Header(None, alias="X-Participant-Token"),
 ) -> ParticipantDecision:
     session = item(session_id)
+    participant = authorize_participant(session, participant_token)
+    if request.participant_id is not None and request.participant_id != participant.id:
+        raise HTTPException(403, "Participant token does not match participant_id")
+    inject = domain_action(lambda: session._inject(inject_id))
+    if not participant_can_access_inject(participant, inject):
+        raise HTTPException(403, "Inject is not available to this participant")
     return domain_action(
         lambda: session.submit_decision(
             inject_id,
-            request.participant_id,
-            request.selected_action,
-            request.rationale,
+            participant.id,
+            request.decision_payload,
         )
     )
 
@@ -249,6 +264,39 @@ def get_journal(session_id: UUID) -> list[SessionJournalEntry]:
     return item(session_id).journal
 
 
+def participant_visible_injects(
+    session: FacilitatedSession, participant: Participant
+) -> list[SessionInject]:
+    return [
+        inject
+        for inject in session.injects
+        if participant_can_access_inject(participant, inject)
+    ]
+
+
+def participant_decisions(
+    session: FacilitatedSession, participant: Participant
+) -> list[ParticipantDecision]:
+    return [
+        decision
+        for decision in session.decisions
+        if decision.participant_id == participant.id
+    ]
+
+
+def participant_can_access_inject(participant: Participant, inject: SessionInject) -> bool:
+    payload = inject.payload or {}
+    role_targets = payload.get("target_role_ids") or payload.get("target_roles") or []
+    participant_targets = payload.get("target_participant_ids") or []
+    if participant_targets and str(participant.id) not in {
+        str(target) for target in participant_targets
+    }:
+        return False
+    if role_targets and str(participant.role_id) not in {str(target) for target in role_targets}:
+        return False
+    return True
+
+
 def authorize_participant(session: FacilitatedSession, participant_token: str | None) -> Participant:
     if participant_token is None:
         raise HTTPException(401, "Participant token is required")
@@ -256,6 +304,7 @@ def authorize_participant(session: FacilitatedSession, participant_token: str | 
         return session.participant_for_token(participant_token)
     except DomainRuleViolation as exc:
         raise HTTPException(403, str(exc)) from exc
+
 
 def authorize_facilitator(
     session: FacilitatedSession, facilitator_token: str | None

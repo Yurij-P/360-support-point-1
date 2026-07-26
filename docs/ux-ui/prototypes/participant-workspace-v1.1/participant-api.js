@@ -52,6 +52,16 @@
           headers: { "X-Participant-Token": participantToken }
         });
       },
+      async submitDecision(sessionId, injectId, participantToken, participantId, decisionPayload) {
+        return jsonRequest("/sessions/" + encodeURIComponent(sessionId) + "/injects/" + encodeURIComponent(injectId) + "/decisions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Participant-Token": participantToken },
+          body: JSON.stringify({
+            participant_id: participantId,
+            decision_payload: decisionPayload
+          })
+        });
+      },
       saveSession(session) {
         if (!storage) return;
         storage.setItem(storageKey, JSON.stringify({
