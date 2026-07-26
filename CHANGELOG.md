@@ -2,6 +2,18 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.5] — 2026-07-26
+
+### Додано
+
+- **PR #21 (Role Dashboard Workspace, LEGO Decision Card Builder, Resource Exhaustion & Inter-Role OMS Resource Transfer API):**
+  - Сервіс рольових кабінетів, відкритих конструкторів карточок LEGO та перерозподілу ресурсів (`RoleDashboardService`, `LegoDecisionCard`, `ResourceTransferDirective`, `RoleWorkspaceReadModel`).
+  - Стартовий інвентар ресурсів для ролей (`head_of_emergency`, `chief_medical_officer`, `chief_sanitary_inspector`, `chief_police_officer`, `chief_utility_officer`).
+  - Відкритий конструктор каток рішень LEGO: будується гравцем самостійно з кубиків дій (`EVACUATE`, `CONTAIN`, `EXTINGUISH_FIRE`, `REPAIR_LINE`, `DECONTAMINATE`, `DEPLOY_SHELTER`, `DISTRIBUTE_SUPPLIES` тощо), об'єктів OpenStreetMap та залучення ресурсів.
+  - Підтримка 100% списання залучених ресурсів за раунд з негайним блокуванням/резервуванням та відкладеним виконанням під час завершення раунду (`PENDING_ROUND_EXECUTION`).
+  - Офіційний міжрольовий перерозподіл ресурсів за Розпорядженнями Керівника штабу / Голови ОМС у межах повноважень місцевого самоврядування.
+  - REST API Кабінету ролі та Ресурсів (`GET /sessions/{id}/role-workspace`, `POST /sessions/{id}/lego-decisions`, `POST /sessions/{id}/resource-transfers`).
+
 ## [0.2.4] — 2026-07-26
 
 ### Додано
