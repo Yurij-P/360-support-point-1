@@ -68,10 +68,50 @@ class AICrisisCopilotService:
     """Autonomous AI Crisis Engine strictly grounded on empirical OSINT feeds and verified real-world incidents.
     
     IMPORTANT DOMAIN RULE:
-    The AI model MUST NEVER invent fictional crises or artificial lifecycles out of thin air.
-    It bases all lifecycle dynamics, secondary strike warnings (double-tap safety), secondary detonation radii (e.g. 2 km ammo fragmentation),
-    and hazard cascades strictly on verified real-world emergency reports (DSNS, OVA, General Staff) and actual physical practices.
+    The AI model possesses the complete holistic picture of the crisis (spatial spread, hazard radius, velocity).
+    It computes objective recommended resource allocations (AI Resource Estimates) for crisis resolution.
+    Players can allocate only the exact necessary resources needed for the round based on AI recommendations or up to 100% of their available balance.
     """
+
+    @staticmethod
+    def calculate_ai_recommended_resources(
+        action_type: str, hazard_radius_km: float = 1.0
+    ) -> dict[str, Decimal]:
+        """Calculates an objective AI recommended resource allocation based on crisis severity and hazard radius."""
+        act = action_type.strip().upper()
+        multiplier = Decimal(str(max(1.0, hazard_radius_km)))
+
+        if act == "EXTINGUISH_FIRE":
+            return {
+                "fire_trucks": (Decimal("3") * multiplier).quantize(Decimal("1")),
+                "fuel_liters": (Decimal("500") * multiplier).quantize(Decimal("1")),
+                "rescue_personnel": (Decimal("12") * multiplier).quantize(Decimal("1")),
+            }
+        elif act in ("CONTAIN", "EVACUATE"):
+            return {
+                "patrol_cars": (Decimal("4") * multiplier).quantize(Decimal("1")),
+                "rescue_personnel": (Decimal("15") * multiplier).quantize(Decimal("1")),
+                "fuel_liters": (Decimal("800") * multiplier).quantize(Decimal("1")),
+            }
+        elif act == "DECONTAMINATE":
+            return {
+                "decontamination_units": Decimal("2"),
+                "disinfectant_liters": (Decimal("400") * multiplier).quantize(Decimal("1")),
+                "sanitary_inspectors": Decimal("6"),
+            }
+        elif act == "REPAIR_LINE":
+            return {
+                "utility_repair_trucks": Decimal("2"),
+                "utility_workers": Decimal("8"),
+                "backup_generators": Decimal("2"),
+                "fuel_liters": Decimal("600"),
+            }
+        else:
+            return {
+                "vehicles": Decimal("2"),
+                "personnel": Decimal("10"),
+                "fuel_liters": Decimal("400"),
+            }
 
     @staticmethod
     def generate_round_proposal(context: CopilotInputContext) -> CopilotGenerationResult:

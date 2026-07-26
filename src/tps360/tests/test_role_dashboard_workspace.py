@@ -151,3 +151,11 @@ def test_role_workspace_api_endpoints() -> None:
     assert trans_resp.status_code == 200
     t_data = trans_resp.json()
     assert t_data["sender_role_id"] == "head_of_emergency"
+
+    # Query AI Resource Estimate
+    ai_resp = client.get(f"/sessions/{sess_id}/ai-resource-estimate?action_type=EXTINGUISH_FIRE&hazard_radius_km=1.5")
+    assert ai_resp.status_code == 200
+    ai_data = ai_resp.json()
+    assert "ai_recommended_resources" in ai_data
+    assert "fire_trucks" in ai_data["ai_recommended_resources"]
+

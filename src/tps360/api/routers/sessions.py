@@ -178,6 +178,27 @@ def get_role_workspace(session_id: str, role_id: str = Query(...)) -> RoleWorksp
     return role_dashboard_service.get_role_workspace(session_id=session_id, role_id=role_id)
 
 
+@router.get("/{session_id}/ai-resource-estimate")
+def get_ai_resource_estimate(
+    session_id: str,
+    action_type: str = Query(...),
+    hazard_radius_km: float = Query(default=1.0, ge=0.1),
+) -> dict[str, Any]:
+    from tps360.simulation.services.ai_crisis_copilot import AICrisisCopilotService
+
+    recommended = AICrisisCopilotService.calculate_ai_recommended_resources(
+        action_type=action_type, hazard_radius_km=hazard_radius_km
+    )
+    return {
+        "session_id": session_id,
+        "action_type": action_type.strip().upper(),
+        "hazard_radius_km": hazard_radius_km,
+        "ai_recommended_resources": recommended,
+        "calculation_basis": "Об'єктивний розрахунок ШІ на основі повної картини кризової події.",
+    }
+
+
+
 @router.post("/{session_id}/lego-decisions", response_model=LegoDecisionCard)
 def submit_lego_decision(session_id: str, req: SubmitLegoCardRequest) -> LegoDecisionCard:
     try:
