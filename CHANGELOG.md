@@ -2,7 +2,18 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.2] — 2026-07-26
+
+### Додано
+
+- **PR #18 (Community Catalog & OpenStreetMap Critical Infrastructure Passport Read Model API):**
+  - Вичерпна доменна онтологія 40+ категорій об'єктів критичної інфраструктури, АПК, видобутку, військово-оборонного компонента та небезпек (`CriticalInfrastructureCategory`, `OSMTagMapping`), прикріплена до тегів OpenStreetMap (`openstreetmap.org`).
+  - Агрегована Read Model Паспорта громади (`CommunityPassportReadModel`, `InfrastructureItemReadModel`) з картографічними межами OpenStreetMap, демографією, уразливими групами та балом готовності.
+  - Сервіс каталогу громад (`CommunityCatalogService`, `CommunityCatalogItem`).
+  - REST API Каталогу та Паспорта громад (`GET /communities/catalog`, `GET /communities/{community_id}/passport`).
+
 ## [0.2.1] — 2026-07-26
+
 
 ### Додано
 
