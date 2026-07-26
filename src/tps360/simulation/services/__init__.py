@@ -1,3 +1,15 @@
+from .aar_telemetry_service import (
+    AARTelemetryService as AARTelemetryService,
+)
+from .aar_telemetry_service import (
+    AfterActionReviewReport as AfterActionReviewReport,
+)
+from .aar_telemetry_service import (
+    ParticipantExperienceRecord as ParticipantExperienceRecord,
+)
+from .aar_telemetry_service import (
+    RoundTelemetrySnapshot as RoundTelemetrySnapshot,
+)
 from .ai_crisis_copilot import AICrisisCopilotService as AICrisisCopilotService
 from .ai_crisis_copilot import CopilotGenerationResult as CopilotGenerationResult
 from .ai_crisis_copilot import CopilotInputContext as CopilotInputContext
@@ -56,7 +68,9 @@ from .session_lobby_service import (
 )
 
 __all__ = [
+    "AARTelemetryService",
     "AICrisisCopilotService",
+    "AfterActionReviewReport",
     "CopilotGenerationResult",
     "CopilotInputContext",
     "CrisisLifecycleProjectionVariant",
@@ -66,13 +80,14 @@ __all__ = [
     "LegoDecisionCard",
     "LobbyParticipantStatus",
     "LobbyRoomStatus",
+    "ParticipantExperienceRecord",
     "PsychologicalFrictionInject",
     "ResourceTransferDirective",
-
     "RoleDashboardService",
     "RoleWorkspaceReadModel",
     "RoundExecutionService",
     "RoundExecutionServiceResult",
+    "RoundTelemetrySnapshot",
     "ScenarioCatalogService",
     "ScenarioCompatibilityResult",
     "ScenarioTemplateCatalogItem",
