@@ -6,6 +6,14 @@ from uuid import uuid4
 
 from tps360.core.exceptions import DomainRuleViolation, EntityNotFound
 
+# Room Capacity Bounds
+# Demo / Integration Testing Mode: Min 1, Max 50
+# Production Target: Min 5, Max 20 participants
+DEMO_MIN_CAPACITY = 1
+DEMO_MAX_CAPACITY = 50
+PROD_MIN_CAPACITY = 5
+PROD_MAX_CAPACITY = 20
+
 
 @dataclass(frozen=True)
 class LobbyParticipantStatus:
@@ -32,15 +40,25 @@ class LobbyRoomStatus:
 
 
 class SessionLobbyService:
-    """Manages pre-session multi-participant standby room, token registration, role assignment, and start readiness guards."""
+    """Manages pre-session multi-participant standby room, token registration, role assignment, and start readiness guards.
+    
+    Capacity configuration:
+    - Demo Testing Mode: Allows 1 to 50 participants for rapid single-developer or load testing.
+    - Production Target: Designed for 5 to 20 operational role participants per crisis simulation session.
+    """
 
-    def __init__(self) -> None:
+    def __init__(self, enforce_prod_capacity: bool = False) -> None:
         self._rooms: dict[str, dict[str, Any]] = {}
-
+        self._enforce_prod_capacity = enforce_prod_capacity
 
     def create_room(self, session_id: str, capacity: int = 10) -> LobbyRoomStatus:
-        if capacity < 1 or capacity > 50:
-            raise DomainRuleViolation("Lobby room capacity must be between 1 and 50.")
+        min_cap = PROD_MIN_CAPACITY if self._enforce_prod_capacity else DEMO_MIN_CAPACITY
+        max_cap = PROD_MAX_CAPACITY if self._enforce_prod_capacity else DEMO_MAX_CAPACITY
+
+        if capacity < min_cap or capacity > max_cap:
+            raise DomainRuleViolation(
+                f"Lobby room capacity must be between {min_cap} and {max_cap} participants."
+            )
         if session_id in self._rooms:
             raise DomainRuleViolation(f"Lobby room for session '{session_id}' already exists.")
 
@@ -121,11 +139,13 @@ class SessionLobbyService:
         connected_count = len(participants)
 
         # Pre-start Guard Rules:
-        # 1. At least 1 participant connected
+        # 1. At least 1 participant connected (or PROD_MIN_CAPACITY in production mode)
         # 2. All connected participants MUST have an assigned role
-        if connected_count == 0:
+        min_required = PROD_MIN_CAPACITY if self._enforce_prod_capacity else 1
+
+        if connected_count < min_required:
             can_start = False
-            message = "Кімната очікування порожня. Очікуйте підключення гравців."
+            message = f"Кімната очікування має {connected_count} підключених гравців (мінімум за регламентом: {min_required}). Очікуйте підключення."
         elif assigned_count < connected_count:
             unassigned_names = [p.display_name for p in participants if not p.is_assigned]
             can_start = False
