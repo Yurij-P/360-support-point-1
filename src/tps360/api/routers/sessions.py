@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from datetime import datetime
 from secrets import token_urlsafe
 from typing import Any, TypeVar
 from uuid import UUID
@@ -108,6 +109,13 @@ def create(request: CreateSessionRequest) -> CreateSessionResponse:
     )
 
 
+class ParticipantInjectResponse(BaseModel):
+    id: UUID
+    title: str
+    description: str
+    sent_at: datetime
+
+
 class ParticipantViewResponse(BaseModel):
     participant_id: UUID
     display_name: str
@@ -117,7 +125,7 @@ class ParticipantViewResponse(BaseModel):
     role_id: UUID | None
     role_profile: RoleProfile | None
     session_status: SessionStatus
-    injects: list[SessionInject] = Field(default_factory=list)
+    injects: list[ParticipantInjectResponse] = Field(default_factory=list)
     decisions: list[ParticipantDecision] = Field(default_factory=list)
 
 
@@ -260,15 +268,25 @@ def complete(
 
 
 @router.get("/{session_id}/journal")
-def get_journal(session_id: UUID) -> list[SessionJournalEntry]:
-    return item(session_id).journal
+def get_journal(
+    session_id: UUID,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> list[SessionJournalEntry]:
+    session = item(session_id)
+    authorize_facilitator(session, facilitator_token)
+    return session.journal
 
 
 def participant_visible_injects(
     session: FacilitatedSession, participant: Participant
-) -> list[SessionInject]:
+) -> list[ParticipantInjectResponse]:
     return [
-        inject
+        ParticipantInjectResponse(
+            id=inject.id,
+            title=inject.title,
+            description=inject.description,
+            sent_at=inject.sent_at,
+        )
         for inject in session.injects
         if participant_can_access_inject(participant, inject)
     ]

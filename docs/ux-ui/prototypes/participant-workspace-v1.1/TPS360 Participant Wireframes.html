@@ -874,6 +874,7 @@ class Component extends DCLogic {
       joinForm: { session_id: new URLSearchParams(window.location.search).get("session_id") || "", join_token: "", display_name: "", organization: "" },
       decision: null,
       decisionDraft: { title: "", description: "", rationale: "" },
+      injects: [], decisions: [], selectedInjectId: null, decisionStatus: "idle", decisionError: "",
       participant: { session_id: "", participant_id: "", display_name: "", role_id: null, role_version: null, reconnect_status: "new" }
     };
     try {
@@ -916,7 +917,11 @@ class Component extends DCLogic {
         submitted: this.state.submitted,
         reflectSent: this.state.reflectSent,
         decisionDraft: this.state.decisionDraft,
-        decision: this.state.decision
+        decision: this.state.decision,
+        injects: this.state.injects,
+        decisions: this.state.decisions,
+        selectedInjectId: this.state.selectedInjectId,
+        decisionStatus: this.state.decisionStatus === "error" ? "idle" : this.state.decisionStatus
       }));
     } catch (_error) {
       // MOCK DATA persistence is best effort in a restricted browser context.
@@ -939,6 +944,12 @@ class Component extends DCLogic {
   applyParticipantPayload(payload) {
     const assigned = Boolean(payload.role_assigned);
     const profile = payload.role_profile || null;
+    const injects = Array.isArray(payload.injects) ? payload.injects : [];
+    const decisions = Array.isArray(payload.decisions) ? payload.decisions : [];
+    const selectedInjectId = injects.some((inject) => inject.id === this.state.selectedInjectId)
+      ? this.state.selectedInjectId
+      : (injects[0] && injects[0].id) || null;
+    const submittedForSelectedInject = Boolean(selectedInjectId && decisions.some((decision) => decision.inject_id === selectedInjectId));
     this.setState({
       roleAssigned: assigned,
       role: payload.role_id || null,
@@ -947,6 +958,12 @@ class Component extends DCLogic {
       screen: assigned ? 3 : 2,
       apiStatus: "connected",
       apiMessage: assigned ? "Role assigned by facilitator. Briefing is available." : "Waiting for role assignment by the facilitator.",
+      injects,
+      decisions,
+      selectedInjectId,
+      submitted: submittedForSelectedInject,
+      decisionStatus: submittedForSelectedInject ? "decision_submitted" : "idle",
+      decisionError: "",
       participant: Object.assign({}, this.state.participant, {
         session_id: this.state.participant.session_id || this.state.joinForm.session_id,
         participant_id: payload.participant_id,

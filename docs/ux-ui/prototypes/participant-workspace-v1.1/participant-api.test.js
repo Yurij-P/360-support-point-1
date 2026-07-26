@@ -174,3 +174,26 @@ test("workspace decision UI is wired to API submission states", () => {
   assert.doesNotMatch(html, /Submitted - local MOCK DATA/);
   assert.doesNotMatch(html, /persistence: "MOCK DATA - API REQUIRED"/);
 });
+
+test("workspace applies server injects and decisions to UI state before submit", () => {
+  const fs = require("node:fs");
+  const html = fs.readFileSync("./docs/ux-ui/prototypes/participant-workspace-v1.1/TPS360 Participant Wireframes.html", "utf8");
+
+  assert.match(html, /const injects = Array\.isArray\(payload\.injects\) \? payload\.injects : \[\];/);
+  assert.match(html, /const decisions = Array\.isArray\(payload\.decisions\) \? payload\.decisions : \[\];/);
+  assert.match(html, /selectedInjectId,\s*submitted: submittedForSelectedInject,\s*decisionStatus: submittedForSelectedInject \? "decision_submitted" : "idle"/);
+  assert.match(html, /const inject = injects\.find\(\(item\) => item\.id === this\.state\.selectedInjectId\) \|\| injects\[0\];/);
+  assert.match(html, /this\.api\.submitDecision\([\s\S]*inject\.id,[\s\S]*decisionPayload/);
+});
+
+test("workspace persists inject decision context without stale errors", () => {
+  const fs = require("node:fs");
+  const html = fs.readFileSync("./docs/ux-ui/prototypes/participant-workspace-v1.1/TPS360 Participant Wireframes.html", "utf8");
+
+  assert.match(html, /injects: this\.state\.injects/);
+  assert.match(html, /decisions: this\.state\.decisions/);
+  assert.match(html, /selectedInjectId: this\.state\.selectedInjectId/);
+  assert.match(html, /decisionStatus: this\.state\.decisionStatus === "error" \? "idle" : this\.state\.decisionStatus/);
+  assert.match(html, /decisionError: ""/);
+  assert.doesNotMatch(html, /decisionError: this\.state\.decisionError/);
+});

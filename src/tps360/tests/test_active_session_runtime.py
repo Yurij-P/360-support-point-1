@@ -210,7 +210,7 @@ def test_active_session_api_flow() -> None:
     )
     assert duplicate.status_code == 409
 
-    journal = client.get(f"/sessions/{session_id}/journal")
+    journal = client.get(f"/sessions/{session_id}/journal", headers=headers)
     assert journal.status_code == 200
     assert [entry["type"] for entry in journal.json()] == [
         "session_started",
@@ -463,7 +463,35 @@ def test_facilitator_journal_contains_participant_decision_submission() -> None:
     )
     assert decision.status_code == 200
 
-    journal = client.get(f"/sessions/{session_id}/journal")
+    journal = client.get(f"/sessions/{session_id}/journal", headers=headers)
     assert journal.status_code == 200
     assert journal.json()[-1]["type"] == "decision_submitted"
     assert journal.json()[-1]["decision_id"] == decision.json()["id"]
+
+
+def test_facilitator_journal_requires_valid_facilitator_token() -> None:
+    session_id, headers, first, _ = start_two_participant_api_session()
+    inject = client.post(
+        f"/sessions/{session_id}/injects",
+        json={"title": "Public", "description": "Visible to all participants"},
+        headers=headers,
+    )
+    assert inject.status_code == 200
+    decision = client.post(
+        f"/sessions/{session_id}/injects/{inject.json()['id']}/decisions",
+        json={"participant_id": first["participant_id"], "decision_payload": decision_payload("Act")},
+        headers={"X-Participant-Token": first["participant_token"]},
+    )
+    assert decision.status_code == 200
+
+    missing = client.get(f"/sessions/{session_id}/journal")
+    invalid = client.get(
+        f"/sessions/{session_id}/journal",
+        headers={"X-Facilitator-Token": "invalid"},
+    )
+    allowed = client.get(f"/sessions/{session_id}/journal", headers=headers)
+
+    assert missing.status_code == 401
+    assert invalid.status_code == 403
+    assert allowed.status_code == 200
+    assert allowed.json()[-1]["type"] == "decision_submitted"
