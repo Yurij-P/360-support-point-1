@@ -10,6 +10,15 @@ from .event_broadcaster import SessionEventBroadcaster as SessionEventBroadcaste
 from .event_broadcaster import SessionEventType as SessionEventType
 from .event_broadcaster import broadcaster as broadcaster
 from .event_broadcaster import create_event as create_event
+from .facilitator_console_service import (
+    CrisisLifecycleProjectionVariant as CrisisLifecycleProjectionVariant,
+)
+from .facilitator_console_service import (
+    FacilitatorConsoleReadModel as FacilitatorConsoleReadModel,
+)
+from .facilitator_console_service import (
+    FacilitatorConsoleService as FacilitatorConsoleService,
+)
 from .role_dashboard_service import (
     LegoDecisionCard as LegoDecisionCard,
 )
@@ -47,14 +56,16 @@ __all__ = [
     "AICrisisCopilotService",
     "CopilotGenerationResult",
     "CopilotInputContext",
+    "CrisisLifecycleProjectionVariant",
     "EmpiricalCrisisIncidentFact",
+    "FacilitatorConsoleReadModel",
+    "FacilitatorConsoleService",
     "LegoDecisionCard",
     "LobbyParticipantStatus",
     "LobbyRoomStatus",
     "ResourceTransferDirective",
     "RoleDashboardService",
     "RoleWorkspaceReadModel",
-
     "RoundExecutionService",
     "RoundExecutionServiceResult",
     "ScenarioCatalogService",
@@ -68,6 +79,3 @@ __all__ = [
     "create_event",
     "generate_context_checksum",
 ]
-
-
-

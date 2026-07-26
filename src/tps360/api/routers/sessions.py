@@ -21,6 +21,9 @@ from tps360.simulation.domain.session import (
     SessionStatus,
 )
 from tps360.simulation.services import (
+    CrisisLifecycleProjectionVariant,
+    FacilitatorConsoleReadModel,
+    FacilitatorConsoleService,
     LegoDecisionCard,
     LobbyParticipantStatus,
     LobbyRoomStatus,
@@ -34,6 +37,8 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 T = TypeVar("T")
 lobby_service = SessionLobbyService()
 role_dashboard_service = RoleDashboardService()
+facilitator_console_service = FacilitatorConsoleService()
+
 
 
 class CreateSessionRequest(BaseModel):
@@ -178,24 +183,61 @@ def get_role_workspace(session_id: str, role_id: str = Query(...)) -> RoleWorksp
     return role_dashboard_service.get_role_workspace(session_id=session_id, role_id=role_id)
 
 
-@router.get("/{session_id}/ai-resource-estimate")
-def get_ai_resource_estimate(
+@router.get("/{session_id}/facilitator-console", response_model=FacilitatorConsoleReadModel)
+def get_facilitator_console(
     session_id: str,
-    action_type: str = Query(...),
-    hazard_radius_km: float = Query(default=1.0, ge=0.1),
-) -> dict[str, Any]:
-    from tps360.simulation.services.ai_crisis_copilot import AICrisisCopilotService
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> FacilitatorConsoleReadModel:
+    return facilitator_console_service.get_facilitator_console(session_id=session_id)
 
-    recommended = AICrisisCopilotService.calculate_ai_recommended_resources(
-        action_type=action_type, hazard_radius_km=hazard_radius_km
+
+@router.get("/{session_id}/future-projections", response_model=list[CrisisLifecycleProjectionVariant])
+def get_future_projections(
+    session_id: str,
+    crisis_type: str = Query(default="Ракетно-дроновий обстріл та детонація БК"),
+    current_round: int = Query(default=1, ge=1),
+) -> list[CrisisLifecycleProjectionVariant]:
+    projections = facilitator_console_service.generate_5_future_lifecycle_variants(
+        session_id=session_id, crisis_type=crisis_type, current_round=current_round
     )
-    return {
-        "session_id": session_id,
-        "action_type": action_type.strip().upper(),
-        "hazard_radius_km": hazard_radius_km,
-        "ai_recommended_resources": recommended,
-        "calculation_basis": "Об'єктивний розрахунок ШІ на основі повної картини кризової події.",
-    }
+    return list(projections)
+
+
+class ApproveAIProposalRequest(BaseModel):
+    variant_id: str = Field(min_length=1)
+    custom_title: str | None = None
+    custom_description: str | None = None
+
+
+@router.post("/{session_id}/injects/approve-ai-proposal")
+def approve_ai_proposal(
+    session_id: str,
+    req: ApproveAIProposalRequest,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> dict[str, Any]:
+    try:
+        return facilitator_console_service.approve_ai_proposal(
+            session_id=session_id,
+            variant_id=req.variant_id,
+            custom_title=req.custom_title,
+            custom_description=req.custom_description,
+        )
+    except NotFoundError as exc:
+        raise HTTPException(404, str(exc))
+
+
+@router.post("/{session_id}/rounds/advance")
+def advance_round(
+    session_id: str,
+    current_round: int = Query(default=1, ge=1),
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> dict[str, Any]:
+    # Resolve pending LEGO decisions execution in round
+    role_dashboard_service.resolve_round_execution(session_id=session_id, round_number=current_round)
+    return facilitator_console_service.advance_session_round(
+        session_id=session_id, current_round=current_round
+    )
+
 
 
 

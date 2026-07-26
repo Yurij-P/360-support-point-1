@@ -115,9 +115,8 @@ class RoleDashboardService:
             )
             initial = {k: Decimal(str(v)) for k, v in defaults.items()}
             available = {k: Decimal(str(v)) for k, v in defaults.items()}
-            reserved = {k: Decimal(str(k_res)) for k_res in defaults.keys()}
-            for k in reserved:
-                reserved[k] = Decimal("0")
+            reserved = {res_k: Decimal("0") for res_k in defaults.keys()}
+
 
             self._session_resources[session_id][role_id] = {
                 "initial": initial,
