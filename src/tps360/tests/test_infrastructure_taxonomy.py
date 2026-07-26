@@ -19,6 +19,12 @@ from tps360.community.domain.infrastructure_taxonomy import (
         (CriticalInfrastructureCategory.FUEL_STATION, "amenity", "fuel"),
         (CriticalInfrastructureCategory.SEWAGE_TREATMENT_PLANT, "amenity", "wastewater_plant"),
         (CriticalInfrastructureCategory.EPIZOOTIC_BURIAL_SITE, "sanitary", "epizootic_burial"),
+        (CriticalInfrastructureCategory.MILITARY_BASE, "military", "base"),
+        (CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ, "military", "office"),
+        (CriticalInfrastructureCategory.MILITARY_CHECKPOINT, "military", "checkpoint"),
+        (CriticalInfrastructureCategory.FORTIFICATION_LINE, "military", "trench"),
+        (CriticalInfrastructureCategory.CIVIL_MILITARY_COOPERATION_CENTER, "military", "office"),
+
     ],
 )
 def test_infrastructure_osm_tag_mapping(

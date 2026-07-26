@@ -80,6 +80,30 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
                 risk_level="HIGH",
             ),
             InfrastructureItemReadModel(
+                id="infra_berez_tro_hq_1",
+                name="Штаб батальйону ТрО Березнегувате",
+                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
+                latitude=47.318,
+                longitude=32.848,
+                risk_level="CRITICAL",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_berez_checkpoint_1",
+                name="Військовий блокпост Північ",
+                category=CriticalInfrastructureCategory.MILITARY_CHECKPOINT,
+                latitude=47.35,
+                longitude=32.89,
+                risk_level="HIGH",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_berez_fortification_1",
+                name="Фортифікаційна лінія Схід",
+                category=CriticalInfrastructureCategory.FORTIFICATION_LINE,
+                latitude=47.34,
+                longitude=32.92,
+                risk_level="CRITICAL",
+            ),
+            InfrastructureItemReadModel(
                 id="infra_berez_hospital_1",
                 name="Березнегуватська центральна лікарня",
                 category=CriticalInfrastructureCategory.HOSPITAL_MEDICAL,
@@ -88,6 +112,7 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
                 risk_level="MODERATE",
             ),
         ),
+
     ),
 }
 

@@ -5,7 +5,18 @@ from enum import StrEnum
 
 
 class CriticalInfrastructureCategory(StrEnum):
-    """Exhaustive domain classification of community critical infrastructure, agricultural, mining & hazard assets."""
+    """Exhaustive domain classification of community critical infrastructure, agricultural, mining, military & hazard assets."""
+
+    # Military & Civil-Military Defense Component
+    MILITARY_BASE = "MILITARY_BASE"
+    TERRITORIAL_DEFENSE_HQ = "TERRITORIAL_DEFENSE_HQ"
+    MILITARY_AIRFIELD = "MILITARY_AIRFIELD"
+    MILITARY_RECRUITMENT_CENTER = "MILITARY_RECRUITMENT_CENTER"
+    AMMUNITION_DEPOT = "AMMUNITION_DEPOT"
+    FORTIFICATION_LINE = "FORTIFICATION_LINE"
+    MILITARY_CHECKPOINT = "MILITARY_CHECKPOINT"
+    MILITARY_TRAINING_GROUND = "MILITARY_TRAINING_GROUND"
+    CIVIL_MILITARY_COOPERATION_CENTER = "CIVIL_MILITARY_COOPERATION_CENTER"
 
     # Agro-Industrial & Biosecurity
     POULTRY_FARM = "POULTRY_FARM"
@@ -68,6 +79,35 @@ class OSMTagMapping:
 
 
 OSM_TAG_MAPPINGS: dict[CriticalInfrastructureCategory, OSMTagMapping] = {
+    # Military Tag Mappings
+    CriticalInfrastructureCategory.MILITARY_BASE: OSMTagMapping(
+        CriticalInfrastructureCategory.MILITARY_BASE, "military", "base"
+    ),
+    CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ: OSMTagMapping(
+        CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ, "military", "office"
+    ),
+    CriticalInfrastructureCategory.MILITARY_AIRFIELD: OSMTagMapping(
+        CriticalInfrastructureCategory.MILITARY_AIRFIELD, "military", "airfield"
+    ),
+    CriticalInfrastructureCategory.MILITARY_RECRUITMENT_CENTER: OSMTagMapping(
+        CriticalInfrastructureCategory.MILITARY_RECRUITMENT_CENTER, "military", "recruitment_office"
+    ),
+    CriticalInfrastructureCategory.AMMUNITION_DEPOT: OSMTagMapping(
+        CriticalInfrastructureCategory.AMMUNITION_DEPOT, "military", "ammunition"
+    ),
+    CriticalInfrastructureCategory.FORTIFICATION_LINE: OSMTagMapping(
+        CriticalInfrastructureCategory.FORTIFICATION_LINE, "military", "trench"
+    ),
+    CriticalInfrastructureCategory.MILITARY_CHECKPOINT: OSMTagMapping(
+        CriticalInfrastructureCategory.MILITARY_CHECKPOINT, "military", "checkpoint"
+    ),
+    CriticalInfrastructureCategory.MILITARY_TRAINING_GROUND: OSMTagMapping(
+        CriticalInfrastructureCategory.MILITARY_TRAINING_GROUND, "military", "range"
+    ),
+    CriticalInfrastructureCategory.CIVIL_MILITARY_COOPERATION_CENTER: OSMTagMapping(
+        CriticalInfrastructureCategory.CIVIL_MILITARY_COOPERATION_CENTER, "military", "office"
+    ),
+    # Agro & Industrial
     CriticalInfrastructureCategory.POULTRY_FARM: OSMTagMapping(
         CriticalInfrastructureCategory.POULTRY_FARM, "farmyard", "poultry"
     ),
