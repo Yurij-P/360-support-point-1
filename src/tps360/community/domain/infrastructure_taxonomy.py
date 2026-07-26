@@ -4,6 +4,17 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 
+class SpatialTopographyFeature(StrEnum):
+    """Geographic & topographical terrain features extracted from map layer boundaries."""
+
+    MOUNTAINOUS_TERRAIN = "MOUNTAINOUS_TERRAIN"  # Гірський рельєф, круті схили (зсуви, каменепади, селі)
+    STEPPE_FLATLAND = "STEPPE_FLATLAND"  # Рівнинна / степова місцевість
+    COASTAL_MARINE = "COASTAL_MARINE"  # Приморська / прибережна зона
+    RIVER_BASIN = "RIVER_BASIN"  # Басейн великої річки / заплава
+    NUCLEAR_PROXIMITY = "NUCLEAR_PROXIMITY"  # Зона спостереження / близькість до АЕС
+    UNIVERSAL_WIDESPREAD = "UNIVERSAL_WIDESPREAD"  # Повітряні та воєнні загрози (ракети, БПЛА, артобстріли)
+
+
 class CriticalInfrastructureCategory(StrEnum):
     """Exhaustive domain classification of community critical infrastructure, agricultural, mining, military & hazard assets."""
 
@@ -40,6 +51,7 @@ class CriticalInfrastructureCategory(StrEnum):
     ROAD_NETWORK = "ROAD_NETWORK"
     RAILWAY_HUB = "RAILWAY_HUB"
     BRIDGE_VIADUCT = "BRIDGE_VIADUCT"
+    MOUNTAIN_PASS_ROAD = "MOUNTAIN_PASS_ROAD"
     FUEL_STATION = "FUEL_STATION"
     FUEL_DEPOT = "FUEL_DEPOT"
 
@@ -56,8 +68,9 @@ class CriticalInfrastructureCategory(StrEnum):
     WATER_SUPPLY_FACILITY = "WATER_SUPPLY_FACILITY"
     SEWAGE_TREATMENT_PLANT = "SEWAGE_TREATMENT_PLANT"
 
-    # Environmental & Epizootic Hazards
+    # Environmental & Hazards
     FOREST_MASS = "FOREST_MASS"
+    LANDSLIDE_ROCKFALL_ZONE = "LANDSLIDE_ROCKFALL_ZONE"
     SEISMIC_ZONE = "SEISMIC_ZONE"
     FLOOD_PRONE_ZONE = "FLOOD_PRONE_ZONE"
     EPIZOOTIC_BURIAL_SITE = "EPIZOOTIC_BURIAL_SITE"
@@ -153,6 +166,9 @@ OSM_TAG_MAPPINGS: dict[CriticalInfrastructureCategory, OSMTagMapping] = {
     CriticalInfrastructureCategory.BRIDGE_VIADUCT: OSMTagMapping(
         CriticalInfrastructureCategory.BRIDGE_VIADUCT, "bridge", "yes"
     ),
+    CriticalInfrastructureCategory.MOUNTAIN_PASS_ROAD: OSMTagMapping(
+        CriticalInfrastructureCategory.MOUNTAIN_PASS_ROAD, "mountain_pass", "yes"
+    ),
     CriticalInfrastructureCategory.FUEL_STATION: OSMTagMapping(
         CriticalInfrastructureCategory.FUEL_STATION, "amenity", "fuel"
     ),
@@ -188,6 +204,9 @@ OSM_TAG_MAPPINGS: dict[CriticalInfrastructureCategory, OSMTagMapping] = {
     ),
     CriticalInfrastructureCategory.FOREST_MASS: OSMTagMapping(
         CriticalInfrastructureCategory.FOREST_MASS, "landuse", "forest"
+    ),
+    CriticalInfrastructureCategory.LANDSLIDE_ROCKFALL_ZONE: OSMTagMapping(
+        CriticalInfrastructureCategory.LANDSLIDE_ROCKFALL_ZONE, "natural", "scree"
     ),
     CriticalInfrastructureCategory.SEISMIC_ZONE: OSMTagMapping(
         CriticalInfrastructureCategory.SEISMIC_ZONE, "geology", "seismic_risk"

@@ -5,6 +5,9 @@ from .infrastructure_taxonomy import (
     OSMTagMapping as OSMTagMapping,
 )
 from .infrastructure_taxonomy import (
+    SpatialTopographyFeature as SpatialTopographyFeature,
+)
+from .infrastructure_taxonomy import (
     get_osm_tag_mapping as get_osm_tag_mapping,
 )
 from .passport_read_model import (
@@ -19,5 +22,6 @@ __all__ = [
     "CriticalInfrastructureCategory",
     "InfrastructureItemReadModel",
     "OSMTagMapping",
+    "SpatialTopographyFeature",
     "get_osm_tag_mapping",
 ]
