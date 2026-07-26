@@ -21,16 +21,29 @@ from .scenario_catalog_service import (
 from .scenario_catalog_service import (
     ScenarioTemplateCatalogItem as ScenarioTemplateCatalogItem,
 )
+from .session_lobby_service import (
+    LobbyParticipantStatus as LobbyParticipantStatus,
+)
+from .session_lobby_service import (
+    LobbyRoomStatus as LobbyRoomStatus,
+)
+from .session_lobby_service import (
+    SessionLobbyService as SessionLobbyService,
+)
 
 __all__ = [
     "AICrisisCopilotService",
     "CopilotGenerationResult",
     "CopilotInputContext",
+    "EmpiricalCrisisIncidentFact",
+    "LobbyParticipantStatus",
+    "LobbyRoomStatus",
     "RoundExecutionService",
     "RoundExecutionServiceResult",
     "ScenarioCatalogService",
     "ScenarioCompatibilityResult",
     "ScenarioTemplateCatalogItem",
+    "SessionLobbyService",
     "SessionEvent",
     "SessionEventBroadcaster",
     "SessionEventType",
@@ -38,5 +51,6 @@ __all__ = [
     "create_event",
     "generate_context_checksum",
 ]
+
 
 

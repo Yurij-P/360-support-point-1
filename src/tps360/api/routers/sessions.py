@@ -19,9 +19,15 @@ from tps360.simulation.domain.session import (
     SessionJournalEntry,
     SessionStatus,
 )
+from tps360.simulation.services import (
+    LobbyParticipantStatus,
+    LobbyRoomStatus,
+    SessionLobbyService,
+)
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 T = TypeVar("T")
+lobby_service = SessionLobbyService()
 
 
 class CreateSessionRequest(BaseModel):
@@ -39,6 +45,15 @@ class JoinSessionRequest(BaseModel):
 
 class AssignRoleRequest(BaseModel):
     role_id: UUID
+
+
+class AssignLobbyRoleRequest(BaseModel):
+    participant_id: str
+    role_id: str
+
+
+class JoinLobbyRequest(BaseModel):
+    display_name: str = Field(min_length=1)
 
 
 class SendInjectRequest(BaseModel):
@@ -103,11 +118,37 @@ def create(request: CreateSessionRequest) -> CreateSessionResponse:
             join_token_digest=FacilitatedSession.digest_facilitator_token(join_token),
         )
     )
+    # Initialize lobby room for pre-start standby waiting
+    lobby_service.create_room(session_id=str(session.id), capacity=request.player_capacity)
+
     return CreateSessionResponse(
         **session.model_dump(),
         facilitator_token=facilitator_token,
         join_token=join_token,
     )
+
+
+@router.post("/{session_id}/lobby/join", response_model=LobbyParticipantStatus)
+def join_lobby(session_id: str, req: JoinLobbyRequest) -> LobbyParticipantStatus:
+    try:
+        return lobby_service.join_standby_room(session_id=session_id, display_name=req.display_name)
+    except DomainRuleViolation as exc:
+        raise HTTPException(409, str(exc))
+
+
+@router.post("/{session_id}/lobby/assign-role", response_model=LobbyParticipantStatus)
+def assign_lobby_role(session_id: str, req: AssignLobbyRoleRequest) -> LobbyParticipantStatus:
+    try:
+        return lobby_service.assign_participant_role(
+            session_id=session_id, participant_id=req.participant_id, role_id=req.role_id
+        )
+    except DomainRuleViolation as exc:
+        raise HTTPException(409, str(exc))
+
+
+@router.get("/{session_id}/lobby-status", response_model=LobbyRoomStatus)
+def get_lobby_status(session_id: str) -> LobbyRoomStatus:
+    return lobby_service.get_lobby_status(session_id)
 
 
 class ParticipantInjectResponse(BaseModel):
