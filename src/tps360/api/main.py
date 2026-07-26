@@ -1,9 +1,5 @@
-import os
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from .routers import (
     assessments,
@@ -28,14 +24,15 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-Participant-Token"],
 )
 
-# Serve static files from the web directory
-web_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "web"))
-app.mount("/static", StaticFiles(directory=web_dir), name="static")
-
-
 @app.get("/")
-def read_root() -> FileResponse:
-    return FileResponse(os.path.join(web_dir, "index.html"))
+def read_root() -> dict[str, str]:
+    return {
+        "name": "TPS360 Operational Headquarters API",
+        "version": "0.2.1",
+        "status": "running",
+        "docs": "/docs",
+    }
+
 
 
 @app.get("/health")
