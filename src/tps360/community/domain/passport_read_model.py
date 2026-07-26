@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from tps360.community.domain.infrastructure_taxonomy import (
     CriticalInfrastructureCategory,
+    SpatialTopographyFeature,
     get_osm_tag_mapping,
 )
 from tps360.core.exceptions import DomainRuleViolation
@@ -48,6 +49,7 @@ class CommunityPassportReadModel:
     vulnerable_population_total: int
     vulnerable_groups_breakdown: dict[str, int] = field(default_factory=dict)
     infrastructure_items: tuple[InfrastructureItemReadModel, ...] = ()
+    topography_features: tuple[SpatialTopographyFeature, ...] = ()
     osm_relation_id: str | None = None
     bounding_box: dict[str, float] | None = None
 
