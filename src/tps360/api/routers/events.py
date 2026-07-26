@@ -1,5 +1,4 @@
-import json
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
@@ -18,10 +17,11 @@ class SessionEventResponse(BaseModel):
     id: str
     session_id: str
     event_type: SessionEventType
-    payload: dict
+    payload: dict[str, Any]
     target_role_id: str | None
     timestamp_round: int
     timestamp_iso: str
+
 
 
 def _to_event_response(event: SessionEvent) -> SessionEventResponse:

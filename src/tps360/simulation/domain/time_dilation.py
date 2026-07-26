@@ -9,35 +9,53 @@ from tps360.core.exceptions import DomainRuleViolation
 class CrisisVelocity(StrEnum):
     """Simulation time compression ratio based on crisis dynamics and velocity."""
 
-    FAST = "FAST"  # 1:30 — 1 real minute = 30 simulated minutes (Fires, Military attacks, Flash floods)
-    MODERATE = "MODERATE"  # 1:60 — 1 real minute = 60 simulated minutes (1 hr) (Cholera outbreaks, Water contamination)
-    SLOW_MAX = "SLOW_MAX"  # 1:90 — 1 real minute = 90 simulated minutes (1.5 hrs) (Livestock mortality, Quarantine isolation, Blackouts)
+    FAST = "FAST"  # 1:30 — 1 real minute = 30 simulated minutes (Fast events: fires, military, flash floods)
+    MODERATE = "MODERATE"  # 1:60 — 1 real minute = 60 simulated minutes (1 hr) (Epidemiological: cholera, water contamination, spills)
+    SLOW_MAX = "SLOW_MAX"  # 1:90 — 1 real minute = 90 simulated minutes (1.5 hrs) (Epizootic, quarantine, infrastructure, blackouts)
 
 
-# Mapping of standard threat and crisis types to their default velocity
-CRISIS_TYPE_VELOCITY_MAPPING: dict[str, CrisisVelocity] = {
-    "FIRE": CrisisVelocity.FAST,
-    "MILITARY_ATTACK": CrisisVelocity.FAST,
-    "FLASH_FLOOD": CrisisVelocity.FAST,
-    "CHOLERA": CrisisVelocity.MODERATE,
-    "WATER_CONTAMINATION": CrisisVelocity.MODERATE,
-    "CHEMICAL_SPILL": CrisisVelocity.MODERATE,
-    "LIVESTOCK_MORTALITY": CrisisVelocity.SLOW_MAX,
-    "QUARANTINE_ISOLATION": CrisisVelocity.SLOW_MAX,
-    "BLACKOUT": CrisisVelocity.SLOW_MAX,
-}
+def resolve_crisis_velocity(
+    crisis_type: str,
+    override_velocity: CrisisVelocity | None = None,
+) -> CrisisVelocity:
+    """Dynamic crisis velocity resolution supporting arbitrary crisis types and optional admin/moderator override."""
+    if override_velocity is not None:
+        return override_velocity
 
+    normalized = crisis_type.strip().lower()
 
-def resolve_crisis_velocity(crisis_type: str) -> CrisisVelocity:
-    normalized = crisis_type.strip().upper()
-    return CRISIS_TYPE_VELOCITY_MAPPING.get(normalized, CrisisVelocity.MODERATE)
+    # Fast-velocity keywords
+    if any(k in normalized for k in ("fire", "пожеж", "military", "обстріл", " flood", "падок", "вибух")):
+        return CrisisVelocity.FAST
+
+    # Slow-max keywords (epizootic, quarantine, blackout, infrastructure)
+    if any(
+        k in normalized
+        for k in (
+            "livestock",
+            "худоб",
+            "падіж",
+            "епізоот",
+            "quarantine",
+            "ізоляц",
+            "карантин",
+            "blackout",
+            "блек-аут",
+            "інфраструктур",
+            "сибірка",
+        )
+    ):
+        return CrisisVelocity.SLOW_MAX
+
+    # Default moderate velocity for general/biological/chemical/open-source crisis types
+    return CrisisVelocity.MODERATE
 
 
 @dataclass(frozen=True)
 class SimulationRoundClock:
     """Immutable clock manager calculating time dilation between real server time and simulation time."""
 
-    real_round_minutes: int  # Real-world facilitator round length (5 to 30 minutes)
+    real_round_minutes: int  # Real-world round length (5 to 30 minutes)
     velocity: CrisisVelocity = CrisisVelocity.MODERATE
 
     def __post_init__(self) -> None:

@@ -10,18 +10,20 @@ from tps360.simulation.domain.task_directive import (
     TaskDirective,
 )
 from tps360.simulation.domain.time_dilation import (
+    CrisisVelocity,
     SimulationRoundClock,
 )
 
 
 @dataclass(frozen=True)
 class CopilotInputContext:
-    """Immutable input context provided to AI Crisis Copilot for generating round dynamic events."""
+    """Immutable input context for AI Crisis Copilot supporting open-source intelligence feeds and dynamic crisis types."""
 
     session_id: str
     current_round: int
-    crisis_type: str
+    crisis_type: str  # Open dynamic crisis description (e.g. "Аварія колектора", "Спалах холери", "Падіж худоби", "Дезінформація")
     clock: SimulationRoundClock
+    official_sources_feed: tuple[str, ...] = ()  # External OSINT & Official reports (DSNS, MOH, Media)
     submitted_directives: tuple[TaskDirective, ...] = ()
     resource_levels: dict[str, Decimal] = field(default_factory=dict)
 
@@ -34,7 +36,7 @@ class CopilotInputContext:
 
 @dataclass(frozen=True)
 class CopilotGenerationResult:
-    """Immutable AI Copilot proposal for facilitator review before SSE publication."""
+    """Immutable AI Copilot proposal for Game Moderator review before SSE publication to players."""
 
     session_id: str
     round_number: int
@@ -47,92 +49,71 @@ class CopilotGenerationResult:
 
 
 class AICrisisCopilotService:
-    """Human-in-the-Loop AI Crisis Copilot generating dynamic round injects and role directive proposals."""
+    """Autonomous AI Crisis Engine providing objective crisis lifecycle modeling under System Admin governance & Facilitator (Game Moderator) session moderation."""
 
     @staticmethod
     def generate_round_proposal(context: CopilotInputContext) -> CopilotGenerationResult:
         simulated_hours = context.clock.total_simulated_hours_per_round
         velocity = context.clock.velocity
-        normalized_crisis = context.crisis_type.strip().upper()
+        crisis_title_text = context.crisis_type.strip()
 
-        # Build dynamic narrative grounded in crisis type and time dilation
-        narrative_parts: list[str] = []
-        suggested_title = ""
-        suggested_desc = ""
+        narrative_parts: list[str] = [
+            f"Динамічний розвиток кризової події «{crisis_title_text}» за {simulated_hours:.1f} год симуляційного часу (динаміка {velocity})."
+        ]
+
+        # Integrate official OSINT & Media feeds into the AI crisis model narrative
+        if context.official_sources_feed:
+            feed_text = " | ".join(context.official_sources_feed)
+            narrative_parts.append(f"Аналітика джерел та ЗМІ: {feed_text}.")
+
+        suggested_title = f"Ситуаційне оновлення: {crisis_title_text} (Раунд {context.current_round})"
+        suggested_desc = f"За останні {simulated_hours:.1f} год симуляції виявлено зміни у стані громади."
+
         proposed_directives: list[TaskDirective] = []
 
-        if normalized_crisis in ("FIRE", "MILITARY_ATTACK", "FLASH_FLOOD"):
-            suggested_title = f"Динамічний розвиток події: {normalized_crisis} (Раунд {context.current_round})"
-            narrative_parts.append(
-                f"За {simulated_hours:.1f} год симуляційного часу (швидкий перебіг 1:30) зафіксовано нові осередки виклику."
-            )
-            suggested_desc = (
-                f"За останні {simulated_hours:.1f} год зафіксовано додаткові пошкодження інфраструктури. "
-                f"Потрібна оперативна передислокація підрозділів."
-            )
+        # Dynamic role assignment recommendation based on crisis velocity
+        if velocity is CrisisVelocity.FAST:
             proposed_directives.append(
                 TaskDirective(
                     id=str(uuid4()),
                     session_id=context.session_id,
-                    issuer_role_id="facilitator",
+                    issuer_role_id="facilitator_moderator",
                     assignee_role_id="head_of_emergency",
-                    title="Оперативна передислокація сил",
-                    description="Забезпечити огородження та захист критичних об'єктів у небезпечному секторі.",
+                    title="Оперативне огородження та реакція",
+                    description=f"Вжити невідкладних заходів реагування на осередки події «{crisis_title_text}».",
                     target_round=context.current_round + 1,
                     priority=DirectivePriority.CRITICAL,
                     created_at_round=context.current_round,
                 )
             )
-
-        elif normalized_crisis in ("CHOLERA", "WATER_CONTAMINATION", "CHEMICAL_SPILL"):
-            suggested_title = f"Епідеміологічна оцінка: {normalized_crisis} (Раунд {context.current_round})"
-            narrative_parts.append(
-                f"За {simulated_hours:.1f} год симуляційного часу (середня динаміка 1:60) зафіксовано динаміку поширення інфекції питної води."
-            )
-            suggested_desc = (
-                f"Аналіз проб за {simulated_hours:.1f} год підтверджує ризик поширення збудників у центральному водогоні. "
-                f"Необхідне термінове введення санітарних обмежень."
-            )
+        elif velocity is CrisisVelocity.SLOW_MAX:
             proposed_directives.append(
                 TaskDirective(
                     id=str(uuid4()),
                     session_id=context.session_id,
-                    issuer_role_id="facilitator",
-                    assignee_role_id="chief_medical_officer",
-                    title="Санітарно-епідеміологічний блокпост та моніторинг",
-                    description="Організувати лабораторні проби питної води та розгорнути ізолятор первинного огляду.",
+                    issuer_role_id="facilitator_moderator",
+                    assignee_role_id="chief_sanitary_inspector",
+                    title="Карантинна ізоляція та протиепізоотичні заходи",
+                    description=f"Встановити санітарний контроль та обмеження для осередку «{crisis_title_text}».",
                     target_round=context.current_round + 1,
                     priority=DirectivePriority.HIGH,
                     created_at_round=context.current_round,
                 )
             )
-
-        elif normalized_crisis in ("LIVESTOCK_MORTALITY", "QUARANTINE_ISOLATION", "BLACKOUT"):
-            suggested_title = f"Епізоотична та санітарна обстановка: {normalized_crisis} (Раунд {context.current_round})"
-            narrative_parts.append(
-                f"За {simulated_hours:.1f} год симуляційного часу (максимальний макро-перебіг 1:90) зафіксовано потребу у тривалій санітарній ізоляції."
-            )
-            suggested_desc = (
-                f"За останні {simulated_hours:.1f} год симуляційного періоду виявлено осередки падіжу худоби та потребу карантинного обмеження території. "
-                f"Потрібна санітарна утилізація та контроль кордонів громади."
-            )
+        else:
             proposed_directives.append(
                 TaskDirective(
                     id=str(uuid4()),
                     session_id=context.session_id,
-                    issuer_role_id="facilitator",
-                    assignee_role_id="chief_veterinary_inspector",
-                    title="Встановлення карантинної зони та санітарний кордон",
-                    description="Організувати протиепізоотичні заходи, утилізацію та обмеження ввезення/вивезення продукції.",
+                    issuer_role_id="facilitator_moderator",
+                    assignee_role_id="chief_medical_officer",
+                    title="Лабораторний моніторинг та первинний огляд",
+                    description=f"Забезпечити моніторинг та допомогу у зоні дії загрози «{crisis_title_text}».",
                     target_round=context.current_round + 1,
-                    priority=DirectivePriority.CRITICAL,
+                    priority=DirectivePriority.HIGH,
                     created_at_round=context.current_round,
                 )
             )
-
-        else:
-            suggested_title = f"Ситуаційний звіт кризової події (Раунд {context.current_round})"
-            suggested_desc = f"Оновлення обстановки за {simulated_hours:.1f} год симуляції."
 
         # Incorporate participant submitted reports into AI narrative summary
         if context.submitted_directives:
@@ -144,7 +125,7 @@ class AICrisisCopilotService:
             if reports_summary:
                 narrative_parts.append(f"Враховано звіти ролей: {reports_summary}")
 
-        full_narrative = " ".join(narrative_parts) if narrative_parts else suggested_desc
+        full_narrative = " ".join(narrative_parts)
 
         return CopilotGenerationResult(
             session_id=context.session_id,
