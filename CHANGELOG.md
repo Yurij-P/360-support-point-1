@@ -2,7 +2,21 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.6] — 2026-07-26
+
+### Додано
+
+- **PR #22 (Facilitator Master Control Dashboard, 5-Variant Future Crisis Vision Engine & Psychological Stress Injection API):**
+  - Головна пульт-консоль Фасилітатора (`FacilitatorConsoleService`, `FacilitatorConsoleReadModel`, `CrisisLifecycleProjectionVariant`).
+  - Рушій бачення на 1 раунд уперед з 5 проєкціями розвитку кризової події (`BEST_CASE_CONTAINED`, `MODERATE_STABLE`, `ESCALATION_HAZARD`, `INFRASTRUCTURE_COLLAPSE`, `WORST_CASE_CASCADE`).
+  - Модерація та затвердження вводних ШІ-Копілота Фасилітатором перед розсилкою гравцям.
+  - Рушій психологічного навантаження та фрикцій у Кабінеті гравця (`PsychologicalFrictionInject`): сирени повітряної тривоги (аудіо/візуальний сигнал), термінові телефонні дзвінки, паніка у соцмережах/Telegram-каналах, протести мешканців під міськрадою, побутові форс-мажори (загублені ключі).
+  - Обчислення індексу когнітивного стресу (`cognitive_stress_level_pct`) та коригування коефіцієнта спроможності ролі (`capability_score`).
+  - Динамічне оцінювання ШІ тривалості гри: залучення ресурсів та правильність рішень гравців визначають момент успішної ліквідації НС та завершення симуляції (`COMPLETED_SUCCESS`).
+  - REST API Консолі Фасилітатора (`GET /sessions/{id}/facilitator-console`, `GET /sessions/{id}/future-projections`, `POST /sessions/{id}/injects/approve-ai-proposal`, `POST /sessions/{id}/injects/psychological-friction`, `POST /sessions/{id}/rounds/advance`).
+
 ## [0.2.5] — 2026-07-26
+
 
 ### Додано
 
