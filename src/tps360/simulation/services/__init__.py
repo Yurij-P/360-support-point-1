@@ -10,6 +10,18 @@ from .event_broadcaster import SessionEventBroadcaster as SessionEventBroadcaste
 from .event_broadcaster import SessionEventType as SessionEventType
 from .event_broadcaster import broadcaster as broadcaster
 from .event_broadcaster import create_event as create_event
+from .role_dashboard_service import (
+    LegoDecisionCard as LegoDecisionCard,
+)
+from .role_dashboard_service import (
+    ResourceTransferDirective as ResourceTransferDirective,
+)
+from .role_dashboard_service import (
+    RoleDashboardService as RoleDashboardService,
+)
+from .role_dashboard_service import (
+    RoleWorkspaceReadModel as RoleWorkspaceReadModel,
+)
 from .round_execution_service import RoundExecutionService as RoundExecutionService
 from .round_execution_service import RoundExecutionServiceResult as RoundExecutionServiceResult
 from .scenario_catalog_service import (
@@ -36,8 +48,13 @@ __all__ = [
     "CopilotGenerationResult",
     "CopilotInputContext",
     "EmpiricalCrisisIncidentFact",
+    "LegoDecisionCard",
     "LobbyParticipantStatus",
     "LobbyRoomStatus",
+    "ResourceTransferDirective",
+    "RoleDashboardService",
+    "RoleWorkspaceReadModel",
+
     "RoundExecutionService",
     "RoundExecutionServiceResult",
     "ScenarioCatalogService",
