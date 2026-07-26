@@ -62,10 +62,11 @@ class AICrisisCopilotService:
         crisis_title_text = context.crisis_type.strip()
 
         spatial_note = (
-            f" [Межі: OpenStreetMap BoundingBox min_lat={context.community_boundary_bbox.min_lat:.3f}, max_lat={context.community_boundary_bbox.max_lat:.3f}]"
+            f" [Межі: OpenStreetMap BoundingBox min_lat={context.community_boundary_bbox.south:.3f}, max_lat={context.community_boundary_bbox.north:.3f}]"
             if context.community_boundary_bbox
             else " [Обмежено картографічними межами OpenStreetMap громади]"
         )
+
 
         narrative_parts: list[str] = [
             f"Динамічний розвиток кризової події «{crisis_title_text}» у межах громади{spatial_note} за {simulated_hours:.1f} год симуляційного часу (динаміка {velocity})."
