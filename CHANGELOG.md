@@ -2,7 +2,18 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.3] — 2026-07-26
+
+### Додано
+
+- **PR #19 (Threat-Scenario Compatibility & Simulation Context Snapshot API):**
+  - Сервіс каталогу та моделювання сценаріїв криз (`ScenarioCatalogService`, `ScenarioTemplateCatalogItem`).
+  - Картографічна та топографічна модель евалуації сумісності за рельєфом (`SpatialTopographyFeature`, `ScenarioCompatibilityEvaluator`), що перевіряє можливість виникнення загрози за картою громади (гірський рельєф для зсувів ґрунту/Верховина vs рівнинний степ/Широке, близькість АЕС для радіації) з універсальною сумісністю ракетно-дронових загроз.
+  - Immutable Read Model передстартового контекстного зрізу симуляції (`SimulationContextSnapshotReadModel`).
+  - REST API Сценаріїв та Контексту (`GET /scenarios/catalog`, `POST /scenarios/compatibility-check`, `GET /simulations/{session_id}/context-snapshot`).
+
 ## [0.2.2] — 2026-07-26
+
 
 ### Додано
 
