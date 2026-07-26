@@ -225,3 +225,55 @@ __all__ += [
     "DecisionBlock", "DecisionBlockType", "DecisionLink", "DecisionLinkRelation",
     "LegoDecisionPayload", "validate_decision_payload",
 ]
+
+from .participant_capability import ActionDefinition as ActionDefinition
+from .participant_capability import ActionWorkProfile as ActionWorkProfile
+from .participant_capability import ActorProfile as ActorProfile
+from .participant_capability import CompatibilityEvaluator as CompatibilityEvaluator
+from .participant_capability import CompatibilityInput as CompatibilityInput
+from .participant_capability import CompatibilityIssue as CompatibilityIssue
+from .participant_capability import CompatibilityOutcome as CompatibilityOutcome
+from .participant_capability import CompatibilityReasonCode as CompatibilityReasonCode
+from .participant_capability import CompatibilityResult as CompatibilityResult
+from .participant_capability import ConsumptionTiming as ConsumptionTiming
+from .participant_capability import DurationCalculationPolicy as DurationCalculationPolicy
+from .participant_capability import DurationCalculationStrategy as DurationCalculationStrategy
+from .participant_capability import DurationEstimateStatus as DurationEstimateStatus
+from .participant_capability import DurationRoundingMode as DurationRoundingMode
+from .participant_capability import EvaluationContext as EvaluationContext
+from .participant_capability import InteractionIntent as InteractionIntent
+from .participant_capability import InteractionType as InteractionType
+from .participant_capability import ParticipantContext as ParticipantContext
+from .participant_capability import ParticipantWorkspaceProjection as ParticipantWorkspaceProjection
+from .participant_capability import PrerequisiteStatus as PrerequisiteStatus
+from .participant_capability import Relationship as Relationship
+from .participant_capability import RelationshipDirection as RelationshipDirection
+from .participant_capability import Requirement as Requirement
+from .participant_capability import RequirementCriticality as RequirementCriticality
+from .participant_capability import RequirementKind as RequirementKind
+from .participant_capability import ResourceAccessGrant as ResourceAccessGrant
+from .participant_capability import ResourceAccessMode as ResourceAccessMode
+from .participant_capability import ResourceAvailability as ResourceAvailability
+from .participant_capability import ResourceCommitmentRequirement as ResourceCommitmentRequirement
+from .participant_capability import ResourceProfile as ResourceProfile
+from .participant_capability import ResourceRenewalPolicy as ResourceRenewalPolicy
+from .participant_capability import ResourceStateSnapshot as ResourceStateSnapshot
+from .participant_capability import SelectedResource as SelectedResource
+from .participant_capability import TaskDemand as TaskDemand
+from .participant_capability import WorkspaceInteractionReference as WorkspaceInteractionReference
+from .participant_capability import WorkspaceResourceReference as WorkspaceResourceReference
+
+__all__ += [
+    "ActionDefinition", "ActionWorkProfile", "ActorProfile", "CompatibilityEvaluator",
+    "CompatibilityInput", "CompatibilityIssue", "CompatibilityOutcome",
+    "CompatibilityReasonCode", "CompatibilityResult", "ConsumptionTiming",
+    "DurationCalculationPolicy", "DurationCalculationStrategy", "DurationEstimateStatus",
+    "DurationRoundingMode", "EvaluationContext",
+    "InteractionIntent", "InteractionType", "ParticipantContext",
+    "ParticipantWorkspaceProjection", "PrerequisiteStatus", "Relationship",
+    "RelationshipDirection", "Requirement", "RequirementCriticality", "RequirementKind",
+    "ResourceAccessGrant", "ResourceAccessMode", "ResourceAvailability",
+    "ResourceCommitmentRequirement", "ResourceProfile", "ResourceRenewalPolicy",
+    "ResourceStateSnapshot", "SelectedResource", "TaskDemand",
+    "WorkspaceInteractionReference", "WorkspaceResourceReference",
+]
