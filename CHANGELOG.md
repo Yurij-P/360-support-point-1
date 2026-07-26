@@ -2,6 +2,18 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.4] — 2026-07-26
+
+### Додано
+
+- **PR #20 (Multi-Participant Lobby Standby Room, Role Assignment & Pre-Start Readiness Guard API):**
+  - Сервіс кімнати очікування Лобі та реєстрації гравців (`SessionLobbyService`, `LobbyParticipantStatus`, `LobbyRoomStatus`).
+  - Конфігуратор місткості лобі: Демо/Тестовий режим (1-50 осіб) та Продакшн-регламент (5-20 осіб).
+  - Процедури реєстрації учасників у кімнаті очікування (Standby Room) та закріплення унікальних оперативних ролей (`head_of_emergency`, `chief_medical_officer` тощо) Фасилітатором.
+  - Суворий бар'єр старту сесії (Pre-start Readiness Guard), що блокує запуск гри до моменту отримання ролі кожним підключеним учасником.
+  - REST API Кімнати очікування та Ролей (`POST /sessions/{id}/lobby/join`, `POST /sessions/{id}/lobby/assign-role`, `GET /sessions/{id}/lobby-status`).
+  - Сервіс об'єктивного заземлення ШІ-Копілота (`AICrisisCopilotService`, `EmpiricalCrisisIncidentFact`) на підтверджені факти реальних воєнних подій, протоколи повторних ударів (Double-tap) та радіуси розльоту БК.
+
 ## [0.2.3] — 2026-07-26
 
 ### Додано
