@@ -4,3 +4,7 @@ class DomainRuleViolation(ValueError):
 
 class NotFoundError(LookupError):
     """Raised when an in-memory aggregate cannot be found."""
+
+
+EntityNotFound = NotFoundError
+
