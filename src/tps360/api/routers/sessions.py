@@ -21,15 +21,19 @@ from tps360.simulation.domain.session import (
     SessionStatus,
 )
 from tps360.simulation.services import (
+    AARTelemetryService,
+    AfterActionReviewReport,
     CrisisLifecycleProjectionVariant,
     FacilitatorConsoleReadModel,
     FacilitatorConsoleService,
     LegoDecisionCard,
     LobbyParticipantStatus,
     LobbyRoomStatus,
+    ParticipantExperienceRecord,
     ResourceTransferDirective,
     RoleDashboardService,
     RoleWorkspaceReadModel,
+    RoundTelemetrySnapshot,
     SessionLobbyService,
 )
 
@@ -38,6 +42,8 @@ T = TypeVar("T")
 lobby_service = SessionLobbyService()
 role_dashboard_service = RoleDashboardService()
 facilitator_console_service = FacilitatorConsoleService()
+aar_telemetry_service = AARTelemetryService()
+
 
 
 
@@ -533,3 +539,24 @@ def authorize_facilitator(
         raise HTTPException(401, "Facilitator token is required")
     if not session.accepts_facilitator_token(facilitator_token):
         raise HTTPException(403, "Facilitator token is invalid")
+
+
+@router.get("/{session_id}/aar-report", response_model=AfterActionReviewReport)
+def get_aar_report(session_id: str) -> AfterActionReviewReport:
+    return aar_telemetry_service.generate_aar_report(session_id=session_id)
+
+
+@router.get("/{session_id}/telemetry", response_model=list[RoundTelemetrySnapshot])
+def get_session_telemetry(session_id: str) -> list[RoundTelemetrySnapshot]:
+    return list(aar_telemetry_service.get_session_telemetry(session_id=session_id))
+
+
+@router.get("/participants/{participant_id}/experience-record", response_model=ParticipantExperienceRecord)
+def get_participant_experience(participant_id: str) -> ParticipantExperienceRecord:
+    rec = aar_telemetry_service.get_participant_experience(participant_id)
+    if not rec:
+        return aar_telemetry_service.record_participant_experience(
+            participant_id=participant_id, community_id="verkhovyna"
+        )
+    return rec
+
