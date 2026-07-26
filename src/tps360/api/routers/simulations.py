@@ -3,12 +3,21 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 
 from tps360.api.dependencies import simulations
+from tps360.community.services import CommunityCatalogService
 from tps360.core.domain.models import Decision, Inject, Simulation
 from tps360.core.exceptions import NotFoundError
 from tps360.core.services import SimulationService
+from tps360.simulation.domain import (
+    SimulationContextSnapshotReadModel,
+    SimulationRoundClock,
+)
+from tps360.simulation.services import ScenarioCatalogService
 
 router = APIRouter(prefix="/simulations", tags=["simulations"])
 service = SimulationService()
+community_catalog = CommunityCatalogService()
+scenario_service = ScenarioCatalogService()
+
 
 
 def item(sid: UUID) -> Simulation:
@@ -26,6 +35,26 @@ def create(simulation: Simulation) -> Simulation:
 @router.get("/{simulation_id}")
 def get_simulation(simulation_id: UUID) -> Simulation:
     return item(simulation_id)
+
+
+@router.get("/{session_id}/context-snapshot", response_model=SimulationContextSnapshotReadModel)
+def get_simulation_context_snapshot(session_id: str) -> SimulationContextSnapshotReadModel:
+    passport = community_catalog.get_passport("a29d6fbd-02c3-4d43-a651-7efd6fbd02c3")
+    scenario = scenario_service.get_scenario("scen_flooding_v1")
+    return SimulationContextSnapshotReadModel(
+        session_id=session_id,
+        community_passport=passport,
+        scenario_id=scenario.id,
+        scenario_title=scenario.title,
+        threat_categories=(scenario.threat_category,),
+        time_dilation_clock=SimulationRoundClock(
+            real_round_minutes=scenario.target_round_duration,
+            velocity=scenario.crisis_velocity,
+        ),
+        is_osm_bounded=True,
+        bounding_box=passport.bounding_box,
+    )
+
 
 
 

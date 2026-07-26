@@ -306,5 +306,12 @@ __all__ += [
     "TaskRoundExecutionEngine", "TransitionReason", "TransitionType", "resolve_crisis_velocity",
 ]
 
+from .simulation_context_snapshot import (
+    SimulationContextSnapshotReadModel as SimulationContextSnapshotReadModel,
+)
+
+__all__ += ["SimulationContextSnapshotReadModel"]
+
+
 
 
