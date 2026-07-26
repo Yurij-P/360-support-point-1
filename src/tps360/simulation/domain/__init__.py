@@ -277,3 +277,24 @@ __all__ += [
     "ResourceStateSnapshot", "SelectedResource", "TaskDemand",
     "WorkspaceInteractionReference", "WorkspaceResourceReference",
 ]
+
+from .task_execution import ExecutionResourceState as ExecutionResourceState
+from .task_execution import ExecutionTransition as ExecutionTransition
+from .task_execution import ProcessedRound as ProcessedRound
+from .task_execution import ResourceReservation as ResourceReservation
+from .task_execution import RoundCommand as RoundCommand
+from .task_execution import RoundExecutionResult as RoundExecutionResult
+from .task_execution import TaskExecution as TaskExecution
+from .task_execution import TaskExecutionState as TaskExecutionState
+from .task_execution import TaskExecutionStatus as TaskExecutionStatus
+from .task_execution import TaskResourceAllocation as TaskResourceAllocation
+from .task_execution import TaskRoundExecutionEngine as TaskRoundExecutionEngine
+from .task_execution import TransitionReason as TransitionReason
+from .task_execution import TransitionType as TransitionType
+
+__all__ += [
+    "ExecutionResourceState", "ExecutionTransition", "ProcessedRound", "ResourceReservation",
+    "RoundCommand", "RoundExecutionResult", "TaskExecution", "TaskExecutionState",
+    "TaskExecutionStatus", "TaskResourceAllocation", "TaskRoundExecutionEngine",
+    "TransitionReason", "TransitionType",
+]
