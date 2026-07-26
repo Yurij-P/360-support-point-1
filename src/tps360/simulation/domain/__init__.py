@@ -294,11 +294,17 @@ from .task_execution import TaskResourceAllocation as TaskResourceAllocation
 from .task_execution import TaskRoundExecutionEngine as TaskRoundExecutionEngine
 from .task_execution import TransitionReason as TransitionReason
 from .task_execution import TransitionType as TransitionType
+from .time_dilation import CRISIS_TYPE_VELOCITY_MAPPING as CRISIS_TYPE_VELOCITY_MAPPING
+from .time_dilation import CrisisVelocity as CrisisVelocity
+from .time_dilation import SimulationRoundClock as SimulationRoundClock
+from .time_dilation import resolve_crisis_velocity as resolve_crisis_velocity
 
 __all__ += [
-    "DirectivePriority", "DirectiveStatus", "ExecutionResourceState", "ExecutionTransition",
-    "ProcessedRound", "ResourceReservation", "RoundCommand", "RoundExecutionResult",
-    "TaskDirective", "TaskExecution", "TaskExecutionState", "TaskExecutionStatus",
-    "TaskResourceAllocation", "TaskRoundExecutionEngine", "TransitionReason", "TransitionType",
+    "CRISIS_TYPE_VELOCITY_MAPPING", "CrisisVelocity", "DirectivePriority", "DirectiveStatus",
+    "ExecutionResourceState", "ExecutionTransition", "ProcessedRound", "ResourceReservation",
+    "RoundCommand", "RoundExecutionResult", "SimulationRoundClock", "TaskDirective",
+    "TaskExecution", "TaskExecutionState", "TaskExecutionStatus", "TaskResourceAllocation",
+    "TaskRoundExecutionEngine", "TransitionReason", "TransitionType", "resolve_crisis_velocity",
 ]
+
 
