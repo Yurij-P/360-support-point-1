@@ -17,16 +17,28 @@ from tps360.simulation.domain.time_dilation import (
 
 
 @dataclass(frozen=True)
+class EmpiricalCrisisIncidentFact:
+    """Verified real-world emergency fact or OSINT report (e.g. ammo transport explosion, double-tap strike, chemical breach)."""
+
+    incident_id: str
+    fact_description: str
+    source_attribution: str  # e.g. "ДСНС України", "ОБВА/ОВА", "Генеральний Штаб", "Офіційний ЗМІ"
+    cascade_hazard_type: str  # e.g. "SECONDARY_STRIKE_DOUBLE_TAP", "AMMO_DETONATION_RADIUS_2KM", "CHEMICAL_HAZMAT_PLUME", "RAILWAY_TANK_BREACH"
+    hazard_radius_km: float = 0.0
+
+
+@dataclass(frozen=True)
 class CopilotInputContext:
-    """Immutable input context for AI Crisis Copilot supporting OpenStreetMap community spatial boundaries, OSINT feeds, and open crisis types."""
+    """Immutable input context for AI Crisis Copilot supporting OpenStreetMap community spatial boundaries, empirical OSINT feeds, and open crisis types."""
 
     session_id: str
     current_round: int
-    crisis_type: str  # Open dynamic crisis description (e.g. "Аварія колектора", "Спалах холери", "Падіж худоби", "Дезінформація")
+    crisis_type: str  # Open dynamic crisis description
     clock: SimulationRoundClock
     community_boundary_bbox: BoundingBox | None = None  # OpenStreetMap administrative boundary box
     osm_relation_id: str | None = None  # OpenStreetMap relation ID for community polygon boundary
     official_sources_feed: tuple[str, ...] = ()  # External OSINT & Official reports (DSNS, MOH, Media)
+    empirical_facts: tuple[EmpiricalCrisisIncidentFact, ...] = ()  # Real-world verified incident facts
     submitted_directives: tuple[TaskDirective, ...] = ()
     resource_levels: dict[str, Decimal] = field(default_factory=dict)
 
@@ -53,7 +65,13 @@ class CopilotGenerationResult:
 
 
 class AICrisisCopilotService:
-    """Autonomous AI Crisis Engine providing objective crisis lifecycle modeling bounded by OpenStreetMap community spatial limits under System Admin governance & Facilitator (Game Moderator) session moderation."""
+    """Autonomous AI Crisis Engine strictly grounded on empirical OSINT feeds and verified real-world incidents.
+    
+    IMPORTANT DOMAIN RULE:
+    The AI model MUST NEVER invent fictional crises or artificial lifecycles out of thin air.
+    It bases all lifecycle dynamics, secondary strike warnings (double-tap safety), secondary detonation radii (e.g. 2 km ammo fragmentation),
+    and hazard cascades strictly on verified real-world emergency reports (DSNS, OVA, General Staff) and actual physical practices.
+    """
 
     @staticmethod
     def generate_round_proposal(context: CopilotInputContext) -> CopilotGenerationResult:
@@ -67,22 +85,48 @@ class AICrisisCopilotService:
             else " [Обмежено картографічними межами OpenStreetMap громади]"
         )
 
-
         narrative_parts: list[str] = [
-            f"Динамічний розвиток кризової події «{crisis_title_text}» у межах громади{spatial_note} за {simulated_hours:.1f} год симуляційного часу (динаміка {velocity})."
+            f"Оперативна аналітика ШІ для кризової події «{crisis_title_text}» у межах громади{spatial_note} за {simulated_hours:.1f} год симуляції (динаміка {velocity})."
         ]
 
-        # Integrate official OSINT & Media feeds into the AI crisis model narrative
+        # Integrate empirical real-world facts into AI narrative summary
+        if context.empirical_facts:
+            facts_text = " | ".join(
+                f"[{fact.source_attribution}]: {fact.fact_description} (Загроза: {fact.cascade_hazard_type}, радіус {fact.hazard_radius_km} км)"
+                for fact in context.empirical_facts
+            )
+            narrative_parts.append(f"Підтверджені факти реальних подій: {facts_text}.")
+
+        # Integrate official OSINT & Media feeds
         if context.official_sources_feed:
             feed_text = " | ".join(context.official_sources_feed)
-            narrative_parts.append(f"Аналітика джерел та ЗМІ: {feed_text}.")
+            narrative_parts.append(f"Моніторинг джерел та ЗМІ: {feed_text}.")
 
         suggested_title = f"Ситуаційне оновлення: {crisis_title_text} (Раунд {context.current_round})"
-        suggested_desc = f"За останні {simulated_hours:.1f} год симуляції у межах OpenStreetMap території громади виявлено зміни."
+        suggested_desc = "На основі фактів реальних подій та моніторингу у межах OpenStreetMap території громади сформовано аналітичний зріз."
 
         proposed_directives: list[TaskDirective] = []
 
-        # Dynamic role assignment recommendation based on crisis velocity
+        # Dynamic role assignment recommendation based on crisis velocity and empirical facts
+        has_double_tap_risk = any(
+            f.cascade_hazard_type == "SECONDARY_STRIKE_DOUBLE_TAP" for f in context.empirical_facts
+        )
+
+        if has_double_tap_risk:
+            proposed_directives.append(
+                TaskDirective(
+                    id=str(uuid4()),
+                    session_id=context.session_id,
+                    issuer_role_id="facilitator_moderator",
+                    assignee_role_id="head_of_emergency",
+                    title="Безпековий протокол ДСНС: протокол повторного удару",
+                    description=f"Негайно відвести рятувальні розрахунки у безпекове укриття в зоні «{crisis_title_text}» через високий ризик повторного удару (Double-tap).",
+                    target_round=context.current_round + 1,
+                    priority=DirectivePriority.CRITICAL,
+                    created_at_round=context.current_round,
+                )
+            )
+
         if velocity is CrisisVelocity.FAST:
             proposed_directives.append(
                 TaskDirective(
@@ -90,7 +134,7 @@ class AICrisisCopilotService:
                     session_id=context.session_id,
                     issuer_role_id="facilitator_moderator",
                     assignee_role_id="head_of_emergency",
-                    title="Оперативне огородження та реакція у межах громади",
+                    title="Оперативне огородження та реагування у межах громади",
                     description=f"Вжити невідкладних заходів реагування у зоні OpenStreetMap події «{crisis_title_text}».",
                     target_round=context.current_round + 1,
                     priority=DirectivePriority.CRITICAL,
