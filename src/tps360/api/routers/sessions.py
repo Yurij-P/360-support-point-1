@@ -226,6 +226,36 @@ def approve_ai_proposal(
         raise HTTPException(404, str(exc))
 
 
+class InjectPsychologicalFrictionRequest(BaseModel):
+
+    target_role_id: str = Field(min_length=1)
+    friction_type: str = Field(min_length=1)  # AIR_RAID_SIREN, URGENT_PHONE_CALL, SOCIAL_MEDIA_TROLLING, PUBLIC_PROTEST, STAFF_INCIDENT, FACILITATOR_CUSTOM_FRICTION
+    title: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    stress_level_delta: float = Field(default=15.0, ge=0.0, le=100.0)
+    audio_siren_signal: bool = Field(default=False)
+    current_round: int = Field(default=1, ge=1)
+
+
+@router.post("/{session_id}/injects/psychological-friction")
+def inject_psychological_friction(
+    session_id: str,
+    req: InjectPsychologicalFrictionRequest,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+) -> Any:
+    return role_dashboard_service.inject_psychological_friction(
+        session_id=session_id,
+        target_role_id=req.target_role_id,
+        friction_type=req.friction_type,
+        title=req.title,
+        description=req.description,
+        stress_level_delta=req.stress_level_delta,
+        audio_siren_signal=req.audio_siren_signal,
+        current_round=req.current_round,
+    )
+
+
+
 @router.post("/{session_id}/rounds/advance")
 def advance_round(
     session_id: str,

@@ -45,6 +45,21 @@ ROLE_INITIAL_RESOURCES: dict[str, dict[str, Decimal]] = {
 
 
 @dataclass(frozen=True)
+class PsychologicalFrictionInject:
+    """Psychological stress factor or operational friction event injected into the player's role dashboard."""
+
+    inject_id: str
+    session_id: str
+    target_role_id: str  # Specific role or "all_roles"
+    friction_type: str  # AIR_RAID_SIREN, URGENT_PHONE_CALL, SOCIAL_MEDIA_TROLLING, PUBLIC_PROTEST, STAFF_INCIDENT, FACILITATOR_CUSTOM_FRICTION
+    title: str
+    description: str
+    stress_level_delta: float = 15.0
+    audio_siren_signal: bool = False
+    created_at_round: int = 1
+
+
+@dataclass(frozen=True)
 class LegoDecisionCard:
     """Modular player-constructed decision card assembled independently from atomic primitives."""
 
@@ -75,7 +90,7 @@ class ResourceTransferDirective:
 
 @dataclass(frozen=True)
 class RoleWorkspaceReadModel:
-    """Aggregated role workspace read model including initial inventory, available balances, locked/reserved resources, and pending LEGO cards."""
+    """Aggregated role workspace read model including initial inventory, available balances, locked/reserved resources, psychological stress factors, and pending LEGO cards."""
 
     session_id: str
     role_id: str
@@ -85,23 +100,27 @@ class RoleWorkspaceReadModel:
     reserved_resources: dict[str, Decimal]
     pending_lego_cards: tuple[LegoDecisionCard, ...]
     active_directives: tuple[TaskDirective, ...]
+    psychological_injects: tuple[PsychologicalFrictionInject, ...] = ()
+    cognitive_stress_level_pct: float = 0.0
     capability_score: float = 100.0
 
 
 class RoleDashboardService:
-    """Manages role-scoped workspaces, initial resource inventories, 100% resource exhaustion locking, open LEGO decision card assembly, and inter-role OMS resource transfers."""
+    """Manages role-scoped workspaces, initial resource inventories, psychological friction/stress injections, 100% resource exhaustion locking, open LEGO decision card assembly, and inter-role OMS resource transfers."""
 
     def __init__(self) -> None:
         # Structure: _session_resources[session_id][role_id] = {"initial": dict, "available": dict, "reserved": dict}
         self._session_resources: dict[str, dict[str, dict[str, dict[str, Decimal]]]] = {}
         self._pending_cards: dict[str, list[LegoDecisionCard]] = {}
         self._transfers: dict[str, list[ResourceTransferDirective]] = {}
+        self._psychological_injects: dict[str, list[PsychologicalFrictionInject]] = {}
 
     def _ensure_role_initialized(self, session_id: str, role_id: str) -> None:
         if session_id not in self._session_resources:
             self._session_resources[session_id] = {}
             self._pending_cards[session_id] = []
             self._transfers[session_id] = []
+            self._psychological_injects[session_id] = []
 
         if role_id not in self._session_resources[session_id]:
             defaults = ROLE_INITIAL_RESOURCES.get(
@@ -117,12 +136,40 @@ class RoleDashboardService:
             available = {k: Decimal(str(v)) for k, v in defaults.items()}
             reserved = {res_k: Decimal("0") for res_k in defaults.keys()}
 
-
             self._session_resources[session_id][role_id] = {
                 "initial": initial,
                 "available": available,
                 "reserved": reserved,
             }
+
+    def inject_psychological_friction(
+        self,
+        session_id: str,
+        target_role_id: str,
+        friction_type: str,
+        title: str,
+        description: str,
+        stress_level_delta: float = 15.0,
+        audio_siren_signal: bool = False,
+        current_round: int = 1,
+    ) -> PsychologicalFrictionInject:
+        """Injects a psychological stress event (e.g. sirens, phone calls, social media trolls, protests, lost keys) into player dashboard."""
+        self._ensure_role_initialized(session_id, target_role_id if target_role_id != "all_roles" else "head_of_emergency")
+
+        inject = PsychologicalFrictionInject(
+            inject_id=f"psych_{uuid4().hex[:8]}",
+            session_id=session_id,
+            target_role_id=target_role_id,
+            friction_type=friction_type.strip().upper(),
+            title=title.strip(),
+            description=description.strip(),
+            stress_level_delta=stress_level_delta,
+            audio_siren_signal=audio_siren_signal,
+            created_at_round=current_round,
+        )
+
+        self._psychological_injects[session_id].append(inject)
+        return inject
 
     def get_role_workspace(
         self, session_id: str, role_id: str, active_directives: tuple[TaskDirective, ...] = ()
@@ -131,6 +178,13 @@ class RoleDashboardService:
         role_res = self._session_resources[session_id][role_id]
 
         cards = [c for c in self._pending_cards.get(session_id, []) if c.role_id == role_id]
+        psych_injects = [
+            i
+            for i in self._psychological_injects.get(session_id, [])
+            if i.target_role_id in (role_id, "all_roles")
+        ]
+
+        total_stress = min(100.0, sum(i.stress_level_delta for i in psych_injects))
 
         role_name_map = {
             "head_of_emergency": "Голова ДСНС / Керівник штабу з НС",
@@ -149,7 +203,9 @@ class RoleDashboardService:
             reserved_resources=dict(role_res["reserved"]),
             pending_lego_cards=tuple(cards),
             active_directives=active_directives,
-            capability_score=100.0,
+            psychological_injects=tuple(psych_injects),
+            cognitive_stress_level_pct=total_stress,
+            capability_score=max(0.0, 100.0 - (total_stress * 0.3)),
         )
 
     def submit_lego_decision_card(

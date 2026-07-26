@@ -23,6 +23,9 @@ from .role_dashboard_service import (
     LegoDecisionCard as LegoDecisionCard,
 )
 from .role_dashboard_service import (
+    PsychologicalFrictionInject as PsychologicalFrictionInject,
+)
+from .role_dashboard_service import (
     ResourceTransferDirective as ResourceTransferDirective,
 )
 from .role_dashboard_service import (
@@ -63,7 +66,9 @@ __all__ = [
     "LegoDecisionCard",
     "LobbyParticipantStatus",
     "LobbyRoomStatus",
+    "PsychologicalFrictionInject",
     "ResourceTransferDirective",
+
     "RoleDashboardService",
     "RoleWorkspaceReadModel",
     "RoundExecutionService",

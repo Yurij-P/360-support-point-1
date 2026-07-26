@@ -159,3 +159,21 @@ def test_role_workspace_api_endpoints() -> None:
     assert "ai_recommended_resources" in ai_data
     assert "fire_trucks" in ai_data["ai_recommended_resources"]
 
+    # Inject Psychological Friction (Sirens / Phone Calls / Trolling)
+    psych_resp = client.post(
+        f"/sessions/{sess_id}/injects/psychological-friction",
+        json={
+            "target_role_id": "head_of_emergency",
+            "friction_type": "AIR_RAID_SIREN",
+            "title": "Повітряна тривога та паніка у соцмережах",
+            "description": "У Telegram-каналах тролять владу, а водій автоцистерни загубив ключі.",
+            "stress_level_delta": 25.0,
+            "audio_siren_signal": True,
+        },
+    )
+    assert psych_resp.status_code == 200
+    p_data = psych_resp.json()
+    assert p_data["friction_type"] == "AIR_RAID_SIREN"
+    assert p_data["audio_siren_signal"] is True
+
+
