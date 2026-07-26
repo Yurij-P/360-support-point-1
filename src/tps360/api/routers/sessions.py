@@ -1,10 +1,11 @@
 from collections.abc import Callable
 from datetime import datetime
+from decimal import Decimal
 from secrets import token_urlsafe
 from typing import Any, TypeVar
 from uuid import UUID
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import sessions
@@ -20,14 +21,19 @@ from tps360.simulation.domain.session import (
     SessionStatus,
 )
 from tps360.simulation.services import (
+    LegoDecisionCard,
     LobbyParticipantStatus,
     LobbyRoomStatus,
+    ResourceTransferDirective,
+    RoleDashboardService,
+    RoleWorkspaceReadModel,
     SessionLobbyService,
 )
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 T = TypeVar("T")
 lobby_service = SessionLobbyService()
+role_dashboard_service = RoleDashboardService()
 
 
 class CreateSessionRequest(BaseModel):
@@ -54,6 +60,22 @@ class AssignLobbyRoleRequest(BaseModel):
 
 class JoinLobbyRequest(BaseModel):
     display_name: str = Field(min_length=1)
+
+
+class SubmitLegoCardRequest(BaseModel):
+    role_id: str = Field(min_length=1)
+    action_type: str = Field(min_length=1)
+    target_facility_id: str = Field(min_length=1)
+    allocated_resources: dict[str, Decimal] = Field(default_factory=dict)
+    allocated_personnel: int = Field(default=0, ge=0)
+    custom_instructions: str = ""
+
+
+class TransferResourcesRequest(BaseModel):
+    sender_role_id: str = Field(min_length=1)
+    recipient_role_id: str = Field(min_length=1)
+    resources: dict[str, Decimal] = Field(default_factory=dict)
+    authorization_note: str = ""
 
 
 class SendInjectRequest(BaseModel):
@@ -149,6 +171,43 @@ def assign_lobby_role(session_id: str, req: AssignLobbyRoleRequest) -> LobbyPart
 @router.get("/{session_id}/lobby-status", response_model=LobbyRoomStatus)
 def get_lobby_status(session_id: str) -> LobbyRoomStatus:
     return lobby_service.get_lobby_status(session_id)
+
+
+@router.get("/{session_id}/role-workspace", response_model=RoleWorkspaceReadModel)
+def get_role_workspace(session_id: str, role_id: str = Query(...)) -> RoleWorkspaceReadModel:
+    return role_dashboard_service.get_role_workspace(session_id=session_id, role_id=role_id)
+
+
+@router.post("/{session_id}/lego-decisions", response_model=LegoDecisionCard)
+def submit_lego_decision(session_id: str, req: SubmitLegoCardRequest) -> LegoDecisionCard:
+    try:
+        return role_dashboard_service.submit_lego_decision_card(
+            session_id=session_id,
+            role_id=req.role_id,
+            action_type=req.action_type,
+            target_facility_id=req.target_facility_id,
+            allocated_resources=req.allocated_resources,
+            allocated_personnel=req.allocated_personnel,
+            custom_instructions=req.custom_instructions,
+        )
+    except DomainRuleViolation as exc:
+        raise HTTPException(409, str(exc))
+
+
+@router.post("/{session_id}/resource-transfers", response_model=ResourceTransferDirective)
+def transfer_resources_oms(
+    session_id: str, req: TransferResourcesRequest
+) -> ResourceTransferDirective:
+    try:
+        return role_dashboard_service.transfer_resources_oms(
+            session_id=session_id,
+            sender_role_id=req.sender_role_id,
+            recipient_role_id=req.recipient_role_id,
+            resources=req.resources,
+            authorization_note=req.authorization_note,
+        )
+    except DomainRuleViolation as exc:
+        raise HTTPException(409, str(exc))
 
 
 class ParticipantInjectResponse(BaseModel):
