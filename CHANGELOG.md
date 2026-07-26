@@ -2,7 +2,19 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.1] — 2026-07-26
+
+### Додано
+
+- **PR #17 (Real-Time SSE Event Transport, Time Dilation Clock & Open AI Crisis Copilot):**
+  - Математична та доменна модель дилатації часу (`SimulationRoundClock`, `CrisisVelocity`, розрахунок 1:30, 1:60, 1:90 для пожеж, епідемій холери, падіжу худоби, ізоляції, блек-аутів).
+  - In-Memory PubSub шина подій реального часу (`SessionEventBroadcaster`, `SessionEvent`, `SessionEventType`) з рольовою фільтрацією.
+  - Server-Sent Events (SSE) REST API (`GET /events/session/{session_id}/stream`, `GET /events/session/{session_id}/history`).
+  - Відкрита онтологія криз та сервіс **AI Crisis Copilot** (`AICrisisCopilotService`), що моделює розвиток подій на основі джерел та ЗМІ під модерацією фасилітатора.
+  - Суворе геопросторове обмеження подій ШІ у межах кордонів **OpenStreetMap (OSM BoundingBox / Relation)** громади.
+
 ## [0.2.0] — 2026-07-26
+
 
 ### Додано
 
