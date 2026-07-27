@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from tps360.core.domain.crisis_taxonomy import CrisisCategory, HazardType, ImpactType
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.simulation.domain.decision_payload import validate_decision_payload
 
@@ -81,6 +82,28 @@ class SessionJournalEntry(BaseModel):
     decision_id: UUID | None = None
 
 
+class CrisisCondition(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    description: str = Field(min_length=1)
+    value: str | None = None
+    unit: str | None = None
+    confirmed: bool = False
+    added_at: datetime = Field(default_factory=utcnow)
+
+
+class CrisisDefinition(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    title: str = Field(min_length=1)
+    category: CrisisCategory
+    primary_hazard: HazardType
+    secondary_hazards: list[HazardType] = Field(default_factory=list)
+    potential_impacts: list[ImpactType] = Field(default_factory=list)
+    description: str = Field(min_length=1)
+    affected_area_description: str = ""
+    conditions: list[CrisisCondition] = Field(default_factory=list)
+    defined_at: datetime = Field(default_factory=utcnow)
+
+
 class FacilitatedSession(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     community_id: UUID
@@ -94,6 +117,7 @@ class FacilitatedSession(BaseModel):
     facilitator_token_digest: str = Field(exclude=True, repr=False)
     join_token_digest: str = Field(default="", exclude=True, repr=False)
     role_profiles: list[RoleProfile] = Field(default_factory=list)
+    crisis_definition: CrisisDefinition | None = None
 
     @staticmethod
     def digest_facilitator_token(token: str) -> str:
@@ -174,6 +198,20 @@ class FacilitatedSession(BaseModel):
             (profile for profile in self.role_profiles if profile.role_id == role_id),
             None,
         )
+
+    def define_crisis(self, definition: CrisisDefinition) -> CrisisDefinition:
+        if self.status not in {SessionStatus.LOBBY, SessionStatus.READY}:
+            raise DomainRuleViolation("Crisis can only be defined before the session starts.")
+        self.crisis_definition = definition
+        return definition
+
+    def add_crisis_condition(self, condition: CrisisCondition) -> CrisisCondition:
+        if self.crisis_definition is None:
+            raise DomainRuleViolation("Crisis must be defined before adding conditions.")
+        if any(c.id == condition.id for c in self.crisis_definition.conditions):
+            raise DomainRuleViolation("Crisis condition with this ID already exists.")
+        self.crisis_definition.conditions.append(condition)
+        return condition
 
     def start(self) -> None:
         if self.status is not SessionStatus.READY:
