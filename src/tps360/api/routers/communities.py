@@ -13,7 +13,11 @@ from tps360.core.domain.models import Community
 from tps360.core.exceptions import DomainRuleViolation, EntityNotFound, NotFoundError
 
 router = APIRouter(prefix="/communities", tags=["communities"])
-catalog_service = CommunityCatalogService()
+_catalog_service_instance = CommunityCatalogService()
+
+
+def get_catalog_service() -> CommunityCatalogService:
+    return _catalog_service_instance
 
 
 class CatalogSearchResponse(BaseModel):
@@ -29,7 +33,8 @@ def get_communities_catalog(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> CatalogSearchResponse:
-    items = catalog_service.search_catalog(
+    service = get_catalog_service()
+    items = service.search_catalog(
         query=query,
         region=region,
         min_preparedness=min_preparedness,
@@ -41,8 +46,9 @@ def get_communities_catalog(
 
 @router.get("/{community_id}/passport", response_model=CommunityPassportReadModel)
 def get_community_passport(community_id: str) -> CommunityPassportReadModel:
+    service = get_catalog_service()
     try:
-        return catalog_service.get_passport(community_id)
+        return service.get_passport(community_id)
     except EntityNotFound as exc:
         raise HTTPException(404, str(exc))
 

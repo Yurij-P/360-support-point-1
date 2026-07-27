@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from tps360.community.domain.infrastructure_taxonomy import (
     CriticalInfrastructureCategory,
 )
+from tps360.community.domain.katottg_directory import OFFICIAL_KATOTTG_DATASET
 from tps360.community.domain.passport_read_model import (
     CommunityPassportReadModel,
     InfrastructureItemReadModel,
@@ -27,214 +28,82 @@ class CommunityCatalogItem:
     center_longitude: float = 24.832
 
 
-# Official KATOTTG Directory dataset (directory.org.ua)
-SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
-    "verkhovyna": CommunityPassportReadModel(
-        community_id="verkhovyna",
-        name="Верховинська селищна громада",
-        official_code="UA26020010000055743",
-        region="Івано-Франківська область",
-        district="Верховинський район",
-        area_sq_km=718.3,
-        total_population=17850,
-        preparedness_score=74.5,
-        maturity_level="Resilient",
-        vulnerable_population_total=3420,
-        center_latitude=48.155,
-        center_longitude=24.832,
-        vulnerable_groups_breakdown={
-            "children": 1400,
-            "elderly": 1200,
-            "disabled": 320,
-            "idp": 500,
-        },
-        osm_relation_id="osm_rel_verkhovyna_2602",
-        bounding_box={"min_lat": 48.10, "min_lon": 24.75, "max_lat": 48.25, "max_lon": 24.95},
-        infrastructure_items=(
-            InfrastructureItemReadModel(
-                id="infra_verkh_hq_1",
-                name="Штаб з НС (Верховина)",
-                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
-                latitude=48.155,
-                longitude=24.832,
-                risk_level="LOW",
+def _build_initial_passports() -> dict[str, CommunityPassportReadModel]:
+    passports: dict[str, CommunityPassportReadModel] = {}
+
+    for record in OFFICIAL_KATOTTG_DATASET:
+        comm_id = record.official_code.lower()
+        # Custom friendly IDs for initial seed
+        if record.official_code == "UA26020010000055743":
+            comm_id = "verkhovyna"
+        elif record.official_code == "UA48060030000037887":
+            comm_id = "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3"
+        elif record.official_code == "UA23080270000095874":
+            comm_id = "shiroke"
+
+        passports[comm_id] = CommunityPassportReadModel(
+            community_id=comm_id,
+            name=record.name,
+            official_code=record.official_code,
+            region=record.region,
+            district=record.district,
+            area_sq_km=450.0,
+            total_population=record.total_population,
+            preparedness_score=72.0,
+            maturity_level="Integrated",
+            vulnerable_population_total=int(record.total_population * 0.18),
+            center_latitude=record.center_latitude,
+            center_longitude=record.center_longitude,
+            vulnerable_groups_breakdown={
+                "children": int(record.total_population * 0.08),
+                "elderly": int(record.total_population * 0.07),
+                "disabled": int(record.total_population * 0.02),
+                "idp": int(record.total_population * 0.01),
+            },
+            infrastructure_items=(
+                InfrastructureItemReadModel(
+                    id=f"infra_{record.official_code}_hq",
+                    name=f"Штаб НС ({record.name})",
+                    category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
+                    latitude=record.center_latitude,
+                    longitude=record.center_longitude,
+                    risk_level="LOW",
+                ),
+                InfrastructureItemReadModel(
+                    id=f"infra_{record.official_code}_fire",
+                    name=f"Пожежно-рятувальна частина ДСНС ({record.name})",
+                    category=CriticalInfrastructureCategory.RESCUE_FIRE_STATION,
+                    latitude=record.center_latitude + 0.004,
+                    longitude=record.center_longitude + 0.005,
+                    risk_level="LOW",
+                ),
+                InfrastructureItemReadModel(
+                    id=f"infra_{record.official_code}_hosp",
+                    name=f"Центральна міська лікарня ({record.name})",
+                    category=CriticalInfrastructureCategory.HOSPITAL_MEDICAL,
+                    latitude=record.center_latitude - 0.003,
+                    longitude=record.center_longitude - 0.004,
+                    risk_level="MODERATE",
+                ),
+                InfrastructureItemReadModel(
+                    id=f"infra_{record.official_code}_sub",
+                    name=f"Трансформаторна підстанція 110кВ",
+                    category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
+                    latitude=record.center_latitude + 0.012,
+                    longitude=record.center_longitude + 0.015,
+                    risk_level="HIGH",
+                ),
             ),
-            InfrastructureItemReadModel(
-                id="infra_verkh_fire_1",
-                name="Пожежно-рятувальна частина ДСНС №12",
-                category=CriticalInfrastructureCategory.RESCUE_FIRE_STATION,
-                latitude=48.152,
-                longitude=24.838,
-                risk_level="LOW",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_verkh_hospital_1",
-                name="Верховинська центральна лікарня",
-                category=CriticalInfrastructureCategory.HOSPITAL_MEDICAL,
-                latitude=48.148,
-                longitude=24.829,
-                risk_level="MODERATE",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_verkh_substation_1",
-                name="Трансформаторна підстанція 110кВ",
-                category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
-                latitude=48.160,
-                longitude=24.845,
-                risk_level="HIGH",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_verkh_water_1",
-                name="Центральний водоканал р. Черемош",
-                category=CriticalInfrastructureCategory.WATER_SUPPLY_FACILITY,
-                latitude=48.144,
-                longitude=24.820,
-                risk_level="HIGH",
-            ),
-        ),
-    ),
-    "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": CommunityPassportReadModel(
-        community_id="a29d6fbd-02c3-4d43-a651-7efd6fbd02c3",
-        name="Березнегуватська селищна громада",
-        official_code="UA48060030000037887",
-        region="Миколаївська область",
-        district="Баштанський район",
-        area_sq_km=872.4,
-        total_population=23500,
-        preparedness_score=68.5,
-        maturity_level="Integrated",
-        vulnerable_population_total=4200,
-        center_latitude=47.312,
-        center_longitude=32.848,
-        vulnerable_groups_breakdown={
-            "children": 1800,
-            "elderly": 1500,
-            "disabled": 450,
-            "idp": 450,
-        },
-        osm_relation_id="osm_rel_bereznehuvate_1784",
-        bounding_box={"min_lat": 47.1, "min_lon": 32.7, "max_lat": 47.6, "max_lon": 33.3},
-        infrastructure_items=(
-            InfrastructureItemReadModel(
-                id="infra_berez_substation_1",
-                name="Баштанська ТП 110кВ",
-                category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
-                latitude=47.330,
-                longitude=32.880,
-                risk_level="CRITICAL",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_hospital_1",
-                name="Березнегуватська центральна лікарня",
-                category=CriticalInfrastructureCategory.HOSPITAL_MEDICAL,
-                latitude=47.315,
-                longitude=32.845,
-                risk_level="MODERATE",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_tro_hq_1",
-                name="Штаб ТрО Березнегувате",
-                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
-                latitude=47.318,
-                longitude=32.848,
-                risk_level="CRITICAL",
-            ),
-        ),
-    ),
-    "shiroke": CommunityPassportReadModel(
-        community_id="shiroke",
-        name="Широківська сільська громада",
-        official_code="UA23080270000095874",
-        region="Запорізька область",
-        district="Запорізький район",
-        area_sq_km=345.0,
-        total_population=12500,
-        preparedness_score=62.0,
-        maturity_level="Managed",
-        vulnerable_population_total=2100,
-        center_latitude=47.920,
-        center_longitude=35.050,
-        vulnerable_groups_breakdown={
-            "children": 800,
-            "elderly": 900,
-            "disabled": 200,
-            "idp": 200,
-        },
-        osm_relation_id="osm_rel_shiroke_2308",
-        bounding_box={"min_lat": 47.8, "min_lon": 34.9, "max_lat": 48.0, "max_lon": 35.2},
-        infrastructure_items=(
-            InfrastructureItemReadModel(
-                id="infra_shir_substation_1",
-                name="Широківська ТП 35кВ",
-                category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
-                latitude=47.920,
-                longitude=35.050,
-                risk_level="HIGH",
-            ),
-        ),
-    ),
-    "pervomaisk": CommunityPassportReadModel(
-        community_id="pervomaisk",
-        name="Первомайська міська громада",
-        official_code="UA48080070000038596",
-        region="Миколаївська область",
-        district="Первомайський район",
-        area_sq_km=251.4,
-        total_population=66000,
-        preparedness_score=71.0,
-        maturity_level="Integrated",
-        vulnerable_population_total=11200,
-        center_latitude=48.044,
-        center_longitude=30.850,
-        vulnerable_groups_breakdown={
-            "children": 4200,
-            "elderly": 4500,
-            "disabled": 1500,
-            "idp": 1000,
-        },
-        infrastructure_items=(
-            InfrastructureItemReadModel(
-                id="infra_pervo_hq",
-                name="Штаб НС Первомайськ",
-                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
-                latitude=48.044,
-                longitude=30.850,
-                risk_level="LOW",
-            ),
-        ),
-    ),
-    "mykolaiv_city": CommunityPassportReadModel(
-        community_id="mykolaiv_city",
-        name="Миколаївська міська громада",
-        official_code="UA48060150000025841",
-        region="Миколаївська область",
-        district="Миколаївський район",
-        area_sq_km=260.0,
-        total_population=470000,
-        preparedness_score=82.0,
-        maturity_level="Advanced",
-        vulnerable_population_total=75000,
-        center_latitude=46.975,
-        center_longitude=31.994,
-        infrastructure_items=(
-            InfrastructureItemReadModel(
-                id="infra_myk_hq",
-                name="Оперативний Штаб Миколаївської ОВА",
-                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
-                latitude=46.975,
-                longitude=31.994,
-                risk_level="HIGH",
-            ),
-        ),
-    ),
-}
+        )
+
+    return passports
 
 
 class CommunityCatalogService:
     """Service providing search, filtering, and passport read model access for communities."""
 
     def __init__(self, passports: dict[str, CommunityPassportReadModel] | None = None) -> None:
-        self._passports = passports if passports is not None else dict(SEED_PASSPORTS)
+        self._passports = passports if passports is not None else _build_initial_passports()
 
     def search_catalog(
         self,
@@ -245,25 +114,24 @@ class CommunityCatalogService:
         offset: int = 0,
     ) -> list[CommunityCatalogItem]:
         items: list[CommunityCatalogItem] = []
-
         q_clean = query.strip().lower() if query else ""
 
-        # If query is a custom KATOTTG code (starts with UA or numbers) not yet in dictionary, dynamically register it
-        if q_clean and (q_clean.startswith("ua") or q_clean.isdigit()) and len(q_clean) >= 6:
+        # If query is a custom KATOTTG code (starts with UA or digits) not yet in dictionary, dynamically register it
+        if q_clean and (q_clean.startswith("ua") or q_clean.isdigit()) and len(q_clean) >= 5:
             code_upper = q_clean.upper()
             if not any(code_upper in p.official_code for p in self._passports.values()):
                 dynamic_id = f"katottg_{code_upper.lower()}"
                 self._passports[dynamic_id] = CommunityPassportReadModel(
                     community_id=dynamic_id,
-                    name=f"Громада КАТОТТГ ({code_upper})",
+                    name=f"Територіальна громада ({code_upper})",
                     official_code=code_upper,
                     region="Україна (КАТОТТГ)",
-                    district="Адміністративний район",
+                    district="Район КАТОТТГ",
                     area_sq_km=500.0,
-                    total_population=18500,
+                    total_population=21000,
                     preparedness_score=70.0,
                     maturity_level="Integrated",
-                    vulnerable_population_total=3200,
+                    vulnerable_population_total=3500,
                     center_latitude=49.0,
                     center_longitude=31.0,
                     infrastructure_items=(
@@ -312,5 +180,9 @@ class CommunityCatalogService:
 
     def get_passport(self, community_id: str) -> CommunityPassportReadModel:
         if community_id not in self._passports:
+            # Fallback search by official_code if lower ID matched
+            for p in self._passports.values():
+                if p.official_code.lower() == community_id.lower():
+                    return p
             raise EntityNotFound(f"Community passport with id '{community_id}' not found.")
         return self._passports[community_id]
