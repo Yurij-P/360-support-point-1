@@ -1,7 +1,7 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Live Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Dynamic Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  */
 
 class TPS360WebApp {
@@ -11,6 +11,8 @@ class TPS360WebApp {
     this.communityId = null;
     this.communityName = null;
     this.officialCode = null;
+    this.scenarioId = null;
+    this.scenarioTitle = null;
     this.roleId = "head_of_emergency";
     this.apiBase = ""; // FastAPI routers mounted at root level
 
@@ -37,9 +39,31 @@ class TPS360WebApp {
     const commLabel = document.getElementById("activeCommunityName");
     if (commLabel) {
       if (this.communityName) {
-        commLabel.textContent = `АКТИВНА ГРОМАДА: ${this.communityName}`;
+        commLabel.textContent = this.communityName;
       } else {
-        commLabel.textContent = "Громада не обрана (Оберіть у Каталозі КАТОТТГ)";
+        commLabel.textContent = "Не обрано (Оберіть у Каталозі КАТОТТГ)";
+      }
+    }
+
+    const scenLabel = document.getElementById("activeScenarioTitle");
+    if (scenLabel) {
+      if (this.scenarioTitle) {
+        scenLabel.textContent = this.scenarioTitle;
+      } else {
+        scenLabel.textContent = "Сценарій НС не обрано";
+      }
+    }
+
+    const statusLabel = document.getElementById("activeSessionStatus");
+    if (statusLabel) {
+      if (this.sessionId) {
+        statusLabel.textContent = `ACTIVE · Раунд ${this.state.round}`;
+        statusLabel.className = "chip chip-active";
+      } else {
+        statusLabel.textContent = "Очікує вибору громади та сценарію";
+        statusLabel.className = "chip";
+        statusLabel.style.background = "var(--bg-elevated)";
+        statusLabel.style.color = "var(--text-secondary)";
       }
     }
   }
@@ -340,7 +364,7 @@ class TPS360WebApp {
                   <span class="chip">Рельєф: ${s.terrain_compatibility}</span>
                 </div>
               </div>
-              <button type="button" class="btn-primary check-compatibility-btn" data-id="${s.id}" style="width:100%;">
+              <button type="button" class="btn-primary check-compatibility-btn" data-id="${s.id}" data-title="${s.title || s.id}" style="width:100%;">
                 🔍 Перевірити Сумісність з Громадою →
               </button>
             </div>
@@ -352,6 +376,10 @@ class TPS360WebApp {
       container.querySelectorAll(".check-compatibility-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const scenarioId = e.currentTarget.getAttribute("data-id");
+          const scenarioTitle = e.currentTarget.getAttribute("data-title");
+          this.scenarioId = scenarioId;
+          this.scenarioTitle = scenarioTitle;
+          this.updateContextBar();
           this.runCompatibilityCheck(scenarioId);
         });
       });
@@ -368,7 +396,7 @@ class TPS360WebApp {
     if (!this.communityId) {
       resultBox.innerHTML = `
         <div class="card" style="border-left: 6px solid var(--warning-border);">
-          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведения оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
+          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведення оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
           <button type="button" class="btn-primary" style="margin-top:8px;" onclick="window.tps360App.switchScreen('catalog')">← Перейти до Каталогу КАТОТТГ</button>
         </div>
       `;
@@ -407,6 +435,7 @@ class TPS360WebApp {
       if (launchBtn) {
         launchBtn.addEventListener("click", () => {
           this.sessionId = `sess_${this.communityId}_${Date.now()}`;
+          this.updateContextBar();
           this.switchScreen("workspace");
         });
       }
