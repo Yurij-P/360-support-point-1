@@ -1,7 +1,7 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Dynamic Client-side controller with Facilitator-controlled Role Assignment, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Dynamic Client-side controller with Instant Search Engine, Facilitator-controlled Role Assignment, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  * ZERO HARDCODED DEMO DATA PRE-POPULATION
  */
 
@@ -151,8 +151,7 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN 1: CATALOG & LIVE KATOTTG DIRECTORY SEARCH
-   * ALPHABETICAL NATIONAL REGION SORTING
+   * SCREEN 1: CATALOG & ROCK-SOLID INSTANT SEARCH ENGINE
    * ------------------------------------------------------------------ */
   async renderCatalogScreen(container) {
     try {
@@ -178,7 +177,7 @@ class TPS360WebApp {
           <p style="color:var(--text-secondary); margin-bottom:14px;">Офіційний довідник територіальних громад України з верифікованими кодами КАТОТТГ, інфраструктурними паспортами та картами OpenStreetMap.</p>
           
           <div style="display:flex; gap:12px;">
-            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Миттєвий пошук громади: введіть код КАТОТТГ, область або назву (наприклад: Київ, Львів, Харків, Запоріжжя)..." style="flex:1;">
+            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Миттєвий пошук громади: введіть код КАТОТТГ, область або назву (наприклад: Київ, Широківська, Харків, Запоріжжя)..." style="flex:1;">
             <button type="button" id="katottgSearchBtn" class="btn-primary">🔍 Знайти у КАТОТТГ</button>
           </div>
         </div>
@@ -192,35 +191,59 @@ class TPS360WebApp {
 
       this.bindCatalogCardEvents(container);
 
-      // Instant live typeahead & button search
+      // Instant live client-side typeahead + fallback server search
       const searchBtn = container.querySelector("#katottgSearchBtn");
       const searchInput = container.querySelector("#katottgSearchInput");
       if (searchInput) {
-        const doSearch = async () => {
-          const q = searchInput.value.trim();
-          const searchUrl = q 
-            ? `${this.apiBase}/communities/catalog?query=${encodeURIComponent(q)}`
-            : `${this.apiBase}/communities/catalog`;
+        const normalizeText = (str) => {
+          if (!str) return "";
+          return str.toLowerCase()
+                    .replace(/i/g, "і") // normalize Latin i to Ukrainian і
+                    .replace(/e/g, "е")
+                    .trim();
+        };
 
-          try {
-            const searchRes = await fetch(searchUrl);
-            if (searchRes.ok) {
-              const data = await searchRes.json();
-              const filtered = Array.isArray(data) ? data : (data.items || []);
-              const grid = document.getElementById("catalogGridContainer");
-              if (grid) {
-                grid.innerHTML = this.renderCommunityCardsHTML(filtered);
-                this.bindCatalogCardEvents(container);
-              }
-            }
-          } catch (e) {
-            console.error("Search error:", e);
+        const performFilter = async () => {
+          const rawQ = searchInput.value.trim();
+          const q = normalizeText(rawQ);
+          const grid = document.getElementById("catalogGridContainer");
+          if (!grid) return;
+
+          if (!q) {
+            grid.innerHTML = this.renderCommunityCardsHTML(this.state.communities);
+            this.bindCatalogCardEvents(container);
+            return;
           }
+
+          // 1. Fast instant local filter over cached dataset
+          let matches = this.state.communities.filter(c => {
+            const nameNorm = normalizeText(c.name);
+            const codeNorm = normalizeText(c.official_code);
+            const regionNorm = normalizeText(c.region);
+            const distNorm = normalizeText(c.district);
+            return nameNorm.includes(q) || codeNorm.includes(q) || regionNorm.includes(q) || distNorm.includes(q);
+          });
+
+          // 2. Fallback backend search if local filter returned no matches or for custom codes
+          if (matches.length === 0) {
+            try {
+              const searchRes = await fetch(`${this.apiBase}/communities/catalog?query=${encodeURIComponent(rawQ)}`);
+              if (searchRes.ok) {
+                const data = await searchRes.json();
+                matches = Array.isArray(data) ? data : (data.items || []);
+              }
+            } catch (e) {
+              console.error("Backend search fallback error:", e);
+            }
+          }
+
+          grid.innerHTML = this.renderCommunityCardsHTML(matches);
+          this.bindCatalogCardEvents(container);
         };
 
         // Live instant filtering as user types
-        searchInput.addEventListener("input", doSearch);
-        if (searchBtn) searchBtn.addEventListener("click", doSearch);
+        searchInput.addEventListener("input", performFilter);
+        if (searchBtn) searchBtn.addEventListener("click", performFilter);
       }
 
     } catch (err) {
@@ -229,8 +252,8 @@ class TPS360WebApp {
   }
 
   renderCommunityCardsHTML(items) {
-    if (items.length === 0) {
-      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">У довіднику КАТОТТГ за цим запитом громад не знайдено.</p></div>`;
+    if (!items || items.length === 0) {
+      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted); padding:16px 0;">У довіднику КАТОТТГ за цим запитом громад не знайдено.</p></div>`;
     }
 
     return items.map(c => {
@@ -725,7 +748,7 @@ class TPS360WebApp {
             <div class="form-group">
               <label class="form-label" for="legoActionType">1. Дія LEGO (Action Component):</label>
               <select id="legoActionType" class="form-control">
-                <option value="EVACUATE_POPULATION">🚜 Евакуація населення з небезпечної зони</option>
+                <option value="EVACUATE_POPULATION">🚜 Евакуація населения з небезпечної зони</option>
                 <option value="REPAIR_POWER_GRID">⚡ Аварійний ремонт трансформаторної підстанції</option>
                 <option value="DEPLOY_GENERATOR">🔌 Розгортання резервного дизель-генератора</option>
                 <option value="MEDICAL_TRIAGE">🚑 Організація сортувального пункту поранених</option>
