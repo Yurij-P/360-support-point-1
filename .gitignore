@@ -44,3 +44,8 @@ htmlcov/
 .specify/
 .github/agents/
 .github/prompts/
+
+# Agent skills tooling (npx skills; installed locally, not part of the app)
+.agents/
+.claude/
+skills-lock.json
