@@ -98,6 +98,32 @@ export class TPS360ApiClient {
     return res.json();
   }
 
+  async createSession(communityId: string): Promise<{ session_id: string; facilitator_token: string; join_token: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ community_id: communityId }),
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async joinSession(sessionId: string, joinToken: string): Promise<{ participant_id: string; participant_token: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/participants/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ join_token: joinToken }),
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async getSession(sessionId: string): Promise<{ session_id: string; lifecycle: string; [key: string]: unknown }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
   subscribeToSessionEvents(sessionId: string, onMessage: (event: MessageEvent) => void): EventSource {
     const eventSource = new EventSource(`${this.baseUrl}/events/session/${sessionId}/stream`);
     eventSource.onmessage = onMessage;
