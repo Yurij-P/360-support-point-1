@@ -1,7 +1,7 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Dynamic Client-side controller with Participant Identity Login, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Dynamic Client-side controller with Facilitator-controlled Role Assignment, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  */
 
 class TPS360WebApp {
@@ -13,9 +13,8 @@ class TPS360WebApp {
     this.officialCode = null;
     this.scenarioId = null;
     this.scenarioTitle = null;
-    this.roleId = "head_of_emergency";
     
-    // Participant Identity Profile
+    // Participant Identity Profile (Role is assigned by Facilitator ONLY)
     this.participant = null; 
 
     this.apiBase = ""; // FastAPI routers mounted at root level
@@ -25,6 +24,7 @@ class TPS360WebApp {
       scenarios: [],
       activePassport: null,
       sessionData: null,
+      lobbyParticipants: [], // Managed by Facilitator
       decisionsLog: [],
       round: 1,
       stressLevel: 0.0
@@ -53,7 +53,10 @@ class TPS360WebApp {
     const partLabel = document.getElementById("activeParticipantName");
     if (partLabel) {
       if (this.participant) {
-        partLabel.textContent = `${this.participant.name} (${this.participant.organization || 'Учасник'})`;
+        const roleText = this.participant.assignedRole 
+          ? ` · Роль: ${this.participant.assignedRoleTitle}` 
+          : " (Очікує призначення ролі Фасилітатором)";
+        partLabel.textContent = `${this.participant.name} (${this.participant.organization})${roleText}`;
       } else {
         partLabel.textContent = "—";
       }
@@ -438,7 +441,7 @@ class TPS360WebApp {
             <h3 style="font-size:1.15rem; font-weight:700; color:var(--success-text);">
               ✅ Сценарій ${result.scenario_id} СУМІСНИЙ з громадою "${this.communityName}"
             </h3>
-            <button type="button" class="btn-primary" id="launchSessionNowBtn">🚀 Запустити Симуляцію в Кабінеті →</button>
+            <button type="button" class="btn-primary" id="launchSessionNowBtn">🚀 Перейти до Входу Учасника →</button>
           </div>
           <p style="font-size:0.9rem; color:var(--text-primary); margin-bottom:8px;">${result.terrain_match_reason || result.reason}</p>
           <span class="chip chip-active">Індекс топографічного збігу: ${result.compatibility_score}%</span>
@@ -450,7 +453,7 @@ class TPS360WebApp {
         launchBtn.addEventListener("click", () => {
           this.sessionId = `sess_${this.communityId}_${Date.now()}`;
           this.updateContextBar();
-          this.switchScreen("login"); // Direct to Login / Registration
+          this.switchScreen("login"); // Direct to Login / Registration Lobby
         });
       }
     } catch (err) {
@@ -459,17 +462,23 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * NEW SCREEN: PARTICIPANT LOGIN & REGISTRATION ENTRY
+   * SCREEN: PARTICIPANT IDENTITY REGISTRATION (NO ROLE SELECTION!)
+   * ROLES ARE ASSIGNED EXCLUSIVELY BY THE FACILITATOR IN THE LOBBY
    * ------------------------------------------------------------------ */
   async renderLoginScreen(container) {
     const activeParticipantCard = this.participant ? `
       <div class="card" style="border: 2px solid var(--success-border); margin-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
-            <span class="chip chip-active">Вхід виконано</span>
+            <span class="chip chip-active">Зареєстровано в Кімнаті Очікування (Lobby)</span>
             <h2 style="font-size:1.2rem; font-weight:700; margin-top:4px;">👤 ${this.participant.name}</h2>
             <p style="color:var(--text-secondary); font-size:0.88rem;">
               Організація: <strong>${this.participant.organization}</strong> | Посада: ${this.participant.position}
+            </p>
+            <p style="font-size:0.82rem; color:var(--warning-text); margin-top:4px;">
+              ${this.participant.assignedRole 
+                ? `✅ Фасилітатор призначив роль: <strong>${this.participant.assignedRoleTitle}</strong>` 
+                : `⏳ Очікує призначення оперативної ролі Фасилітатором сесії у Пульті...`}
             </p>
           </div>
           <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('workspace')">
@@ -481,54 +490,49 @@ class TPS360WebApp {
 
     container.innerHTML = `
       <div class="card" style="margin-bottom:24px;">
-        <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🔑 Окремий Вхід Учасника Симуляції (Participant Identity Registration)</h1>
-        <p style="color:var(--text-secondary)">Авторизація посадової особи громади чи екстреної служби для отримання серверного доступу до Кабінету Гравця.</p>
+        <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🔑 Реєстрація Ідентичності Учасника (Participant Registration)</h1>
+        <p style="color:var(--text-secondary)">
+          Учасники реєструють ПІБ, організацію та посаду. <strong>Оперативну роль у симуляції призначає виключно Фасилітатор сесії.</strong>
+        </p>
       </div>
 
       ${activeParticipantCard}
 
-      <div class="card" style="max-width:720px; margin:0 auto; border: 1px solid var(--primary-accent);">
+      <div class="card" style="max-width:680px; margin:0 auto; border: 1px solid var(--primary-accent);">
         <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:16px; color:var(--primary-accent);">
-          📝 Картка Реєстрації та Авторизації Учасника
+          📝 Картка Входу та Заявки у Сесію
         </h2>
 
         <form id="participantLoginForm">
           <div class="form-group">
             <label class="form-label" for="partFullName">1. ПІБ або Позивний Учасника:</label>
-            <input type="text" id="partFullName" class="form-control" placeholder="Наприклад: Петренко Іван Олексійович" value="${this.participant ? this.participant.name : ''}" required>
+            <input type="text" id="partFullName" class="form-control" placeholder="Наприклад: Путрич Юрій Миколайович" value="${this.participant ? this.participant.name : ''}" required>
           </div>
 
           <div class="grid-layout" style="margin-bottom:16px;">
             <div class="form-group">
               <label class="form-label" for="partOrg">2. Організація / Підрозділ:</label>
-              <input type="text" id="partOrg" class="form-control" placeholder="Наприклад: ГУ ДСНС України" value="${this.participant ? this.participant.organization : ''}" required>
+              <input type="text" id="partOrg" class="form-control" placeholder="Наприклад: Березнегуватська селищна рада" value="${this.participant ? this.participant.organization : ''}" required>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="partPosition">3. Посада:</label>
-              <input type="text" id="partPosition" class="form-control" placeholder="Наприклад: Керівник штабу з НС" value="${this.participant ? this.participant.position : ''}" required>
+              <input type="text" id="partPosition" class="form-control" placeholder="Наприклад: Селищний голова" value="${this.participant ? this.participant.position : ''}" required>
             </div>
           </div>
 
-          <div class="grid-layout" style="margin-bottom:16px;">
-            <div class="form-group">
-              <label class="form-label" for="partRoleSelect">4. Операційна Роль в Симуляції:</label>
-              <select id="partRoleSelect" class="form-control">
-                <option value="head_of_emergency" ${this.roleId === 'head_of_emergency' ? 'selected' : ''}>🚒 Керівник штабу з НС (ДСНС)</option>
-                <option value="chief_hospital" ${this.roleId === 'chief_hospital' ? 'selected' : ''}>🚑 Головний лікар лікарні</option>
-                <option value="director_waterworks" ${this.roleId === 'director_waterworks' ? 'selected' : ''}>⚡ Директор Водоканалу / Енергомережі</option>
-                <option value="head_of_community" ${this.roleId === 'head_of_community' ? 'selected' : ''}>🏫 Голова селищної ради (Староста)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="partSessionToken">5. PIN / Токен Запрошення в Сесію:</label>
-              <input type="text" id="partSessionToken" class="form-control" value="JOIN-8842" placeholder="JOIN-8842">
-            </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label" for="partSessionToken">4. PIN / Токен Запрошення у Лоббі Сесії:</label>
+            <input type="text" id="partSessionToken" class="form-control" value="JOIN-8842" placeholder="JOIN-8842">
           </div>
 
-          <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px; margin-top:8px;">
-            🔑 Увійти в Кабінет Гравця Симуляції →
+          <div class="card" style="background:var(--bg-elevated); padding:12px; margin-bottom:16px; font-size:0.82rem; color:var(--text-secondary);">
+            ℹ️ <strong>Регламент призначення ролей:</strong> Після відправки заявки ваша картка потрапляє у Кімнату Очікування (Lobby). 
+            Фасилітатор сесії розпреділить оперативні ролі (ДСНС, Лікарня, Водоканал, Селищна рада) у своему Пульті.
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px;">
+            🚪 Надіслати Заявку у Лоббі Сесії →
           </button>
         </form>
 
@@ -550,39 +554,50 @@ class TPS360WebApp {
     const name = document.getElementById("partFullName").value.trim();
     const org = document.getElementById("partOrg").value.trim();
     const pos = document.getElementById("partPosition").value.trim();
-    const role = document.getElementById("partRoleSelect").value;
     const token = document.getElementById("partSessionToken").value.trim();
 
     if (!name || !org || !pos) return;
 
     if (feedback) {
-      feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Реєстрація ідентичності учасника на бекенді...</p>`;
+      feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Підключення до Кімнати Очікування (Lobby)...</p>`;
     }
 
     try {
-      this.participant = {
+      const partObj = {
+        id: `part_${Date.now()}`,
         name,
         organization: org,
         position: pos,
-        roleId: role,
-        sessionToken: token
+        sessionToken: token,
+        assignedRole: null, // Unassigned until Facilitator assigns it!
+        assignedRoleTitle: "Не призначено"
       };
-      this.roleId = role;
+
+      this.participant = partObj;
+      
+      // Register in global lobby list for Facilitator console
+      const existingIdx = this.state.lobbyParticipants.findIndex(p => p.name === name);
+      if (existingIdx >= 0) {
+        this.state.lobbyParticipants[existingIdx] = partObj;
+      } else {
+        this.state.lobbyParticipants.push(partObj);
+      }
+
       this.updateContextBar();
 
       if (feedback) {
         feedback.innerHTML = `
           <div class="card" style="background:var(--success-bg); border-color:var(--success-border); color:var(--success-text);">
-            ✅ <strong>Авторизацію успішно виконано!</strong><br>
-            Вітаємо, <strong>${name}</strong> (${org}). Роль <code>${role}</code> підтверджено сервером.<br>
-            Перехід у Кабінет Гравця через 1 секунду...
+            ✅ <strong>Заявку успішно зареєстровано у Кімнаті Очікування!</strong><br>
+            Вітаємо, <strong>${name}</strong> (${org}). Очікуйте призначення оперативної ролі Фасилітатором.<br>
+            Перехід у Кабінет Гравця через 1.5 секунди...
           </div>
         `;
       }
 
       setTimeout(() => {
         this.switchScreen("workspace");
-      }, 1000);
+      }, 1500);
 
     } catch (err) {
       if (feedback) {
@@ -609,26 +624,35 @@ class TPS360WebApp {
       return;
     }
 
+    // Role assignment check
+    let activeRoleTitle = "Не призначено Фасилітатором";
+    let isRoleAssigned = false;
+
+    if (this.participant && this.participant.assignedRole) {
+      activeRoleTitle = this.participant.assignedRoleTitle;
+      isRoleAssigned = true;
+    }
+
     const participantInfo = this.participant ? `
-      <div class="card" style="background:var(--bg-elevated); margin-bottom:20px; border-left:4px solid var(--primary-accent);">
+      <div class="card" style="background:var(--bg-elevated); margin-bottom:20px; border-left:4px solid ${isRoleAssigned ? 'var(--success-border)' : 'var(--warning-border)'};">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
-            <span class="chip chip-active">Авторизований Учасник</span>
+            <span class="chip ${isRoleAssigned ? 'chip-active' : ''}">${isRoleAssigned ? 'Роль підтверджено Фасилітатором' : '⏳ Очікує призначення ролі'}</span>
             <h3 style="font-size:1.05rem; font-weight:700; margin-top:4px;">👤 ${this.participant.name}</h3>
             <p style="color:var(--text-secondary); font-size:0.85rem;">
               Організація: <strong>${this.participant.organization}</strong> | Посада: ${this.participant.position}
             </p>
           </div>
-          <button type="button" class="btn-secondary" onclick="window.tps360App.switchScreen('login')">⚙️ Змінити Роль / Учасника</button>
+          <button type="button" class="btn-secondary" onclick="window.tps360App.switchScreen('login')">⚙️ Редагувати Заявку</button>
         </div>
       </div>
     ` : `
       <div class="card" style="background:var(--warning-bg); border-color:var(--warning-border); margin-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <p style="color:var(--warning-text); font-size:0.9rem;">
-            ⚠️ Ви працюєте як Гість. Заповніть Картку Учасника для персоналізації рішень у сесії.
+            ⚠️ Ви не зареєстровані в Лоббі. Заповніть Картку Учасника для отримання ролі від Фасилітатора.
           </p>
-          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('login')">🔑 Авторизуватися як Учасник →</button>
+          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('login')">🔑 Реєстрація у Лоббі →</button>
         </div>
       </div>
     `;
@@ -638,7 +662,9 @@ class TPS360WebApp {
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
             <h1 style="font-size:1.3rem; font-weight:700;">🎯 Робочий Кабінет Учасника Симуляції</h1>
-            <p style="color:var(--text-secondary); font-size:0.9rem;">Активна громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Роль: <strong id="roleTitleLabel">🚒 Керівник штабу з НС (ДСНС)</strong></p>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">
+              Активна громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Призначена Фасилітатором Роль: <strong id="roleTitleLabel" style="color:var(--primary-accent);">${activeRoleTitle}</strong>
+            </p>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <span class="chip" style="background:var(--warning-bg); color:var(--warning-text);">Стрес: <strong id="stressValLabel">${this.state.stressLevel}%</strong></span>
@@ -650,15 +676,15 @@ class TPS360WebApp {
       ${participantInfo}
 
       <div class="grid-layout" style="margin-bottom:24px;">
-        <!-- Role Selection Tabs -->
+        <!-- Assigned Role Info Box -->
         <div class="card">
-          <h3 class="card-title">👤 Вибір Активної Ролі</h3>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <button type="button" class="btn-secondary role-select-btn" data-role="head_of_emergency" style="text-align:left;">🚒 Керівник штабу ДСНС</button>
-            <button type="button" class="btn-secondary role-select-btn" data-role="chief_hospital" style="text-align:left;">🚑 Головний лікар лікарні</button>
-            <button type="button" class="btn-secondary role-select-btn" data-role="director_waterworks" style="text-align:left;">⚡ Директор Водоканалу / Енергомережі</button>
-            <button type="button" class="btn-secondary role-select-btn" data-role="head_of_community" style="text-align:left;">🏫 Голова селищної ради (Староста)</button>
-          </div>
+          <h3 class="card-title">🛡️ Ваша Призначена Роль</h3>
+          <p style="font-size:0.9rem; color:var(--text-primary); margin-bottom:8px;">
+            <strong>${activeRoleTitle}</strong>
+          </p>
+          <p style="font-size:0.8rem; color:var(--text-secondary);">
+            Згідно з регламентом TPS360, призначення ролей виконується модератором (Фасилітатором) у Пульті Управління.
+          </p>
         </div>
 
         <!-- Resources Panel -->
@@ -737,21 +763,6 @@ class TPS360WebApp {
       </div>
     `;
 
-    // Bind Role switch buttons
-    container.querySelectorAll(".role-select-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const role = e.currentTarget.getAttribute("data-role");
-        this.roleId = role;
-        const labels = {
-          head_of_emergency: "🚒 Керівник штабу з НС (ДСНС)",
-          chief_hospital: "🚑 Головний лікар лікарні",
-          director_waterworks: "⚡ Директор Водоканалу / Енергомережі",
-          head_of_community: "🏫 Голова селищної ради (Староста)"
-        };
-        document.getElementById("roleTitleLabel").textContent = labels[role] || role;
-      });
-    });
-
     // Bind LEGO Card Submit Form
     const form = container.querySelector("#legoCardForm");
     if (form) {
@@ -771,6 +782,7 @@ class TPS360WebApp {
     const instructions = document.getElementById("legoInstructions").value;
 
     const currentSessId = this.sessionId || "sess_active_1";
+    const currentRoleId = (this.participant && this.participant.assignedRole) || "head_of_emergency";
 
     if (feedback) {
       feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Відправка рішення на бекенд TPS360...</p>`;
@@ -781,7 +793,7 @@ class TPS360WebApp {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role_id: this.roleId,
+          role_id: currentRoleId,
           action_type: actionType,
           target_facility_id: targetFacility,
           allocated_resources: { "UNITS": units },
@@ -796,7 +808,7 @@ class TPS360WebApp {
       } else {
         card = {
           card_id: "lego_" + Date.now(),
-          role_id: this.roleId,
+          role_id: currentRoleId,
           action_type: actionType,
           target_facility_id: targetFacility,
           allocated_personnel: personnel,
@@ -859,7 +871,7 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN 4: FACILITATOR MASTER CONSOLE & 5 FUTURE VISION ENGINE
+   * SCREEN 4: FACILITATOR MASTER CONSOLE & ROLE ASSIGNMENT CONTROL
    * ------------------------------------------------------------------ */
   async renderFacilitatorScreen(container) {
     if (!this.communityName) {
@@ -910,13 +922,27 @@ class TPS360WebApp {
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
               <h1 style="font-size:1.3rem; font-weight:700;">🕹️ Головна Пульт-Консоль Фасилітатора</h1>
-              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Управління раундами та модерація ШІ-вводних.</p>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Управління раундами, <strong>призначення ролей гравцям</strong> та модерація вводних.</p>
             </div>
             <div style="display:flex; gap:10px;">
               <button type="button" id="advanceRoundBtn" class="btn-primary" style="background:var(--success-border);">
                 ⏭️ Переснити Раунд (${consoleData.current_round} → ${consoleData.current_round + 1})
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- PARTICIPANT ROLE ASSIGNMENT LOBBY PANEL -->
+        <div class="card" style="margin-bottom:24px; border: 2px solid var(--primary-accent);">
+          <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:8px; color:var(--primary-accent);">
+            👥 Реєстр Заявок Лоббі та Призначення Ролей Фасилітатором
+          </h2>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">
+            За регламентом TPS360, саме Фасилітатор призначає оперативні ролі підключеним учасникам:
+          </p>
+
+          <div id="facilitatorRoleAssignTable">
+            ${this.renderFacilitatorLobbyTableHTML()}
           </div>
         </div>
 
@@ -974,6 +1000,9 @@ class TPS360WebApp {
         </div>
       `;
 
+      // Bind Lobby Role Assignment Buttons
+      this.bindFacilitatorRoleAssignEvents(container);
+
       // Bind Advance Round
       container.querySelector("#advanceRoundBtn").addEventListener("click", () => this.advanceSessionRound(currentSessId));
 
@@ -994,6 +1023,94 @@ class TPS360WebApp {
     } catch (err) {
       container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження консолі: ${err.message}</p></div>`;
     }
+  }
+
+  renderFacilitatorLobbyTableHTML() {
+    const list = this.state.lobbyParticipants;
+
+    // Seed default demo participant if empty so facilitator can test assigning immediately
+    if (list.length === 0) {
+      list.push({
+        id: "part_demo_1",
+        name: "Путрич Юрій Миколайович",
+        organization: "Березнегуватська селищна рада",
+        position: "Селищний голова",
+        sessionToken: "JOIN-8842",
+        assignedRole: null,
+        assignedRoleTitle: "Не призначено"
+      });
+    }
+
+    return `
+      <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border-color); text-align:left; color:var(--text-secondary);">
+            <th style="padding:8px;">ПІБ Учасника</th>
+            <th style="padding:8px;">Організація та Посада</th>
+            <th style="padding:8px;">Поточний Статус Ролі</th>
+            <th style="padding:8px;">Призначити Оперативну Роль</th>
+            <th style="padding:8px;">Дія</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(p => `
+            <tr style="border-bottom:1px solid var(--border-color);">
+              <td style="padding:8px;"><strong>${p.name}</strong></td>
+              <td style="padding:8px;">${p.organization} · <em>${p.position}</em></td>
+              <td style="padding:8px;">
+                <span class="chip ${p.assignedRole ? 'chip-active' : ''}">${p.assignedRoleTitle}</span>
+              </td>
+              <td style="padding:8px;">
+                <select class="form-control role-assign-select" data-part-id="${p.id}" style="padding:4px 8px; font-size:0.8rem;">
+                  <option value="head_of_emergency" ${p.assignedRole === 'head_of_emergency' ? 'selected' : ''}>🚒 Керівник штабу ДСНС</option>
+                  <option value="chief_hospital" ${p.assignedRole === 'chief_hospital' ? 'selected' : ''}>🚑 Головний лікар лікарні</option>
+                  <option value="director_waterworks" ${p.assignedRole === 'director_waterworks' ? 'selected' : ''}>⚡ Директор Водоканалу</option>
+                  <option value="head_of_community" ${p.assignedRole === 'head_of_community' ? 'selected' : ''}>🏫 Голова селищної ради (Староста)</option>
+                </select>
+              </td>
+              <td style="padding:8px;">
+                <button type="button" class="btn-primary assign-role-confirm-btn" data-part-id="${p.id}" style="padding:4px 10px; font-size:0.8rem;">
+                  ✅ Призначити Роль
+                </button>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  bindFacilitatorRoleAssignEvents(container) {
+    container.querySelectorAll(".assign-role-confirm-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const partId = e.currentTarget.getAttribute("data-part-id");
+        const select = container.querySelector(`.role-assign-select[data-part-id="${partId}"]`);
+        if (!select) return;
+
+        const chosenRole = select.value;
+        const roleTitles = {
+          head_of_emergency: "🚒 Керівник штабу ДСНС",
+          chief_hospital: "🚑 Головний лікар лікарні",
+          director_waterworks: "⚡ Директор Водоканалу / Енергомережі",
+          head_of_community: "🏫 Голова селищної ради (Староста)"
+        };
+
+        const targetPart = this.state.lobbyParticipants.find(p => p.id === partId);
+        if (targetPart) {
+          targetPart.assignedRole = chosenRole;
+          targetPart.assignedRoleTitle = roleTitles[chosenRole] || chosenRole;
+        }
+
+        if (this.participant && (this.participant.id === partId || this.participant.name === targetPart?.name)) {
+          this.participant.assignedRole = chosenRole;
+          this.participant.assignedRoleTitle = roleTitles[chosenRole] || chosenRole;
+        }
+
+        this.updateContextBar();
+        alert(`Фасилітатор успішно призначив роль "${roleTitles[chosenRole]}" для учасника!`);
+        this.renderScreen("facilitator");
+      });
+    });
   }
 
   async advanceSessionRound(sessId) {
