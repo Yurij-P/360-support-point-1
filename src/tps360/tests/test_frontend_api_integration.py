@@ -34,7 +34,7 @@ def test_e2e_frontend_session_full_lifecycle_api() -> None:
 
     # 2. Fetch Role Workspace
     rw_resp = client.get(
-        f"/api/v1/sessions/{session_id}/role-workspace?role_id=head_of_emergency"
+        f"/api/v1/sessions/{session_id}/role-workspace?role_id=emerg-dsns"
     )
     assert rw_resp.status_code == 200
 

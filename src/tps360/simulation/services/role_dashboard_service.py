@@ -8,37 +8,51 @@ from uuid import uuid4
 from tps360.core.exceptions import DomainRuleViolation
 from tps360.simulation.domain.task_directive import TaskDirective
 
-# Default Initial Resource Balances per Role Type
+# Default initial resource balances per role.
+#
+# Temporary realistic placeholders per TPS360-RES-001: the resource list is
+# open/extensible (plain string keys, NOT a closed enum) and personnel is a
+# first-class resource. Final quantities are to be derived from the community
+# passport / KATOTTG (TPS360-RES-001 §5), not hardcoded here.
 ROLE_INITIAL_RESOURCES: dict[str, dict[str, Decimal]] = {
-    "head_of_emergency": {
+    # ДСНС — пожежно-рятувальні сили
+    "emerg-dsns": {
         "fire_trucks": Decimal("10"),
+        "water_tankers": Decimal("4"),
         "rescue_personnel": Decimal("40"),
+        "rescue_equipment_units": Decimal("8"),
         "fuel_liters": Decimal("5000"),
-        "heavy_equipment": Decimal("5"),
     },
-    "chief_medical_officer": {
+    # Екстрена медична допомога
+    "emerg-ems": {
         "ambulances": Decimal("8"),
+        "medical_teams": Decimal("8"),
         "medical_personnel": Decimal("30"),
         "medical_kits": Decimal("500"),
         "backup_generators": Decimal("4"),
         "fuel_liters": Decimal("2000"),
     },
+    # Санітарно-епідеміологічний контроль (сценарна роль поза каталогом)
     "chief_sanitary_inspector": {
         "decontamination_units": Decimal("3"),
         "sanitary_inspectors": Decimal("15"),
         "disinfectant_liters": Decimal("1000"),
         "water_testing_kits": Decimal("100"),
     },
-    "chief_police_officer": {
+    # Поліція громади
+    "emerg-police": {
         "patrol_cars": Decimal("12"),
         "police_officers": Decimal("50"),
-        "fuel_liters": Decimal("3000"),
         "barricades": Decimal("40"),
+        "fuel_liters": Decimal("3000"),
     },
-    "chief_utility_officer": {
-        "utility_repair_trucks": Decimal("6"),
-        "utility_workers": Decimal("25"),
+    # Комунальне підприємство (КП)
+    "communal-utility": {
+        "tractors": Decimal("5"),
+        "utility_vehicles": Decimal("6"),
+        "sewage_trucks": Decimal("3"),
         "backup_generators": Decimal("10"),
+        "utility_workers": Decimal("25"),
         "fuel_liters": Decimal("4000"),
     },
 }
@@ -154,7 +168,7 @@ class RoleDashboardService:
         current_round: int = 1,
     ) -> PsychologicalFrictionInject:
         """Injects a psychological stress event (e.g. sirens, phone calls, social media trolls, protests, lost keys) into player dashboard."""
-        self._ensure_role_initialized(session_id, target_role_id if target_role_id != "all_roles" else "head_of_emergency")
+        self._ensure_role_initialized(session_id, target_role_id if target_role_id != "all_roles" else "emerg-dsns")
 
         inject = PsychologicalFrictionInject(
             inject_id=f"psych_{uuid4().hex[:8]}",
@@ -187,11 +201,11 @@ class RoleDashboardService:
         total_stress = min(100.0, sum(i.stress_level_delta for i in psych_injects))
 
         role_name_map = {
-            "head_of_emergency": "Голова ДСНС / Керівник штабу з НС",
-            "chief_medical_officer": "Головний медичний офіцер громади",
-            "chief_sanitary_inspector": "Головний санітарний інспектор",
-            "chief_police_officer": "Керівник поліції громади",
-            "chief_utility_officer": "Керівник комунальних служб",
+            "emerg-dsns": "Представник ДСНС",
+            "emerg-ems": "Представник екстреної медичної допомоги",
+            "chief_sanitary_inspector": "Санітарний інспектор",
+            "emerg-police": "Представник поліції",
+            "communal-utility": "Представник комунального підприємства",
         }
 
         return RoleWorkspaceReadModel(

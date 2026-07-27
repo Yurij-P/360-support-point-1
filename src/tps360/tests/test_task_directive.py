@@ -12,7 +12,7 @@ def create_directive(
     directive_id: str = "dir_001",
     session_id: str = "session_001",
     issuer: str = "facilitator",
-    assignee: str = "head_of_emergency",
+    assignee: str = "emerg-dsns",
     title: str = "Deploy Emergency Generators",
     description: str = "Provide backup power to municipal hospital",
     target_round: int = 3,
