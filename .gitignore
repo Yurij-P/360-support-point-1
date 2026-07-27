@@ -39,3 +39,8 @@ venv/
 __pycache__/
 .coverage
 htmlcov/
+
+# Spec Kit (local spec-driven-development tooling; keep .github/workflows tracked)
+.specify/
+.github/agents/
+.github/prompts/

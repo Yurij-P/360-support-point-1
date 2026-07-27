@@ -29,6 +29,10 @@ include = ["tps360*"]
 [tool.pytest.ini_options]
 testpaths = ["src/tps360/tests"]
 pythonpath = ["src"]
+filterwarnings = [
+  # httpx2 does not exist yet; the TestClient works on httpx. Silence the noise.
+  "ignore:Using `httpx` with `starlette.testclient` is deprecated:",
+]
 
 [tool.ruff]
 line-length = 100
