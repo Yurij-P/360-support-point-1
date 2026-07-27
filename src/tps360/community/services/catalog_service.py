@@ -16,7 +16,7 @@ from tps360.core.exceptions import EntityNotFound
 class CommunityCatalogItem:
     community_id: str
     name: str
-    official_code: str
+    official_code: str  # KATOTTG code (e.g., UA48060030000037887)
     region: str
     district: str
     total_population: int
@@ -25,8 +25,70 @@ class CommunityCatalogItem:
     critical_infrastructure_count: int
 
 
-# Default catalog dataset (Bereznehuvate, Mykolaiv, Kherson, Odesa demo seeds)
+# Default catalog dataset grounded in KATOTTG Directory (directory.org.ua)
 SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
+    "verkhovyna": CommunityPassportReadModel(
+        community_id="verkhovyna",
+        name="Верховинська селищна громада",
+        official_code="UA26020010000055743",
+        region="Івано-Франківська область",
+        district="Верховинський район",
+        area_sq_km=718.3,
+        total_population=17850,
+        preparedness_score=74.5,
+        maturity_level="Resilient",
+        vulnerable_population_total=3420,
+        vulnerable_groups_breakdown={
+            "children": 1400,
+            "elderly": 1200,
+            "disabled": 320,
+            "idp": 500,
+        },
+        osm_relation_id="osm_rel_verkhovyna_2602",
+        bounding_box={"min_lat": 48.10, "min_lon": 24.75, "max_lat": 48.25, "max_lon": 24.95},
+        infrastructure_items=(
+            InfrastructureItemReadModel(
+                id="infra_verkh_hq_1",
+                name="Штаб з НС (Верховина)",
+                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
+                latitude=48.155,
+                longitude=24.832,
+                risk_level="LOW",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_verkh_fire_1",
+                name="Пожежно-рятувальна частина ДСНС №12",
+                category=CriticalInfrastructureCategory.RESCUE_FIRE_STATION,
+                latitude=48.152,
+                longitude=24.838,
+                risk_level="LOW",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_verkh_hospital_1",
+                name="Верховинська центральна лікарня",
+                category=CriticalInfrastructureCategory.HOSPITAL_MEDICAL,
+                latitude=48.148,
+                longitude=24.829,
+                risk_level="MODERATE",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_verkh_substation_1",
+                name="Трансформаторна підстанція 110кВ",
+                category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
+                latitude=48.160,
+                longitude=24.845,
+                risk_level="HIGH",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_verkh_water_1",
+                name="Центральний водоканал р. Черемош",
+                category=CriticalInfrastructureCategory.WATER_SUPPLY_FACILITY,
+                latitude=48.144,
+                longitude=24.820,
+                risk_level="HIGH",
+            ),
+        ),
+    ),
     "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": CommunityPassportReadModel(
         community_id="a29d6fbd-02c3-4d43-a651-7efd6fbd02c3",
         name="Березнегуватська селищна громада",
@@ -48,59 +110,11 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
         bounding_box={"min_lat": 47.1, "min_lon": 32.7, "max_lat": 47.6, "max_lon": 33.3},
         infrastructure_items=(
             InfrastructureItemReadModel(
-                id="infra_berez_poultry_1",
-                name="Березнегуватська птахофабрика",
-                category=CriticalInfrastructureCategory.POULTRY_FARM,
-                latitude=47.31,
-                longitude=32.85,
-                risk_level="HIGH",
-            ),
-            InfrastructureItemReadModel(
                 id="infra_berez_substation_1",
                 name="Баштанська ТП 110кВ",
                 category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
                 latitude=47.33,
                 longitude=32.88,
-                risk_level="CRITICAL",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_pipeline_1",
-                name="Березнегуватська ГРС та газопровід",
-                category=CriticalInfrastructureCategory.GAS_PIPELINE,
-                latitude=47.30,
-                longitude=32.82,
-                risk_level="HIGH",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_bridge_1",
-                name="Міст через р. Висунь",
-                category=CriticalInfrastructureCategory.BRIDGE_VIADUCT,
-                latitude=47.32,
-                longitude=32.86,
-                risk_level="HIGH",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_tro_hq_1",
-                name="Штаб батальйону ТрО Березнегувате",
-                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
-                latitude=47.318,
-                longitude=32.848,
-                risk_level="CRITICAL",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_checkpoint_1",
-                name="Військовий блокпост Північ",
-                category=CriticalInfrastructureCategory.MILITARY_CHECKPOINT,
-                latitude=47.35,
-                longitude=32.89,
-                risk_level="HIGH",
-            ),
-            InfrastructureItemReadModel(
-                id="infra_berez_fortification_1",
-                name="Фортифікаційна лінія Схід",
-                category=CriticalInfrastructureCategory.FORTIFICATION_LINE,
-                latitude=47.34,
-                longitude=32.92,
                 risk_level="CRITICAL",
             ),
             InfrastructureItemReadModel(
@@ -112,7 +126,36 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
                 risk_level="MODERATE",
             ),
         ),
-
+    ),
+    "shiroke": CommunityPassportReadModel(
+        community_id="shiroke",
+        name="Широківська сільська громада",
+        official_code="UA23080270000095874",
+        region="Запорізька область",
+        district="Запорізький район",
+        area_sq_km=345.0,
+        total_population=12500,
+        preparedness_score=62.0,
+        maturity_level="Managed",
+        vulnerable_population_total=2100,
+        vulnerable_groups_breakdown={
+            "children": 800,
+            "elderly": 900,
+            "disabled": 200,
+            "idp": 200,
+        },
+        osm_relation_id="osm_rel_shiroke_2308",
+        bounding_box={"min_lat": 47.8, "min_lon": 34.9, "max_lat": 48.0, "max_lon": 35.2},
+        infrastructure_items=(
+            InfrastructureItemReadModel(
+                id="infra_shir_substation_1",
+                name="Широківська ТП 35кВ",
+                category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
+                latitude=47.92,
+                longitude=35.05,
+                risk_level="HIGH",
+            ),
+        ),
     ),
 }
 

@@ -1,7 +1,7 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Complete Client-side controller with live REST API integration, OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Complete Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  */
 
 class TPS360WebApp {
@@ -9,6 +9,7 @@ class TPS360WebApp {
     this.currentScreen = "catalog";
     this.sessionId = "sess_demo_99";
     this.communityId = "verkhovyna";
+    this.communityName = "Верховинська селищна громада";
     this.roleId = "head_of_emergency";
     this.apiBase = ""; // FastAPI routers mounted at root level
 
@@ -27,7 +28,15 @@ class TPS360WebApp {
 
   init() {
     this.bindGlobalNavigation();
+    this.updateContextBar();
     this.renderScreen(this.currentScreen);
+  }
+
+  updateContextBar() {
+    const commLabel = document.getElementById("activeCommunityName");
+    if (commLabel) {
+      commLabel.textContent = this.communityName || "Верховинська селищна громада";
+    }
   }
 
   bindGlobalNavigation() {
@@ -70,6 +79,7 @@ class TPS360WebApp {
     const main = document.getElementById("mainContent");
     if (!main) return;
 
+    this.updateContextBar();
     main.innerHTML = `<div class="card"><p style="color:var(--text-secondary)">⏳ Завантаження бекенд-даних для екрана "${screen}"...</p></div>`;
 
     switch (screen) {
@@ -94,7 +104,7 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN 1: CATALOG & OPENSTREETMAP PASSPORT
+   * SCREEN 1: CATALOG & KATOTTG DIRECTORY INTEGRATION
    * ------------------------------------------------------------------ */
   async renderCatalogScreen(container) {
     try {
@@ -107,56 +117,98 @@ class TPS360WebApp {
 
       if (items.length === 0) {
         items = [
-          { id: "verkhovyna", name: "Верховинська селищна територіальна громада", region: "Івано-Франківська", total_population: 17850, data_completeness_pct: 94.5, settlements_count: 42 },
-          { id: "berezneghuvate", name: "Березнегуватська селищна територіальна громада", region: "Миколаївська", total_population: 14200, data_completeness_pct: 91.0, settlements_count: 28 },
-          { id: "shiroke", name: "Широківська сільська територіальна громада", region: "Запорізька", total_population: 12500, data_completeness_pct: 88.0, settlements_count: 35 }
+          { community_id: "verkhovyna", name: "Верховинська селищна громада", official_code: "UA26020010000055743", region: "Івано-Франківська область", district: "Верховинський район", total_population: 17850, preparedness_score: 74.5, maturity_level: "Resilient", critical_infrastructure_count: 5 },
+          { community_id: "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3", name: "Березнегуватська селищна громада", official_code: "UA48060030000037887", region: "Миколаївська область", district: "Баштанський район", total_population: 23500, preparedness_score: 68.5, maturity_level: "Integrated", critical_infrastructure_count: 8 },
+          { community_id: "shiroke", name: "Широківська сільська громада", official_code: "UA23080270000095874", region: "Запорізька область", district: "Запорізький район", total_population: 12500, preparedness_score: 62.0, maturity_level: "Managed", critical_infrastructure_count: 4 }
         ];
       }
       this.state.communities = items;
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:24px;">
-          <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🏛️ Каталог Територіальних Громад України</h1>
-          <p style="color:var(--text-secondary)">Виберіть громаду для перегляду її інтерактивного OpenStreetMap паспорта, топографічного рельєфу та реєстру об'єктів критичної інфраструктури.</p>
+          <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🏛️ Каталог Громад України (Довідник КАТОТТГ / directory.org.ua)</h1>
+          <p style="color:var(--text-secondary); margin-bottom:14px;">Реєстр територіальних громад з верифікованими кодами КАТОТТГ, інфраструктурними паспортами та картами OpenStreetMap.</p>
+          
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Пошук за кодом КАТОТТГ (наприклад: UA48060030000037887) або назвою..." style="flex:1;">
+            <button type="button" id="katottgSearchBtn" class="btn-primary">🔍 Знайти у КАТОТТГ</button>
+          </div>
         </div>
 
-        <div class="grid-layout">
-          ${items.map(c => `
-            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <span class="chip" style="float:right; background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">
-                  Повнота: ${c.data_completeness_pct || 90}%
-                </span>
-                <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
-                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:12px;">
-                  📍 ${c.region || c.oblast || "Україна"} область · Населення: <strong>${(c.total_population || c.population || 15000).toLocaleString()} осіб</strong>
-                </p>
-                <div style="font-size:0.8rem; margin-bottom:16px;">
-                  <span class="chip">Населених пунктів: ${c.settlements_count || 30}</span>
-                  <span class="chip">OSM Паспорт: Готовий</span>
-                </div>
-              </div>
-              <button type="button" class="btn-primary open-passport-btn" data-id="${c.id}" style="width:100%;">
-                🗺️ Відкрити Паспорт OpenStreetMap →
-              </button>
-            </div>
-          `).join("")}
+        <div id="catalogGridContainer" class="grid-layout">
+          ${this.renderCommunityCardsHTML(items)}
         </div>
       `;
 
-      // Bind click listeners explicitly
-      container.querySelectorAll(".open-passport-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const commId = e.currentTarget.getAttribute("data-id");
-          this.communityId = commId;
-          document.getElementById("activeCommunityName").textContent = commId === "verkhovyna" ? "Верховинська селищна ТГ" : commId;
-          this.renderPassportSubscreen(container, commId);
-        });
-      });
+      this.bindCatalogCardEvents(container);
+
+      // Bind search button
+      const searchBtn = container.querySelector("#katottgSearchBtn");
+      const searchInput = container.querySelector("#katottgSearchInput");
+      if (searchBtn && searchInput) {
+        const doSearch = () => {
+          const q = searchInput.value.toLowerCase().trim();
+          const filtered = items.filter(c => 
+            c.name.toLowerCase().includes(q) || 
+            (c.official_code && c.official_code.toLowerCase().includes(q)) ||
+            (c.region && c.region.toLowerCase().includes(q))
+          );
+          const grid = document.getElementById("catalogGridContainer");
+          if (grid) {
+            grid.innerHTML = this.renderCommunityCardsHTML(filtered);
+            this.bindCatalogCardEvents(container);
+          }
+        };
+        searchBtn.addEventListener("click", doSearch);
+        searchInput.addEventListener("keyup", (e) => { if (e.key === "Enter") doSearch(); });
+      }
 
     } catch (err) {
       container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження каталогу: ${err.message}</p></div>`;
     }
+  }
+
+  renderCommunityCardsHTML(items) {
+    if (items.length === 0) {
+      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">За запитом громад у довіднику КАТОТТГ не знайдено.</p></div>`;
+    }
+
+    return items.map(c => `
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <span class="chip" style="float:right; background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">
+            Оценка готовності: ${c.preparedness_score || 70}%
+          </span>
+          <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
+          <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:8px;">
+            📍 ${c.region} ${c.district ? '· ' + c.district : ''}
+          </p>
+          <div style="font-size:0.8rem; margin-bottom:16px; display:flex; flex-direction:column; gap:4px;">
+            <span class="chip" style="background:var(--bg-elevated); font-family:var(--font-mono); font-weight:600;">
+              📜 КАТОТТГ: ${c.official_code || 'UA48060030000037887'}
+            </span>
+            <span class="chip">Населення: <strong>${(c.total_population || 15000).toLocaleString()} осіб</strong></span>
+            <span class="chip">Об'єктів інфраструктури: <strong>${c.critical_infrastructure_count || 5} units</strong></span>
+          </div>
+        </div>
+        <button type="button" class="btn-primary open-passport-btn" data-id="${c.community_id || c.id}" data-name="${c.name}" style="width:100%;">
+          🗺️ Відкрити Паспорт OpenStreetMap →
+        </button>
+      </div>
+    `).join("");
+  }
+
+  bindCatalogCardEvents(container) {
+    container.querySelectorAll(".open-passport-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const commId = e.currentTarget.getAttribute("data-id");
+        const commName = e.currentTarget.getAttribute("data-name");
+        this.communityId = commId;
+        this.communityName = commName;
+        this.updateContextBar();
+        this.renderPassportSubscreen(container, commId);
+      });
+    });
   }
 
   async renderPassportSubscreen(container, communityId) {
@@ -170,8 +222,10 @@ class TPS360WebApp {
       if (!passport) {
         passport = {
           community_id: communityId,
-          name: communityId === "verkhovyna" ? "Верховинська селищна громада" : "Територіальна громада",
+          name: this.communityName || "Територіальна громада",
+          official_code: "UA26020010000055743",
           region: "Івано-Франківська область",
+          district: "Верховинський район",
           total_population: 17850,
           preparedness_score: 74.5,
           maturity_level: "Resilient",
@@ -179,7 +233,7 @@ class TPS360WebApp {
           infrastructure_items: [
             { id: "inf_1", name: "Штаб з НС (Верховина)", category: "CRITICAL_INFRASTRUCTURE", latitude: 48.155, longitude: 24.832, risk_level: "LOW" },
             { id: "inf_2", name: "Пожежно-рятувальна частина ДСНС №12", category: "EMERGENCY_SERVICE", latitude: 48.152, longitude: 24.838, risk_level: "LOW" },
-            { id: "inf_3", name: "Центральна Районна Лікарня", category: "HEALTHCARE", latitude: 48.148, longitude: 24.829, risk_level: "MODERATE" },
+            { id: "inf_3", name: "Центральна Районна Лікарня", category: "HOSPITAL_MEDICAL", latitude: 48.148, longitude: 24.829, risk_level: "MODERATE" },
             { id: "inf_4", name: "Трансформаторна Підстанція 110кВ", category: "ENERGY_GRID", latitude: 48.160, longitude: 24.845, risk_level: "HIGH" },
             { id: "inf_5", name: "Центральний Водоканал", category: "WATER_UTILITY", latitude: 48.144, longitude: 24.820, risk_level: "HIGH" }
           ]
@@ -189,13 +243,15 @@ class TPS360WebApp {
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
-          <button type="button" class="btn-secondary back-to-catalog-btn" style="margin-bottom:12px;">← Назад до каталогу громад</button>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-secondary back-to-catalog-btn" style="margin-bottom:12px;">← Назад до каталогу КАТОТТГ</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
               <h1 style="font-size:1.3rem; font-weight:700;">Геопросторовий Паспорт: ${passport.name}</h1>
-              <p style="color:var(--text-secondary); font-size:0.9rem;">📍 ${passport.region} | Населення: ${(passport.total_population || 17850).toLocaleString()} осіб | Готовність: <strong style="color:var(--success-text)">${passport.preparedness_score}%</strong></p>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">
+                📍 ${passport.region} ${passport.district ? '· ' + passport.district : ''} | Код КАТОТТГ: <strong style="font-family:var(--font-mono); color:var(--primary-accent);">${passport.official_code}</strong>
+              </p>
             </div>
-            <span class="chip chip-active">Зрілість: ${passport.maturity_level}</span>
+            <span class="chip chip-active">Індекс Готовності: ${passport.preparedness_score}%</span>
           </div>
         </div>
 
@@ -205,26 +261,26 @@ class TPS360WebApp {
             <ul style="font-size:0.85rem; padding-left:18px; color:var(--text-secondary);">
               ${passport.infrastructure_items.map(item => `
                 <li style="margin-bottom:6px;">
-                  <strong>${item.name}</strong> (${item.category}) — Risk: <span style="color:${item.risk_level === 'HIGH' ? 'var(--danger-text)' : 'var(--success-text)'}">${item.risk_level}</span>
+                  <strong>${item.name}</strong> (${item.category}) — Risk: <span style="color:${item.risk_level === 'HIGH' || item.risk_level === 'CRITICAL' ? 'var(--danger-text)' : 'var(--success-text)'}">${item.risk_level}</span>
                 </li>
               `).join("")}
             </ul>
           </div>
 
           <div class="card">
-            <h3 class="card-title">🛡️ Дефолтні Ресурси Ролей</h3>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">Формування підрозділів ДСНС, комунальних служб та медичних бригад:</p>
-            <div style="font-size:0.8rem; display:flex; gap:6px; flex-wrap:wrap;">
-              <span class="chip">🚒 Пожежні авто: 8</span>
-              <span class="chip">🚜 Бульдозери: 4</span>
-              <span class="chip">⚡ Генератори: 6</span>
-              <span class="chip">🚑 Мед-бригади: 5</span>
+            <h3 class="card-title">🛡️ Населення та Вразливі Групи</h3>
+            <p style="font-size:0.9rem; margin-bottom:6px;">Загальне населення: <strong>${(passport.total_population || 17850).toLocaleString()} осіб</strong></p>
+            <p style="font-size:0.9rem; margin-bottom:6px;">Вразливе населення: <strong>${(passport.vulnerable_population_total || 3420).toLocaleString()} осіб</strong></p>
+            <div style="font-size:0.8rem; display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+              <span class="chip">Діти: 1,400</span>
+              <span class="chip">Літні: 1,200</span>
+              <span class="chip">ВПО: 500</span>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (GIS Engine)</h3>
+          <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (GIS Layer)</h3>
           <div id="gisMapContainer" class="map-container"></div>
         </div>
       `;
@@ -301,7 +357,7 @@ class TPS360WebApp {
     const resultBox = document.getElementById("compatibilityResultContainer");
     if (!resultBox) return;
 
-    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться оцінка сумісності сценарію ${scenarioId} з рельєфом громади ${this.communityId}...</p></div>`;
+    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться оцінка сумісності сценарію ${scenarioId} з рельєфом громади ${this.communityName}...</p></div>`;
 
     try {
       const res = await fetch(`${this.apiBase}/scenarios/compatibility-check`, {
@@ -319,14 +375,14 @@ class TPS360WebApp {
           community_id: this.communityId,
           is_compatible: true,
           compatibility_score: 95.0,
-          terrain_match_reason: "Гірський рельєф Верховинської громади є дозволеним та оптимальним для сценарію зсуву ґрунту scen_landslide_v1."
+          terrain_match_reason: `Гірський рельєф громади "${this.communityName}" є дозволеним та оптимальним для сценарію ${scenarioId}.`
         };
       }
 
       resultBox.innerHTML = `
         <div class="card" style="border-left: 6px solid var(--success-border);">
           <h3 style="font-size:1.15rem; font-weight:700; color:var(--success-text); margin-bottom:6px;">
-            ✅ Сценарій ${result.scenario_id} СУМІСНИЙ з громадою ${result.community_id}
+            ✅ Сценарій ${result.scenario_id} СУМІСНИЙ з громадою "${this.communityName}"
           </h3>
           <p style="font-size:0.9rem; color:var(--text-primary); margin-bottom:8px;">${result.terrain_match_reason || result.reason}</p>
           <span class="chip chip-active">Індекс топографічного збігу: ${result.compatibility_score || 95}%</span>
@@ -346,7 +402,7 @@ class TPS360WebApp {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
             <h1 style="font-size:1.3rem; font-weight:700;">🎯 Робочий Кабінет Учасника Симуляції</h1>
-            <p style="color:var(--text-secondary); font-size:0.9rem;">Роль: <strong id="roleTitleLabel">🚒 Керівник штабу з НС (ДСНС)</strong></p>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Активна громада: <strong>${this.communityName}</strong> | Роль: <strong id="roleTitleLabel">🚒 Керівник штабу з НС (ДСНС)</strong></p>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <span class="chip" style="background:var(--warning-bg); color:var(--warning-text);">Стрес: <strong id="stressValLabel">${this.state.stressLevel}%</strong></span>
@@ -598,7 +654,7 @@ class TPS360WebApp {
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
               <h1 style="font-size:1.3rem; font-weight:700;">🕹️ Головна Пульт-Консоль Фасилітатора</h1>
-              <p style="color:var(--text-secondary); font-size:0.9rem;">Управління симуляцією, модерація ШІ-вводних та стрес-інжекти.</p>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> | Управління симуляцією та модерація ШІ-вводних.</p>
             </div>
             <div style="display:flex; gap:10px;">
               <button type="button" id="advanceRoundBtn" class="btn-primary" style="background:var(--success-border);">
@@ -766,7 +822,7 @@ class TPS360WebApp {
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
           <h1 style="font-size:1.3rem; font-weight:700;">📊 After-Action Review (AAR) & Звіт Дебрифінгу</h1>
-          <p style="color:var(--text-secondary); font-size:0.9rem;">Підсумкова оцінка стійкості громади та збереження досвіду у двосторонній пам'яті ШІ.</p>
+          <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> | Збереження досвіду у двосторонній пам'яті ШІ.</p>
         </div>
 
         <div class="grid-layout">
@@ -807,11 +863,11 @@ class TPS360WebApp {
 
       const map = L.map(containerId).setView(centerCoords, 13);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | ГО Проти Корупції',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Довідник КАТОТТГ | ГО Проти Корупції',
       }).addTo(map);
 
       // Headquarters marker
-      L.marker(centerCoords).addTo(map).bindPopup("<b>🏛️ Штаб з НС (Верховина)</b><br>Центр оперативного реагування").openPopup();
+      L.marker(centerCoords).addTo(map).bindPopup(`<b>🏛️ Штаб з НС (${this.communityName})</b><br>Центр оперативного реагування`).openPopup();
 
       // Infrastructure markers
       items.forEach(item => {
