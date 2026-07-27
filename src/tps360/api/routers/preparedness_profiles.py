@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from tps360.api import dependencies
+from tps360.api.dependencies import get_assessment_repo, get_community_repo
 from tps360.assessment.domain.profile import CommunityPreparednessProfile
 from tps360.assessment.services.profile_service import PreparednessProfileService
 from tps360.core.exceptions import NotFoundError
+from tps360.db.repositories import SQLAssessmentRepository, SQLCommunityRepository
 
 router = APIRouter(
     prefix="/communities/{community_id}/preparedness-profile", tags=["preparedness-profiles"]
@@ -15,19 +17,21 @@ service = PreparednessProfileService()
 
 
 @router.get("")
-def get_profile(community_id: UUID, public: bool = False) -> CommunityPreparednessProfile:
+def get_profile(
+    community_id: UUID,
+    public: bool = False,
+    community_repo: SQLCommunityRepository = Depends(get_community_repo),
+    assessment_repo: SQLAssessmentRepository = Depends(get_assessment_repo),
+) -> CommunityPreparednessProfile:
     try:
-        dependencies.communities.get(community_id)
+        community_repo.get(community_id)
     except NotFoundError as exc:
         raise HTTPException(404, str(exc))
 
     profile = dependencies.preparedness_profiles.get_by_community(community_id)
 
     if not profile:
-        # Find latest assessment
-        all_assessments = [
-            a for a in dependencies.assessments.items.values() if a.community_id == community_id
-        ]
+        all_assessments = [a for a in assessment_repo.list_all() if a.community_id == community_id]
         latest_assessment = None
         if all_assessments:
             latest_assessment = max(all_assessments, key=lambda a: a.assessment_date)
@@ -44,19 +48,20 @@ def get_profile(community_id: UUID, public: bool = False) -> CommunityPreparedne
 
 
 @router.post("/agree")
-def agree_profile(community_id: UUID) -> CommunityPreparednessProfile:
+def agree_profile(
+    community_id: UUID,
+    community_repo: SQLCommunityRepository = Depends(get_community_repo),
+    assessment_repo: SQLAssessmentRepository = Depends(get_assessment_repo),
+) -> CommunityPreparednessProfile:
     try:
-        dependencies.communities.get(community_id)
+        community_repo.get(community_id)
     except NotFoundError as exc:
         raise HTTPException(404, str(exc))
 
     profile = dependencies.preparedness_profiles.get_by_community(community_id)
 
     if not profile:
-        # Generate dynamic first if none exists
-        all_assessments = [
-            a for a in dependencies.assessments.items.values() if a.community_id == community_id
-        ]
+        all_assessments = [a for a in assessment_repo.list_all() if a.community_id == community_id]
         latest_assessment = None
         if all_assessments:
             latest_assessment = max(all_assessments, key=lambda a: a.assessment_date)

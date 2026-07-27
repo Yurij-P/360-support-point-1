@@ -1,6 +1,9 @@
+import asyncio
+
 from fastapi.testclient import TestClient
 
 from tps360.api.main import app
+from tps360.api.routers.events import stream_session_events
 from tps360.simulation.services.event_broadcaster import (
     SessionEventType,
     broadcaster,
@@ -29,6 +32,6 @@ def test_get_events_history_api() -> None:
 
 def test_stream_events_api_endpoint_headers() -> None:
     session_id = "session_events_stream"
-    response = client.get(f"/events/session/{session_id}/stream")
-    assert response.status_code == 200
-    assert "text/event-stream" in response.headers["content-type"]
+    response = asyncio.run(stream_session_events(session_id))
+    assert response.media_type == "text/event-stream"
+    assert response.headers["Cache-Control"] == "no-cache"
