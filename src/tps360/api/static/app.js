@@ -38,20 +38,12 @@ class TPS360WebApp {
   updateContextBar() {
     const commLabel = document.getElementById("activeCommunityName");
     if (commLabel) {
-      if (this.communityName) {
-        commLabel.textContent = this.communityName;
-      } else {
-        commLabel.textContent = "Не обрано (Оберіть у Каталозі КАТОТТГ)";
-      }
+      commLabel.textContent = this.communityName || "—";
     }
 
     const scenLabel = document.getElementById("activeScenarioTitle");
     if (scenLabel) {
-      if (this.scenarioTitle) {
-        scenLabel.textContent = this.scenarioTitle;
-      } else {
-        scenLabel.textContent = "Сценарій НС не обрано";
-      }
+      scenLabel.textContent = this.scenarioTitle || "—";
     }
 
     const statusLabel = document.getElementById("activeSessionStatus");
@@ -60,7 +52,7 @@ class TPS360WebApp {
         statusLabel.textContent = `ACTIVE · Раунд ${this.state.round}`;
         statusLabel.className = "chip chip-active";
       } else {
-        statusLabel.textContent = "Очікує вибору громади та сценарію";
+        statusLabel.textContent = "—";
         statusLabel.className = "chip";
         statusLabel.style.background = "var(--bg-elevated)";
         statusLabel.style.color = "var(--text-secondary)";
