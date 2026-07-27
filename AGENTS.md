@@ -6,10 +6,10 @@
 
 ## Обов’язково прочитати перед будь-якими змінами
 
-1. `/home/runner/work/360-support-point-1/360-support-point-1/MASTER_PROJECT.md`
-2. `/home/runner/work/360-support-point-1/360-support-point-1/SKILL.md`
-3. `/home/runner/work/360-support-point-1/360-support-point-1/README.md`
-4. `/home/runner/work/360-support-point-1/360-support-point-1/CONTRIBUTING.md`
+1. `MASTER_PROJECT.md`
+2. `SKILL.md`
+3. `README.md`
+4. `CONTRIBUTING.md`
 
 Якщо `MASTER_PROJECT.md` відсутній або вимоги конфліктують — зупиніться і запросіть уточнення.
 
