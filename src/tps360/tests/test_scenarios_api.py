@@ -5,6 +5,12 @@ from tps360.api.main import app
 client = TestClient(app)
 
 
+def _first_catalog_community_id() -> str:
+    """Pick a real community from the KATOTTG catalog instead of hardcoding one."""
+    catalog = client.get("/communities/catalog").json()
+    return catalog["items"][0]["community_id"]
+
+
 def test_get_scenarios_catalog_api() -> None:
     response = client.get("/scenarios/catalog")
     assert response.status_code == 200
@@ -20,7 +26,7 @@ def test_get_scenarios_catalog_api() -> None:
 
 
 def test_check_scenario_compatibility_api_success() -> None:
-    community_id = "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3"
+    community_id = _first_catalog_community_id()
     scenario_id = "scen_flooding_v1"
 
     payload = {"scenario_id": scenario_id, "community_id": community_id}
@@ -41,10 +47,15 @@ def test_check_scenario_compatibility_api_not_found() -> None:
 
 def test_get_simulation_context_snapshot_api() -> None:
     session_id = "sess_demo_1001"
-    response = client.get(f"/simulations/{session_id}/context-snapshot")
+    community_id = _first_catalog_community_id()
+    response = client.get(
+        f"/simulations/{session_id}/context-snapshot",
+        params={"community_id": community_id, "scenario_id": "scen_flooding_v1"},
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["session_id"] == session_id
     assert "community_passport" in data
+    assert data["community_passport"]["community_id"] == community_id
     assert "time_dilation_clock" in data
     assert data["is_osm_bounded"] is True

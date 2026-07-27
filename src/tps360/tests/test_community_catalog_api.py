@@ -19,19 +19,25 @@ def test_get_communities_catalog_api() -> None:
 
 
 def test_get_community_passport_api_success() -> None:
-    community_id = "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3"
+    # Pick a real community from the KATOTTG catalog rather than hardcoding one.
+    catalog = client.get("/communities/catalog").json()
+    item = catalog["items"][0]
+    community_id = item["community_id"]
+
     response = client.get(f"/communities/{community_id}/passport")
     assert response.status_code == 200
     data = response.json()
     assert data["community_id"] == community_id
-    assert data["name"] == "Березнегуватська селищна громада"
+    assert data["name"] == item["name"]
     assert "infrastructure_items" in data
     items = data["infrastructure_items"]
-    assert len(items) >= 5
+    # Every community gets the canonical KATOTTG-derived infrastructure baseline.
+    assert len(items) >= 4
     categories = [i["category"] for i in items]
-    assert "POULTRY_FARM" in categories
+    assert "TERRITORIAL_DEFENSE_HQ" in categories
+    assert "RESCUE_FIRE_STATION" in categories
+    assert "HOSPITAL_MEDICAL" in categories
     assert "TRANSFORMER_SUBSTATION" in categories
-    assert "GAS_PIPELINE" in categories
 
 
 def test_get_community_passport_api_not_found() -> None:

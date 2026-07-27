@@ -80,7 +80,7 @@ def _build_initial_passports() -> dict[str, CommunityPassportReadModel]:
                 ),
                 InfrastructureItemReadModel(
                     id=f"infra_{record.official_code}_sub",
-                    name=f"Трансформаторна підстанція 110кВ",
+                    name="Трансформаторна підстанція 110кВ",
                     category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
                     latitude=record.center_latitude + 0.012,
                     longitude=record.center_longitude + 0.015,
@@ -182,20 +182,9 @@ class CommunityCatalogService:
         if cid_lower in self._passports:
             return self._passports[cid_lower]
 
-        # Support alias lookups or KATOTTG codes
+        # Support lookups by KATOTTG official code or community id
         for p in self._passports.values():
             if p.official_code.lower() == cid_lower or p.community_id.lower() == cid_lower:
                 return p
-
-        # Legacy aliases for tests
-        if cid_lower in ("verkhovyna", "shiroke", "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3"):
-            alias_map = {
-                "verkhovyna": "ua26020010000055743",
-                "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": "ua48060030000037887",
-                "shiroke": "ua23080270000095874",
-            }
-            target_code = alias_map[cid_lower]
-            if target_code in self._passports:
-                return self._passports[target_code]
 
         raise EntityNotFound(f"Community passport with id '{community_id}' not found.")
