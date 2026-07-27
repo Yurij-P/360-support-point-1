@@ -98,27 +98,65 @@ export class TPS360ApiClient {
     return res.json();
   }
 
-  async createSession(communityId: string): Promise<{ session_id: string; facilitator_token: string; join_token: string }> {
+  async createSession(params: {
+    communityId: string
+    facilitatorName: string
+    playerCapacity: number
+  }): Promise<{
+    id: string
+    facilitator_token: string
+    join_token: string
+    status: string
+  }> {
     const res = await fetch(`${this.baseUrl}/sessions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ community_id: communityId }),
+      body: JSON.stringify({
+        community_id: params.communityId,
+        facilitator_name: params.facilitatorName,
+        player_capacity: params.playerCapacity,
+        role_profiles: [],
+      }),
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return res.json();
   }
 
-  async joinSession(sessionId: string, joinToken: string): Promise<{ participant_id: string; participant_token: string }> {
+  async joinSession(
+    sessionId: string,
+    joinToken: string,
+    displayName: string,
+  ): Promise<{
+    participant_id: string
+    participant_token: string
+    display_name: string
+    lifecycle: string
+    session_status: string
+  }> {
     const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/participants/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ join_token: joinToken }),
+      body: JSON.stringify({ join_token: joinToken, display_name: displayName }),
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return res.json();
   }
 
-  async getSession(sessionId: string): Promise<{ session_id: string; lifecycle: string; [key: string]: unknown }> {
+  async getLobbyStatus(sessionId: string): Promise<{
+    session_id: string
+    capacity: number
+    connected_count: number
+    assigned_count: number
+    can_start: boolean
+    readiness_message: string
+    participants: Array<{ participant_id: string; display_name: string; role_id: string | null }>
+  }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/lobby-status`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async getSession(sessionId: string): Promise<{ id: string; status: string; [key: string]: unknown }> {
     const res = await fetch(`${this.baseUrl}/sessions/${sessionId}`);
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return res.json();

@@ -1,7 +1,6 @@
-/**
+﻿/**
  * Screen 1 of 7 (ROLE-UX-001 §7): Join Session
- * - Participant enters session ID + join token → receives participant_token
- * - D3 (join code format) is an open decision; currently uses two fields
+ * D3 decision: join code is one combined string "{session_id}|{join_token}"
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -11,8 +10,8 @@ import { useSession } from '../context/SessionContext.tsx'
 const client = new TPS360ApiClient()
 
 export default function JoinSession() {
-  const [sessionId, setSessionId] = useState('')
-  const [joinToken, setJoinToken] = useState('')
+  const [code, setCode] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -21,11 +20,17 @@ export default function JoinSession() {
   async function handleJoin(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    const parts = code.trim().split('|')
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      setError('Невірний формат коду. Очікується "session_id|join_token"')
+      return
+    }
+    const [sessionId, joinToken] = parts
     setLoading(true)
     try {
-      const result = await client.joinSession(sessionId.trim(), joinToken.trim())
-      setSession(sessionId.trim(), result.participant_token)
-      navigate(`/sessions/${sessionId.trim()}/lobby`)
+      const result = await client.joinSession(sessionId, joinToken, displayName.trim())
+      setSession(sessionId, result.participant_token)
+      navigate(`/sessions/${sessionId}/lobby`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Помилка приєднання')
     } finally {
@@ -38,26 +43,26 @@ export default function JoinSession() {
       <h1>TPS360</h1>
       <h2>Приєднатися до сесії</h2>
       <form onSubmit={handleJoin}>
-        <label>
-          ID сесії
+        <label style={{ display: 'block' }}>
+          {`Ваше ім'я`}
           <input
             type="text"
-            value={sessionId}
-            onChange={e => setSessionId(e.target.value)}
-            placeholder="session-uuid"
+            value={displayName}
+            onChange={e => setDisplayName(e.target.value)}
+            placeholder="Іван Петренко"
             required
-            style={{ display: 'block', marginTop: '0.5rem', width: '100%' }}
+            style={{ display: 'block', marginTop: '0.5rem', width: '100%', fontSize: '1rem' }}
           />
         </label>
-        <label style={{ marginTop: '1rem', display: 'block' }}>
-          Токен учасника
+        <label style={{ display: 'block', marginTop: '1rem' }}>
+          Код сесії
           <input
             type="text"
-            value={joinToken}
-            onChange={e => setJoinToken(e.target.value)}
-            placeholder="join-token"
+            value={code}
+            onChange={e => setCode(e.target.value)}
+            placeholder="session-uuid|join-token"
             required
-            style={{ display: 'block', marginTop: '0.5rem', width: '100%' }}
+            style={{ display: 'block', marginTop: '0.5rem', width: '100%', fontFamily: 'monospace', fontSize: '0.9rem' }}
           />
         </label>
         {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -65,6 +70,10 @@ export default function JoinSession() {
           {loading ? 'Підключення…' : 'Приєднатися'}
         </button>
       </form>
+      <hr style={{ margin: '2rem 0' }} />
+      <p style={{ color: '#666' }}>
+        Ви фасилітатор? <a href="/create">Створити нову сесію</a>
+      </p>
     </main>
   )
 }
