@@ -8,6 +8,7 @@ import ActiveWorkspace from './screens/ActiveWorkspace.tsx'
 import InjectDetail from './screens/InjectDetail.tsx'
 import DecisionSubmission from './screens/DecisionSubmission.tsx'
 import Completion from './screens/Completion.tsx'
+import FacilitatorConsole from './screens/FacilitatorConsole.tsx'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/sessions/:sessionId/workspace/injects/:injectId" element={<InjectDetail />} />
         <Route path="/sessions/:sessionId/workspace/injects/:injectId/decision" element={<DecisionSubmission />} />
         <Route path="/sessions/:sessionId/completion" element={<Completion />} />
+        <Route path="/sessions/:sessionId/facilitator" element={<FacilitatorConsole />} />
       </Routes>
     </SessionProvider>
   )

@@ -162,6 +162,103 @@ export class TPS360ApiClient {
     return res.json();
   }
 
+  async getParticipantView(sessionId: string, participantToken: string): Promise<{
+    participant_id: string
+    display_name: string
+    lifecycle: string
+    role_assigned: boolean
+    role_id: string | null
+    session_status: string
+    injects: Array<{ id: string; title: string; description: string; sent_at: string }>
+    decisions: Array<{ id: string; inject_id: string; decision_payload: Record<string, unknown> }>
+  }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/participant`, {
+      headers: { "X-Participant-Token": participantToken },
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async getFacilitatorConsole(sessionId: string, facilitatorToken: string): Promise<{
+    session_id: string
+    status: string
+    current_round: number
+    simulated_hours_passed: number
+    connected_participants_count: number
+    assigned_roles_count: number
+    pending_lego_cards_count: number
+    future_projections_5_variants: Array<{
+      variant_id: string
+      variant_name: string
+      hazard_level: string
+      projected_impact_summary: string
+      suggested_inject_title: string
+      suggested_inject_description: string
+    }>
+  }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/facilitator-console`, {
+      headers: { "X-Facilitator-Token": facilitatorToken },
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async startSession(sessionId: string, facilitatorToken: string): Promise<{ id: string; status: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/start`, {
+      method: "POST",
+      headers: { "X-Facilitator-Token": facilitatorToken },
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async sendInject(
+    sessionId: string,
+    facilitatorToken: string,
+    inject: { title: string; description: string; payload?: Record<string, unknown> },
+  ): Promise<{ id: string; title: string; description: string; sent_at: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/injects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Facilitator-Token": facilitatorToken },
+      body: JSON.stringify({ title: inject.title, description: inject.description, payload: inject.payload ?? {} }),
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async advanceRound(sessionId: string, facilitatorToken: string): Promise<Record<string, unknown>> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/rounds/advance`, {
+      method: "POST",
+      headers: { "X-Facilitator-Token": facilitatorToken },
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async completeSession(sessionId: string, facilitatorToken: string): Promise<{ id: string; status: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/complete`, {
+      method: "POST",
+      headers: { "X-Facilitator-Token": facilitatorToken },
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async submitDecision(
+    sessionId: string,
+    injectId: string,
+    participantToken: string,
+    decisionPayload: Record<string, unknown>,
+  ): Promise<{ id: string; inject_id: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/injects/${injectId}/decisions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Participant-Token": participantToken },
+      body: JSON.stringify({ decision_payload: decisionPayload }),
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
   subscribeToSessionEvents(sessionId: string, onMessage: (event: MessageEvent) => void): EventSource {
     const eventSource = new EventSource(`${this.baseUrl}/events/session/${sessionId}/stream`);
     eventSource.onmessage = onMessage;

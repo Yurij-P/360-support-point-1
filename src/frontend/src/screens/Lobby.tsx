@@ -60,12 +60,17 @@ export default function Lobby() {
         </ul>
       )}
 
-      <button
-        onClick={() => navigate(`/sessions/${sessionId}/briefing`)}
-        style={{ marginTop: '1rem' }}
-      >
-        До брифінгу →
-      </button>
+      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+        <button onClick={() => navigate(`/sessions/${sessionId}/briefing`)}>
+          До брифінгу →
+        </button>
+        <button
+          onClick={() => navigate(`/sessions/${sessionId}/facilitator`)}
+          style={{ background: '#7c3aed', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: 6, cursor: 'pointer' }}
+        >
+          🎛 Консоль фасилітатора
+        </button>
+      </div>
     </main>
   )
 }
