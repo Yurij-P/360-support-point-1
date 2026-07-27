@@ -152,6 +152,7 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * SCREEN 1: CATALOG & LIVE KATOTTG DIRECTORY SEARCH
+   * ALPHABETICAL NATIONAL REGION SORTING
    * ------------------------------------------------------------------ */
   async renderCatalogScreen(container) {
     try {
@@ -163,16 +164,26 @@ class TPS360WebApp {
       }
       this.state.communities = items;
 
+      const activeBanner = this.communityName
+        ? `<div class="card" style="background:var(--success-bg); border:1px solid var(--success-border); color:var(--success-text); margin-bottom:16px;">
+             ✅ <strong>Обрана громада:</strong> ${this.communityName} (Код КАТОТТГ: ${this.officialCode})
+           </div>`
+        : `<div class="card" style="background:var(--bg-elevated); border-left:4px solid var(--primary-accent); margin-bottom:16px;">
+             ℹ️ <strong>Громаду не обрано.</strong> Оберіть територіальну громаду з офіційного реєстру КАТОТТГ України нижче.
+           </div>`;
+
       container.innerHTML = `
-        <div class="card" style="margin-bottom:24px;">
+        <div class="card" style="margin-bottom:20px;">
           <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🏛️ Каталог Громад України (Довідник КАТОТТГ / directory.org.ua)</h1>
           <p style="color:var(--text-secondary); margin-bottom:14px;">Офіційний довідник територіальних громад України з верифікованими кодами КАТОТТГ, інфраструктурними паспортами та картами OpenStreetMap.</p>
           
           <div style="display:flex; gap:12px;">
-            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Миттєвий пошук: введіть код КАТОТТГ (наприклад UA4806), область або назву..." style="flex:1;">
+            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Миттєвий пошук громади: введіть код КАТОТТГ, область або назву (наприклад: Київ, Львів, Харків, Запоріжжя)..." style="flex:1;">
             <button type="button" id="katottgSearchBtn" class="btn-primary">🔍 Знайти у КАТОТТГ</button>
           </div>
         </div>
+
+        ${activeBanner}
 
         <div id="catalogGridContainer" class="grid-layout">
           ${this.renderCommunityCardsHTML(items)}
@@ -222,29 +233,31 @@ class TPS360WebApp {
       return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">У довіднику КАТОТТГ за цим запитом громад не знайдено.</p></div>`;
     }
 
-    return items.map(c => `
-      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <span class="chip" style="float:right; background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">
-            Готовність: ${c.preparedness_score}%
-          </span>
-          <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
-          <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:8px;">
-            📍 ${c.region} ${c.district ? '· ' + c.district : ''}
-          </p>
-          <div style="font-size:0.8rem; margin-bottom:16px; display:flex; flex-direction:column; gap:4px;">
-            <span class="chip" style="background:var(--bg-elevated); font-family:var(--font-mono); font-weight:600;">
-              📜 КАТОТТГ: ${c.official_code}
-            </span>
-            <span class="chip">Населення: <strong>${c.total_population.toLocaleString()} осіб</strong></span>
-            <span class="chip">Об'єктів інфраструктури: <strong>${c.critical_infrastructure_count} об'єктів</strong></span>
+    return items.map(c => {
+      const isSelected = this.communityId === c.community_id;
+
+      return `
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; ${isSelected ? 'border:2px solid var(--success-border); background:var(--bg-elevated);' : ''}">
+          <div>
+            ${isSelected ? '<span class="chip chip-active" style="float:right;">✅ Обрано</span>' : ''}
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
+            <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:8px;">
+              📍 ${c.region} ${c.district ? '· ' + c.district : ''}
+            </p>
+            <div style="font-size:0.8rem; margin-bottom:16px; display:flex; flex-direction:column; gap:4px;">
+              <span class="chip" style="background:var(--bg-surface); font-family:var(--font-mono); font-weight:600;">
+                📜 КАТОТТГ: ${c.official_code}
+              </span>
+              <span class="chip">Населення: <strong>${c.total_population.toLocaleString()} осіб</strong></span>
+              <span class="chip">Об'єктів інфраструктури: <strong>${c.critical_infrastructure_count} об'єктів</strong></span>
+            </div>
           </div>
+          <button type="button" class="btn-primary open-passport-btn" data-id="${c.community_id}" data-name="${c.name}" data-code="${c.official_code}" style="width:100%; ${isSelected ? 'background:var(--success-border);' : ''}">
+            ${isSelected ? '🗺️ Переглянути Паспорт OpenStreetMap →' : '🗺️ Відкрити Паспорт & Обрати →'}
+          </button>
         </div>
-        <button type="button" class="btn-primary open-passport-btn" data-id="${c.community_id}" data-name="${c.name}" data-code="${c.official_code}" style="width:100%;">
-          🗺️ Відкрити Паспорт OpenStreetMap →
-        </button>
-      </div>
-    `).join("");
+      `;
+    }).join("");
   }
 
   bindCatalogCardEvents(container) {
@@ -294,8 +307,8 @@ class TPS360WebApp {
               </p>
             </div>
             <div style="display:flex; gap:8px;">
-              <span class="chip chip-active">Індекс Готовності: ${passport.preparedness_score}%</span>
-              <button type="button" id="startSessionWithCommBtn" class="btn-primary">🚀 Обрати Громаду для Симуляції</button>
+              <span class="chip chip-active">Готовність: ${passport.preparedness_score}%</span>
+              <button type="button" id="startSessionWithCommBtn" class="btn-primary">🚀 Підтвердити Вибір Громади</button>
             </div>
           </div>
         </div>
@@ -414,7 +427,7 @@ class TPS360WebApp {
     if (!this.communityId) {
       resultBox.innerHTML = `
         <div class="card" style="border-left: 6px solid var(--warning-border);">
-          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведения оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
+          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведення оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
           <button type="button" class="btn-primary" style="margin-top:8px;" onclick="window.tps360App.switchScreen('catalog')">← Перейти до Каталогу КАТОТТГ</button>
         </div>
       `;
