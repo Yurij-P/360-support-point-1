@@ -1,8 +1,12 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from tps360.community.services.catalog_service import CommunityCatalogItem, CommunityCatalogService
 from tps360.db import orm_models  # noqa: F401
@@ -22,6 +26,8 @@ from .routers import (
     simulations,
 )
 
+STATIC_DIR = Path(__file__).parent / "static"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -29,13 +35,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(title="TPS360 API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="TPS360 API", version="0.2.8", lifespan=lifespan)
 
 LOCAL_PARTICIPANT_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -45,15 +53,22 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-Participant-Token"],
 )
 
-@app.get("/")
-def read_root() -> dict[str, str]:
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/", response_model=None)
+@app.get("/ui", response_model=None)
+def read_root_ui() -> Any:
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
     return {
         "name": "TPS360 Operational Headquarters API",
-        "version": "0.2.1",
+        "version": "0.2.8",
         "status": "running",
         "docs": "/docs",
     }
-
 
 
 @app.get("/health")

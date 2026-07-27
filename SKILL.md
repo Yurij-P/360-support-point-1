@@ -80,16 +80,32 @@ Run:
 ```bash
 pytest
 ruff check .
-mypy
+mypy src/tps360
 git diff --check
 git status --short --branch
 ```
+
+### Full-Stack Web UI Verification Protocol
+When implementing or modifying frontend Web UI components (`app.js`, `api_client.ts`, HTML templates), you MUST execute the following 4-step alignment protocol before declaring completion:
+1. **API Route Contract Alignment:** Verify all `fetch()` / API client URL paths against FastAPI router paths in `main.py` and routers (ensure root prefix alignment e.g. `/communities/catalog` instead of `/api/v1/...`).
+2. **Response Payload Shape Alignment:** Verify backend return type shapes (e.g. object wrapper `{ items: [...] }` vs array `[...]`). In frontend code, always parse defensively: `Array.isArray(data) ? data : (data.items || [])`.
+3. **Automated Endpoint & Asset Test:** Add unit/integration tests in `test_web_app_serving.py` and `test_frontend_api_integration.py` ensuring static files and REST endpoints return 200 OK with correct JSON contracts.
+4. **Local Runtime Smoke Verification:** Launch the application locally and verify that frontend components render live backend data without silent client-side JavaScript console errors.
 
 Report exact results. If a command cannot run, report why; never substitute an
 assumed result.
 
 Before commit or publication, review the full diff against the mapping and verify
 that no hard-coded community, crisis, role or resource has been introduced.
+
+## Mandatory Execution Reporting Rule
+
+ALWAYS provide a comprehensive, structured completion report in Ukrainian after EVERY execution turn.
+The report MUST contain:
+1. **Звіт про виконані роботи (Summary of Completed Work):** Detailed list of modified files, features, and UI/backend fixes.
+2. **Результати аудит-перевірок (Quality Audit Verification):** Exact test output counts (e.g. `550 / 550 passed`), ruff lint status, and mypy type checks.
+3. **Стан активної громади та КАТОТТГ (Active Community & KATOTTG Context):** Current selected community, KATOTTG code, and map alignment status.
+4. **Покліковий план наступних кроків (Next Steps & Recommendations).**
 
 ## Stop conditions
 
@@ -103,3 +119,4 @@ Stop and ask the user when:
 
 Ask a concrete question grounded in files already inspected. Do not fill gaps with
 plausible domain language.
+

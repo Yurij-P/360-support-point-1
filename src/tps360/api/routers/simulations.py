@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from tps360.api.dependencies import get_simulation_repo
 from tps360.community.services import CommunityCatalogService
@@ -43,9 +43,16 @@ def get_simulation(
 
 
 @router.get("/{session_id}/context-snapshot", response_model=SimulationContextSnapshotReadModel)
-def get_simulation_context_snapshot(session_id: str) -> SimulationContextSnapshotReadModel:
-    passport = community_catalog.get_passport("a29d6fbd-02c3-4d43-a651-7efd6fbd02c3")
-    scenario = scenario_service.get_scenario("scen_flooding_v1")
+def get_simulation_context_snapshot(
+    session_id: str,
+    community_id: str = Query(..., min_length=1),
+    scenario_id: str = Query(..., min_length=1),
+) -> SimulationContextSnapshotReadModel:
+    try:
+        passport = community_catalog.get_passport(community_id)
+        scenario = scenario_service.get_scenario(scenario_id)
+    except NotFoundError as exc:
+        raise HTTPException(404, str(exc))
     return SimulationContextSnapshotReadModel(
         session_id=session_id,
         community_passport=passport,
