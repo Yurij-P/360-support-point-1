@@ -2,7 +2,17 @@
 
 Формат спирається на принцип Keep a Changelog. Версії до запуску платформи описують стан документів і концепції, а не готовність продукту.
 
+## [0.2.8] — 2026-07-27
+
+### Додано
+
+- **PR #24 (Frontend Web Workspace Integration & Interactive OpenStreetMap GIS Engine):**
+  - Типізований Web API Клієнт (`src/frontend/api_client.ts`): забезпечує зв'язування REST API бекенду з веб-інтерфейсом кабінету ролей та консолі фасилітатора, включаючи підписку на SSE-потік подій реального часу (`subscribeToSessionEvents`).
+  - Геопросторовий модуль OpenStreetMap GIS (`src/frontend/osm_map_viewer.ts`): візуалізація меж громади (`MapBoundingBox`), маркерів об'єктів критичної інфраструктури, загроз та зон НС.
+  - E2E Інтеграційні тести перевірки сумісності API та CORS-заголовків (`src/tps360/tests/test_frontend_api_integration.py`).
+
 ## [0.2.7] — 2026-07-26
+
 
 ### Додано
 
