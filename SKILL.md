@@ -80,10 +80,17 @@ Run:
 ```bash
 pytest
 ruff check .
-mypy
+mypy src/tps360
 git diff --check
 git status --short --branch
 ```
+
+### Full-Stack Web UI Verification Protocol
+When implementing or modifying frontend Web UI components (`app.js`, `api_client.ts`, HTML templates), you MUST execute the following 4-step alignment protocol before declaring completion:
+1. **API Route Contract Alignment:** Verify all `fetch()` / API client URL paths against FastAPI router paths in `main.py` and routers (ensure root prefix alignment e.g. `/communities/catalog` instead of `/api/v1/...`).
+2. **Response Payload Shape Alignment:** Verify backend return type shapes (e.g. object wrapper `{ items: [...] }` vs array `[...]`). In frontend code, always parse defensively: `Array.isArray(data) ? data : (data.items || [])`.
+3. **Automated Endpoint & Asset Test:** Add unit/integration tests in `test_web_app_serving.py` and `test_frontend_api_integration.py` ensuring static files and REST endpoints return 200 OK with correct JSON contracts.
+4. **Local Runtime Smoke Verification:** Launch the application locally and verify that frontend components render live backend data without silent client-side JavaScript console errors.
 
 Report exact results. If a command cannot run, report why; never substitute an
 assumed result.
