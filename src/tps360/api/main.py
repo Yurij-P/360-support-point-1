@@ -1,9 +1,22 @@
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+from .routers import (
+    assessments,
+    communities,
+    directives,
+    events,
+    preparedness_profiles,
+    risks,
+    scenarios,
+    sessions,
+    simulations,
+)
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -29,9 +42,9 @@ if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.get("/")
-@app.get("/ui")
-def read_root_ui() -> FileResponse | dict[str, str]:
+@app.get("/", response_model=None)
+@app.get("/ui", response_model=None)
+def read_root_ui() -> Any:
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return FileResponse(index_file)
@@ -41,8 +54,6 @@ def read_root_ui() -> FileResponse | dict[str, str]:
         "status": "running",
         "docs": "/docs",
     }
-
-
 
 
 @app.get("/health")
@@ -62,5 +73,3 @@ for router in (
     events.router,
 ):
     app.include_router(router)
-
-
