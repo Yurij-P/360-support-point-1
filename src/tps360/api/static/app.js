@@ -677,7 +677,7 @@ class TPS360WebApp {
           ⏳ <strong>ШІ-Інвентар заблоковано:</strong> Розрахунок потреби ресурсів ШІ-Копілотом для ліквідації кризової ситуації з'явиться одразу після призначення вам однієї з 7 ролей Фасилітатором у Пульті Управління.
         </div>
       `;
-    } else if (assignedRoleId === "head_of_emergency") {
+    } else if (assignedRoleId === "emerg-dsns") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
           <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
@@ -689,7 +689,7 @@ class TPS360WebApp {
           <p style="margin-bottom:4px;">⛽ Паливо для спецтехніки: <strong>Наявно 5 000 л</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 3 500 л</span></p>
         </div>
       `;
-    } else if (assignedRoleId === "chief_medical_officer") {
+    } else if (assignedRoleId === "emerg-ems") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
           <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
@@ -725,7 +725,7 @@ class TPS360WebApp {
           <p style="margin-bottom:4px;">🤝 Волонтери та муніципальна варта: <strong>Наявно 60 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 50 осіб</span></p>
         </div>
       `;
-    } else if (assignedRoleId === "chief_police_officer") {
+    } else if (assignedRoleId === "emerg-police") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
           <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
@@ -920,7 +920,7 @@ class TPS360WebApp {
     const instructions = document.getElementById("legoInstructions").value;
 
     const currentSessId = this.sessionId || "sess_active_1";
-    const currentRoleId = (this.participant && this.participant.assignedRole) || "head_of_emergency";
+    const currentRoleId = (this.participant && this.participant.assignedRole) || "emerg-dsns";
 
     if (feedback) {
       feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Відправка рішення на бекенд TPS360...</p>`;
@@ -1114,11 +1114,11 @@ class TPS360WebApp {
             <div class="form-group">
               <label class="form-label" for="stressRole">Цільова Роль:</label>
               <select id="stressRole" class="form-control">
-                <option value="head_of_emergency">🚒 Керівник штабу ДСНС</option>
-                <option value="chief_medical_officer">🚑 Головний лікар лікарні</option>
+                <option value="emerg-dsns">🚒 Представник ДСНС</option>
+                <option value="emerg-ems">🚑 Представник екстреної медичної допомоги</option>
                 <option value="director_waterworks">⚡ Директор Водоканалу</option>
                 <option value="head_of_community">🏫 Голова громади / Староста</option>
-                <option value="chief_police_officer">🛡️ Керівник Поліції</option>
+                <option value="emerg-police">🛡️ Представник поліції</option>
                 <option value="chief_sanitary_inspector">🔬 Санітарний інспектор</option>
                 <option value="head_of_social_protection">🤝 Керівник Соцзахисту</option>
               </select>
@@ -1202,11 +1202,11 @@ class TPS360WebApp {
               </td>
               <td style="padding:8px;">
                 <select class="form-control role-assign-select" data-part-id="${p.id}" style="padding:4px 8px; font-size:0.8rem;">
-                  <option value="head_of_emergency" ${p.assignedRole === 'head_of_emergency' ? 'selected' : ''}>1. 🚒 Керівник штабу ДСНС</option>
-                  <option value="chief_medical_officer" ${p.assignedRole === 'chief_medical_officer' ? 'selected' : ''}>2. 🚑 Головний лікар лікарні</option>
+                  <option value="emerg-dsns" ${p.assignedRole === 'emerg-dsns' ? 'selected' : ''}>1. 🚒 Представник ДСНС</option>
+                  <option value="emerg-ems" ${p.assignedRole === 'emerg-ems' ? 'selected' : ''}>2. 🚑 Представник екстреної медичної допомоги</option>
                   <option value="director_waterworks" ${p.assignedRole === 'director_waterworks' ? 'selected' : ''}>3. ⚡ Директор Водоканалу / Комунальник</option>
                   <option value="head_of_community" ${p.assignedRole === 'head_of_community' ? 'selected' : ''}>4. 🏫 Голова громади / Староста</option>
-                  <option value="chief_police_officer" ${p.assignedRole === 'chief_police_officer' ? 'selected' : ''}>5. 🛡️ Керівник Поліції громади</option>
+                  <option value="emerg-police" ${p.assignedRole === 'emerg-police' ? 'selected' : ''}>5. 🛡️ Представник поліції</option>
                   <option value="chief_sanitary_inspector" ${p.assignedRole === 'chief_sanitary_inspector' ? 'selected' : ''}>6. 🔬 Санітарний інспектор (Держпродспожив)</option>
                   <option value="head_of_social_protection" ${p.assignedRole === 'head_of_social_protection' ? 'selected' : ''}>7. 🤝 Керівник Соціального захисту / Волонтери</option>
                 </select>
@@ -1232,11 +1232,11 @@ class TPS360WebApp {
 
         const chosenRole = select.value;
         const roleTitles = {
-          head_of_emergency: "1. 🚒 Керівник штабу ДСНС",
-          chief_medical_officer: "2. 🚑 Головний лікар лікарні",
+          emerg-dsns: "1. 🚒 Представник ДСНС",
+          emerg-ems: "2. 🚑 Представник екстреної медичної допомоги",
           director_waterworks: "3. ⚡ Директор Водоканалу / Комунальник",
           head_of_community: "4. 🏫 Голова громади / Староста",
-          chief_police_officer: "5. 🛡️ Керівник Поліції громади",
+          emerg-police: "5. 🛡️ Представник поліції",
           chief_sanitary_inspector: "6. 🔬 Санітарний інспектор",
           head_of_social_protection: "7. 🤝 Керівник Соціального захисту"
         };

@@ -15,9 +15,9 @@ def test_record_round_telemetry_and_aar_report() -> None:
         session_id=SESS,
         round_number=1,
         mitigation_pct=45.0,
-        role_capabilities={"head_of_emergency": 90.0},
-        resource_levels={"head_of_emergency": {"fire_trucks": 8.0}},
-        cognitive_stress_indexes={"head_of_emergency": 15.0},
+        role_capabilities={"emerg-dsns": 90.0},
+        resource_levels={"emerg-dsns": {"fire_trucks": 8.0}},
+        cognitive_stress_indexes={"emerg-dsns": 15.0},
     )
 
     telemetry = service.get_session_telemetry(SESS)

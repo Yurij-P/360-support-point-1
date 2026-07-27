@@ -67,9 +67,9 @@ class AARTelemetryService:
             round_number=round_number,
             simulated_hours=float(round_number * 1.5),
             mitigation_pct=mitigation_pct,
-            role_capabilities=role_capabilities or {"head_of_emergency": 100.0},
-            resource_levels=resource_levels or {"head_of_emergency": {"fire_trucks": 10.0}},
-            cognitive_stress_indexes=cognitive_stress_indexes or {"head_of_emergency": 0.0},
+            role_capabilities=role_capabilities or {"emerg-dsns": 100.0},
+            resource_levels=resource_levels or {"emerg-dsns": {"fire_trucks": 10.0}},
+            cognitive_stress_indexes=cognitive_stress_indexes or {"emerg-dsns": 0.0},
         )
 
         self._telemetry_log[session_id].append(snapshot)
@@ -116,8 +116,8 @@ class AARTelemetryService:
             initial_preparedness_score=68.5,
             final_preparedness_score=92.0,
             role_performance_summaries={
-                "head_of_emergency": "Висока ефективність: швидке залучення 100% автоцистерн для локалізації осередку.",
-                "chief_medical_officer": "Оперативне розгортання пунктів обігріву та медичної допомоги.",
+                "emerg-dsns": "Висока ефективність: швидке залучення 100% автоцистерн для локалізації осередку.",
+                "emerg-ems": "Оперативне розгортання пунктів обігріву та медичної допомоги.",
             },
             identified_vulnerabilities=(
                 "Вузький резерв дизельного палива на випадок тривалого знеструмлення.",

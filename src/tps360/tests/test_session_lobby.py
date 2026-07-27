@@ -33,10 +33,10 @@ def test_session_lobby_lifecycle() -> None:
 
     # Assign role to P1
     updated_p1 = service.assign_participant_role(
-        session_id=SESS, participant_id=p1.participant_id, role_id="head_of_emergency"
+        session_id=SESS, participant_id=p1.participant_id, role_id="emerg-dsns"
     )
     assert updated_p1.is_assigned is True
-    assert updated_p1.role_id == "head_of_emergency"
+    assert updated_p1.role_id == "emerg-dsns"
 
     status_ready = service.get_lobby_status(SESS)
     assert status_ready.assigned_count == 1
@@ -49,10 +49,10 @@ def test_session_lobby_duplicate_role_assignment_fails() -> None:
     p1 = service.join_standby_room("sess_dup_1", "Гравець 1")
     p2 = service.join_standby_room("sess_dup_1", "Гравець 2")
 
-    service.assign_participant_role("sess_dup_1", p1.participant_id, "head_of_emergency")
+    service.assign_participant_role("sess_dup_1", p1.participant_id, "emerg-dsns")
 
     with pytest.raises(DomainRuleViolation, match="already assigned"):
-        service.assign_participant_role("sess_dup_1", p2.participant_id, "head_of_emergency")
+        service.assign_participant_role("sess_dup_1", p2.participant_id, "emerg-dsns")
 
 
 def test_session_lobby_capacity_exceeded_fails() -> None:
@@ -84,11 +84,11 @@ def test_session_lobby_api_endpoints() -> None:
     # Assign role
     assign_resp = client.post(
         f"/sessions/{sess_id}/lobby/assign-role",
-        json={"participant_id": p_id, "role_id": "chief_medical_officer"},
+        json={"participant_id": p_id, "role_id": "emerg-ems"},
     )
     assert assign_resp.status_code == 200
     a_data = assign_resp.json()
-    assert a_data["role_id"] == "chief_medical_officer"
+    assert a_data["role_id"] == "emerg-ems"
 
     # Check status (should be can_start = True)
     status_resp2 = client.get(f"/sessions/{sess_id}/lobby-status")

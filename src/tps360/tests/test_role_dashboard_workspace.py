@@ -13,9 +13,9 @@ SESS = "sess_role_workspace_test_200"
 
 def test_role_workspace_initial_resources() -> None:
     service = RoleDashboardService()
-    workspace = service.get_role_workspace(session_id=SESS, role_id="head_of_emergency")
+    workspace = service.get_role_workspace(session_id=SESS, role_id="emerg-dsns")
 
-    assert workspace.role_id == "head_of_emergency"
+    assert workspace.role_id == "emerg-dsns"
     assert "fire_trucks" in workspace.initial_resources
     assert workspace.initial_resources["fire_trucks"] == Decimal("10")
     assert workspace.available_resources["fire_trucks"] == Decimal("10")
@@ -26,7 +26,7 @@ def test_submit_lego_decision_card_allocates_and_locks_resources() -> None:
     service = RoleDashboardService()
     card = service.submit_lego_decision_card(
         session_id=SESS,
-        role_id="head_of_emergency",
+        role_id="emerg-dsns",
         action_type="EXTINGUISH_FIRE",
         target_facility_id="osm_substation_44",
         allocated_resources={"fire_trucks": Decimal("6"), "fuel_liters": Decimal("2000")},
@@ -39,7 +39,7 @@ def test_submit_lego_decision_card_allocates_and_locks_resources() -> None:
     assert card.action_type == "EXTINGUISH_FIRE"
     assert card.status == "PENDING_ROUND_EXECUTION"
 
-    workspace = service.get_role_workspace(session_id=SESS, role_id="head_of_emergency")
+    workspace = service.get_role_workspace(session_id=SESS, role_id="emerg-dsns")
     assert workspace.available_resources["fire_trucks"] == Decimal("4")
     assert workspace.reserved_resources["fire_trucks"] == Decimal("6")
     assert workspace.available_resources["fuel_liters"] == Decimal("3000")
@@ -51,13 +51,13 @@ def test_100_percent_resource_exhaustion_supported() -> None:
     # Allocate 100% (10 out of 10 fire_trucks)
     service.submit_lego_decision_card(
         session_id=SESS,
-        role_id="head_of_emergency",
+        role_id="emerg-dsns",
         action_type="CONTAIN",
         target_facility_id="osm_oil_depot_1",
         allocated_resources={"fire_trucks": Decimal("10")},
     )
 
-    workspace = service.get_role_workspace(session_id=SESS, role_id="head_of_emergency")
+    workspace = service.get_role_workspace(session_id=SESS, role_id="emerg-dsns")
     assert workspace.available_resources["fire_trucks"] == Decimal("0")
     assert workspace.reserved_resources["fire_trucks"] == Decimal("10")
 
@@ -65,7 +65,7 @@ def test_100_percent_resource_exhaustion_supported() -> None:
     with pytest.raises(DomainRuleViolation, match="Insufficient 'fire_trucks' resources"):
         service.submit_lego_decision_card(
             session_id=SESS,
-            role_id="head_of_emergency",
+            role_id="emerg-dsns",
             action_type="EVACUATE",
             target_facility_id="osm_zone_2",
             allocated_resources={"fire_trucks": Decimal("1")},
@@ -77,8 +77,8 @@ def test_inter_role_oms_resource_transfer() -> None:
     # Chief Utility transfers 3 backup_generators to Chief Medical Officer
     transfer = service.transfer_resources_oms(
         session_id=SESS,
-        sender_role_id="chief_utility_officer",
-        recipient_role_id="chief_medical_officer",
+        sender_role_id="communal-utility",
+        recipient_role_id="emerg-ems",
         resources={"backup_generators": Decimal("3")},
         authorization_note="Розпорядження ОМС для живлення медустанови",
     )
@@ -86,8 +86,8 @@ def test_inter_role_oms_resource_transfer() -> None:
     assert transfer.transfer_id.startswith("trans_")
     assert transfer.resources["backup_generators"] == Decimal("3")
 
-    utility_ws = service.get_role_workspace(SESS, "chief_utility_officer")
-    medical_ws = service.get_role_workspace(SESS, "chief_medical_officer")
+    utility_ws = service.get_role_workspace(SESS, "communal-utility")
+    medical_ws = service.get_role_workspace(SESS, "emerg-ems")
 
     assert utility_ws.available_resources["backup_generators"] == Decimal("7")
     assert medical_ws.available_resources["backup_generators"] == Decimal("7")  # 4 initial + 3 transferred!
@@ -97,7 +97,7 @@ def test_resolve_round_execution_clears_reserved_resources() -> None:
     service = RoleDashboardService()
     service.submit_lego_decision_card(
         session_id=SESS,
-        role_id="chief_medical_officer",
+        role_id="emerg-ems",
         action_type="DEPLOY_SHELTER",
         target_facility_id="osm_hospital_99",
         allocated_resources={"backup_generators": Decimal("2")},
@@ -107,7 +107,7 @@ def test_resolve_round_execution_clears_reserved_resources() -> None:
     assert len(outcomes) == 1
     assert outcomes[0]["status"] == "EXECUTED_IN_ROUND"
 
-    workspace = service.get_role_workspace(session_id=SESS, role_id="chief_medical_officer")
+    workspace = service.get_role_workspace(session_id=SESS, role_id="emerg-ems")
     assert workspace.reserved_resources["backup_generators"] == Decimal("0")
     assert len(workspace.pending_lego_cards) == 0
 
@@ -116,17 +116,17 @@ def test_role_workspace_api_endpoints() -> None:
     sess_id = "sess_api_role_workspace_888"
 
     # Get Workspace
-    response = client.get(f"/sessions/{sess_id}/role-workspace?role_id=head_of_emergency")
+    response = client.get(f"/sessions/{sess_id}/role-workspace?role_id=emerg-dsns")
     assert response.status_code == 200
     w_data = response.json()
-    assert w_data["role_id"] == "head_of_emergency"
+    assert w_data["role_id"] == "emerg-dsns"
     assert "fire_trucks" in w_data["available_resources"]
 
     # Submit LEGO Card
     card_resp = client.post(
         f"/sessions/{sess_id}/lego-decisions",
         json={
-            "role_id": "head_of_emergency",
+            "role_id": "emerg-dsns",
             "action_type": "EVACUATE",
             "target_facility_id": "osm_school_12",
             "allocated_resources": {"fire_trucks": "2"},
@@ -142,15 +142,15 @@ def test_role_workspace_api_endpoints() -> None:
     trans_resp = client.post(
         f"/sessions/{sess_id}/resource-transfers",
         json={
-            "sender_role_id": "head_of_emergency",
-            "recipient_role_id": "chief_police_officer",
+            "sender_role_id": "emerg-dsns",
+            "recipient_role_id": "emerg-police",
             "resources": {"fuel_liters": "500"},
             "authorization_note": "Розпорядження ОМС для патрулювання",
         },
     )
     assert trans_resp.status_code == 200
     t_data = trans_resp.json()
-    assert t_data["sender_role_id"] == "head_of_emergency"
+    assert t_data["sender_role_id"] == "emerg-dsns"
 
     # Query AI Resource Estimate
     ai_resp = client.get(f"/sessions/{sess_id}/ai-resource-estimate?action_type=EXTINGUISH_FIRE&hazard_radius_km=1.5")
@@ -163,7 +163,7 @@ def test_role_workspace_api_endpoints() -> None:
     psych_resp = client.post(
         f"/sessions/{sess_id}/injects/psychological-friction",
         json={
-            "target_role_id": "head_of_emergency",
+            "target_role_id": "emerg-dsns",
             "friction_type": "AIR_RAID_SIREN",
             "title": "Повітряна тривога та паніка у соцмережах",
             "description": "У Telegram-каналах тролять владу, а водій автоцистерни загубив ключі.",
