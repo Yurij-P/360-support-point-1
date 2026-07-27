@@ -16,6 +16,7 @@ from .routers import (
     events,
     preparedness_profiles,
     risks,
+    roles,
     scenarios,
     sessions,
     simulations,
@@ -95,5 +96,6 @@ for router in (
     preparedness_profiles.router,
     directives.router,
     events.router,
+    roles.router,
 ):
     app.include_router(router)
