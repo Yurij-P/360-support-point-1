@@ -100,7 +100,7 @@ def test_resolve_round_execution_clears_reserved_resources() -> None:
         role_id="chief_medical_officer",
         action_type="DEPLOY_SHELTER",
         target_facility_id="osm_hospital_99",
-        allocated_resources={"generators": Decimal("2")},
+        allocated_resources={"backup_generators": Decimal("2")},
     )
 
     outcomes = service.resolve_round_execution(session_id=SESS, round_number=1)
@@ -108,7 +108,7 @@ def test_resolve_round_execution_clears_reserved_resources() -> None:
     assert outcomes[0]["status"] == "EXECUTED_IN_ROUND"
 
     workspace = service.get_role_workspace(session_id=SESS, role_id="chief_medical_officer")
-    assert workspace.reserved_resources["generators"] == Decimal("0")
+    assert workspace.reserved_resources["backup_generators"] == Decimal("0")
     assert len(workspace.pending_lego_cards) == 0
 
 

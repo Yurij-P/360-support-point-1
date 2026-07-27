@@ -20,7 +20,6 @@ ROLE_INITIAL_RESOURCES: dict[str, dict[str, Decimal]] = {
         "ambulances": Decimal("8"),
         "medical_personnel": Decimal("30"),
         "medical_kits": Decimal("500"),
-        "generators": Decimal("4"),
         "backup_generators": Decimal("4"),
         "fuel_liters": Decimal("2000"),
     },
@@ -130,7 +129,7 @@ class RoleDashboardService:
                     "vehicles": Decimal("5"),
                     "personnel": Decimal("20"),
                     "fuel_liters": Decimal("1000"),
-                    "generators": Decimal("2"),
+                    "backup_generators": Decimal("2"),
                 },
             )
             initial = {k: Decimal(str(v)) for k, v in defaults.items()}
