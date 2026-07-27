@@ -57,6 +57,7 @@ async def stream_session_events(
     role_id: str | None = Query(default=None),
 ) -> StreamingResponse:
     async def event_generator() -> AsyncGenerator[str, None]:
+        yield ": connected\n\n"
         async for event in broadcaster.subscribe_stream(session_id=session_id, role_id=role_id):
             resp = _to_event_response(event)
             event_data = json.dumps(resp.model_dump())

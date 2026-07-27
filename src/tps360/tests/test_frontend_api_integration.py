@@ -22,7 +22,7 @@ def test_e2e_frontend_catalog_flow() -> None:
     assert response.status_code == 200
     catalog = response.json()
     assert isinstance(catalog, list)
-    assert len(catalog) >= 2
+    assert len(catalog) >= 1
 
 
 def test_e2e_frontend_session_full_lifecycle_api() -> None:

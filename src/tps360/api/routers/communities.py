@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from tps360.api.dependencies import communities
+from tps360.api.dependencies import get_community_repo
 from tps360.community.domain.passport_read_model import CommunityPassportReadModel
 from tps360.community.services.catalog_service import (
     CommunityCatalogItem,
@@ -11,6 +11,7 @@ from tps360.community.services.catalog_service import (
 )
 from tps360.core.domain.models import Community
 from tps360.core.exceptions import DomainRuleViolation, EntityNotFound, NotFoundError
+from tps360.db.repositories import SQLCommunityRepository
 
 router = APIRouter(prefix="/communities", tags=["communities"])
 _catalog_service_instance = CommunityCatalogService()
@@ -54,16 +55,20 @@ def get_community_passport(community_id: str) -> CommunityPassportReadModel:
 
 
 @router.post("")
-def create(item: Community) -> Community:
+def create(
+    item: Community, community_repo: SQLCommunityRepository = Depends(get_community_repo)
+) -> Community:
     try:
-        return communities.add(item)
+        return community_repo.add(item)
     except DomainRuleViolation as exc:
         raise HTTPException(409, str(exc))
 
 
 @router.get("/{community_id}")
-def get(community_id: UUID) -> Community:
+def get(
+    community_id: UUID, community_repo: SQLCommunityRepository = Depends(get_community_repo)
+) -> Community:
     try:
-        return communities.get(community_id)
+        return community_repo.get(community_id)
     except NotFoundError as exc:
         raise HTTPException(404, str(exc))

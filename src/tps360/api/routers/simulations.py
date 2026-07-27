@@ -1,12 +1,13 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
-from tps360.api.dependencies import simulations
+from tps360.api.dependencies import get_simulation_repo
 from tps360.community.services import CommunityCatalogService
 from tps360.core.domain.models import Decision, Inject, Simulation
 from tps360.core.exceptions import NotFoundError
 from tps360.core.services import SimulationService
+from tps360.db.repositories import SQLSimulationRepository
 from tps360.simulation.domain import (
     SimulationContextSnapshotReadModel,
     SimulationRoundClock,
@@ -20,21 +21,25 @@ scenario_service = ScenarioCatalogService()
 
 
 
-def item(sid: UUID) -> Simulation:
+def item(sid: UUID, simulation_repo: SQLSimulationRepository) -> Simulation:
     try:
-        return simulations.get(sid)
+        return simulation_repo.get(sid)
     except NotFoundError as exc:
         raise HTTPException(404, str(exc))
 
 
 @router.post("")
-def create(simulation: Simulation) -> Simulation:
-    return simulations.add(simulation)
+def create(
+    simulation: Simulation, simulation_repo: SQLSimulationRepository = Depends(get_simulation_repo)
+) -> Simulation:
+    return simulation_repo.add(simulation)
 
 
 @router.get("/{simulation_id}")
-def get_simulation(simulation_id: UUID) -> Simulation:
-    return item(simulation_id)
+def get_simulation(
+    simulation_id: UUID, simulation_repo: SQLSimulationRepository = Depends(get_simulation_repo)
+) -> Simulation:
+    return item(simulation_id, simulation_repo)
 
 
 @router.get("/{session_id}/context-snapshot", response_model=SimulationContextSnapshotReadModel)
@@ -59,22 +64,41 @@ def get_simulation_context_snapshot(session_id: str) -> SimulationContextSnapsho
 
 
 @router.post("/{simulation_id}/start")
-def start(simulation_id: UUID) -> Simulation:
-    return service.start_simulation(item(simulation_id))
+def start(
+    simulation_id: UUID, simulation_repo: SQLSimulationRepository = Depends(get_simulation_repo)
+) -> Simulation:
+    simulation = service.start_simulation(item(simulation_id, simulation_repo))
+    return simulation_repo.save(simulation)
 
 
 @router.post("/{simulation_id}/injects/{inject_id}/deliver")
-def deliver(simulation_id: UUID, inject_id: UUID, inject: Inject) -> Inject:
+def deliver(
+    simulation_id: UUID,
+    inject_id: UUID,
+    inject: Inject,
+    simulation_repo: SQLSimulationRepository = Depends(get_simulation_repo),
+) -> Inject:
     if inject.id != inject_id:
         raise HTTPException(400, "Inject id mismatch")
-    return service.deliver_inject(item(simulation_id), inject)
+    simulation = item(simulation_id, simulation_repo)
+    delivered = service.deliver_inject(simulation, inject)
+    simulation_repo.save(simulation)
+    return delivered
 
 
 @router.post("/{simulation_id}/decisions")
-def decision(simulation_id: UUID, decision: Decision) -> Simulation:
-    return service.record_decision(item(simulation_id), decision)
+def decision(
+    simulation_id: UUID,
+    decision: Decision,
+    simulation_repo: SQLSimulationRepository = Depends(get_simulation_repo),
+) -> Simulation:
+    simulation = service.record_decision(item(simulation_id, simulation_repo), decision)
+    return simulation_repo.save(simulation)
 
 
 @router.post("/{simulation_id}/complete")
-def complete(simulation_id: UUID) -> Simulation:
-    return service.complete_simulation(item(simulation_id))
+def complete(
+    simulation_id: UUID, simulation_repo: SQLSimulationRepository = Depends(get_simulation_repo)
+) -> Simulation:
+    simulation = service.complete_simulation(item(simulation_id, simulation_repo))
+    return simulation_repo.save(simulation)

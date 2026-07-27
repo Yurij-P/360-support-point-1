@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from tps360.api import dependencies
 from tps360.api.main import app
 from tps360.assessment.domain.profile import CommunityPreparednessProfile
 from tps360.assessment.services.profile_service import PreparednessProfileService
@@ -153,21 +152,18 @@ def test_public_profile_redaction():
 
 
 def test_api_endpoints():
-    # 1. Clean registries
-    dependencies.communities.items.clear()
-    dependencies.assessments.items.clear()
-    dependencies.preparedness_profiles.items.clear()
-    dependencies.risks_registry.clear()
-    dependencies.improvement_plans_registry.clear()
-
-    # 2. Add community
     community_id = uuid4()
     community = Community(
-        id=community_id, name="Test Community", code="TC1", oblast="Kyiv", population=100, area_km2=10
+        id=community_id,
+        name="Test Community",
+        code="TC1",
+        oblast="Kyiv",
+        population=100,
+        area_km2=10,
     )
-    dependencies.communities.add(community)
+    community_response = client.post("/communities", json=community.model_dump(mode="json"))
+    assert community_response.status_code == 200
 
-    # 3. Create active assessment
     assessment = PreparednessAssessment(
         community_id=community_id,
         assessment_date=date(2026, 7, 25),
@@ -176,9 +172,12 @@ def test_api_endpoints():
         assessor="Assessor A",
         confidence_level="MEDIUM",
     )
-    dependencies.assessments.add(assessment)
+    assessment_response = client.post(
+        f"/communities/{community_id}/assessments",
+        json=assessment.model_dump(mode="json"),
+    )
+    assert assessment_response.status_code == 200
 
-    # Call API to get profile (triggers dynamic generation)
     resp = client.get(f"/communities/{community_id}/preparedness-profile")
     assert resp.status_code == 200
     data = resp.json()

@@ -1,9 +1,11 @@
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from tps360.api.dependencies import get_directive_repo
 from tps360.core.exceptions import DomainRuleViolation
+from tps360.db.repositories import SQLDirectiveRepository
 from tps360.simulation.domain.task_directive import (
     DirectivePriority,
     DirectiveStatus,
@@ -11,8 +13,6 @@ from tps360.simulation.domain.task_directive import (
 )
 
 router = APIRouter(prefix="/directives", tags=["directives"])
-
-_DIRECTIVES_STORE: dict[str, TaskDirective] = {}
 
 
 class CreateDirectiveRequest(BaseModel):
@@ -70,7 +70,10 @@ def _to_response(directive: TaskDirective) -> DirectiveResponse:
 
 
 @router.post("", response_model=DirectiveResponse)
-def create_directive(req: CreateDirectiveRequest) -> DirectiveResponse:
+def create_directive(
+    req: CreateDirectiveRequest,
+    directive_repo: SQLDirectiveRepository = Depends(get_directive_repo),
+) -> DirectiveResponse:
     directive_id = str(uuid4())
     try:
         directive = TaskDirective(
@@ -88,25 +91,32 @@ def create_directive(req: CreateDirectiveRequest) -> DirectiveResponse:
     except DomainRuleViolation as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    _DIRECTIVES_STORE[directive_id] = directive
+    directive_repo.add(directive)
     return _to_response(directive)
 
 
 @router.get("/{directive_id}", response_model=DirectiveResponse)
-def get_directive(directive_id: str) -> DirectiveResponse:
-    directive = _DIRECTIVES_STORE.get(directive_id)
-    if directive is None:
-        raise HTTPException(status_code=404, detail="Directive not found.")
+def get_directive(
+    directive_id: str,
+    directive_repo: SQLDirectiveRepository = Depends(get_directive_repo),
+) -> DirectiveResponse:
+    try:
+        directive = directive_repo.get(directive_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail="Directive not found.") from exc
     return _to_response(directive)
 
 
 @router.post("/{directive_id}/transition", response_model=DirectiveResponse)
 def transition_directive(
-    directive_id: str, req: DirectiveTransitionRequest
+    directive_id: str,
+    req: DirectiveTransitionRequest,
+    directive_repo: SQLDirectiveRepository = Depends(get_directive_repo),
 ) -> DirectiveResponse:
-    directive = _DIRECTIVES_STORE.get(directive_id)
-    if directive is None:
-        raise HTTPException(status_code=404, detail="Directive not found.")
+    try:
+        directive = directive_repo.get(directive_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail="Directive not found.") from exc
 
     try:
         updated = directive.transition(
@@ -117,17 +127,19 @@ def transition_directive(
     except DomainRuleViolation as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    _DIRECTIVES_STORE[directive_id] = updated
+    directive_repo.save(updated)
     return _to_response(updated)
 
 
 @router.get("/session/{session_id}", response_model=list[DirectiveResponse])
 def list_session_directives(
-    session_id: str, role_id: str | None = None
+    session_id: str,
+    role_id: str | None = None,
+    directive_repo: SQLDirectiveRepository = Depends(get_directive_repo),
 ) -> list[DirectiveResponse]:
     matched = [
         directive
-        for directive in _DIRECTIVES_STORE.values()
+        for directive in directive_repo.list_by_session(session_id)
         if directive.session_id == session_id
         and (
             role_id is None
