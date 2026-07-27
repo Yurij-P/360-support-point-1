@@ -333,3 +333,87 @@ def test_optional_missing_dependency_allows_runtime_application() -> None:
     dependent = definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units"), dependencies=(ImpactDependency(ImpactDefinitionId(uuid4()), required=False),))
     item = engine.create(simulation, uuid4(), dependent, uuid4())
     assert engine.apply(simulation, item.id).status is ImpactStatus.APPLIED
+
+
+# B2 gap-closing tests
+
+
+def test_apply_optional_only_changes_all_failing_returns_applied_no_state_change() -> None:
+    from tps360.simulation.domain import ImpactEngine
+    optional = ImpactChange(target(), ImpactOperation.DECREASE, 2.0, "units", required=False)
+    simulation = _Simulation(SimulationState(SESSION, 3, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    item = engine.create(simulation, uuid4(), definition(optional), uuid4())
+    result = engine.apply(simulation, item.id)
+    assert result.status is ImpactStatus.APPLIED
+    assert result.applied_changes == ()
+    assert len(result.skipped_changes) == 1
+    assert result.state_version_before == result.state_version_after == 3
+    assert simulation.state.version == 3
+    assert all(type(e).__name__ != "SimulationStateChanged" for e in engine.audit_trail)
+
+
+def test_apply_required_failure_sets_failed_result_with_unchanged_versions() -> None:
+    from tps360.simulation.domain import ImpactEngine
+    failing = definition(ImpactChange(target(), ImpactOperation.DECREASE, 2.0, "units"))
+    simulation = _Simulation(SimulationState(SESSION, 7, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+    item = engine.create(simulation, uuid4(), failing, uuid4())
+    with pytest.raises(DomainRuleViolation):
+        engine.apply(simulation, item.id)
+    assert item.result is not None
+    assert item.result.status is ImpactStatus.FAILED
+    assert item.result.state_version_before == item.result.state_version_after == 7
+
+
+def test_applied_and_failed_events_carry_typed_source_and_target() -> None:
+    from tps360.simulation.domain import ImpactApplied, ImpactEngine
+    from tps360.simulation.domain.events import ImpactFailed as ImpactFailedEvent
+
+    simulation = _Simulation(SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),)))
+    engine = ImpactEngine(SESSION, SCENARIO)
+
+    success_item = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.INCREASE, 1.0, "units")), uuid4())
+    engine.apply(simulation, success_item.id)
+    applied_event = next(e for e in success_item.audit_trail if isinstance(e, ImpactApplied))
+    assert applied_event.source == source() and applied_event.target == target()
+
+    failing_item = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.DECREASE, 99.0, "units"), conflict_policy=ImpactConflictPolicy.SEQUENTIAL), uuid4())
+    with pytest.raises(DomainRuleViolation):
+        engine.apply(simulation, failing_item.id)
+    failed_event = next(e for e in failing_item.audit_trail if isinstance(e, ImpactFailedEvent))
+    assert failed_event.source == source() and failed_event.target == target()
+
+
+def test_apply_fails_if_resource_no_longer_in_context_at_apply_time() -> None:
+    from tps360.simulation.domain import ImpactEngine
+
+    class _SimulationWithEvictableResource:
+        def __init__(self) -> None:
+            self.id = SESSION
+            self.current_time = NOW
+            self._state = SimulationState(SESSION, 0, (StateValue(target().state_key, 1.0),))
+            self.resource_available = True
+
+        @property
+        def state(self) -> SimulationState:
+            return self._state
+
+        def replace_simulation_state(self, state: SimulationState) -> None:
+            self._state = state
+
+        @property
+        def context(self) -> object:
+            available = self.resource_available
+            return type("Context", (), {"includes_resource": lambda _, rid: available})()
+
+    simulation = _SimulationWithEvictableResource()
+    engine = ImpactEngine(SESSION, SCENARIO)
+    item = engine.create(simulation, uuid4(), definition(ImpactChange(target(), ImpactOperation.ADD, 1.0, "units")), uuid4())
+    simulation.resource_available = False
+    with pytest.raises(DomainRuleViolation, match="resource"):
+        engine.apply(simulation, item.id)
+    assert item.status is ImpactStatus.FAILED
+    assert simulation.state.version == 0
+    assert item.result is not None and item.result.state_version_before == item.result.state_version_after
+

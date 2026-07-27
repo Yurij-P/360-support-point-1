@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from math import isfinite
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 from uuid import UUID
 
 from tps360.core.exceptions import DomainRuleViolation
@@ -197,19 +197,21 @@ class ImpactEngine:
     def apply(self, simulation: Simulation, instance_id: UUID) -> ImpactResult:
         self._ensure(simulation); item = self._item(instance_id)
         if item.status is not ImpactStatus.READY: raise DomainRuleViolation("Only READY impacts can be applied.")
+        before = simulation.state
         if not self._dependencies_satisfied(item):
-            item.transition(ImpactStatus.FAILED); self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "dependencies", item.correlation_id, item.causation_id)); raise DomainRuleViolation("Required impact dependencies are not satisfied.")
-        if not all(simulation.state.get(c.target.state_key) == c.expected_value for c in item.definition.conditions):
-            item.transition(ImpactStatus.FAILED); self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "conditions", item.correlation_id, item.causation_id)); raise DomainRuleViolation("Impact conditions are not satisfied.")
+            self._fail_apply(item, simulation, before, "Required impact dependencies are not satisfied.")
+        if not all(before.get(c.target.state_key) == c.expected_value for c in item.definition.conditions):
+            self._fail_apply(item, simulation, before, "Impact conditions are not satisfied.")
+        for change in item.definition.changes:
+            if change.target.target_type.value == "resource" and change.target.target_id is not None and not simulation.context.includes_resource(change.target.target_id):
+                self._fail_apply(item, simulation, before, "Impact target resource is no longer available in simulation context.")
         conflicts = self._conflicts(item)
         if conflicts and not self._conflict_permitted(item, conflicts):
-            self._record_conflict(item, conflicts); item.transition(ImpactStatus.FAILED)
-            self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "conflict", item.correlation_id, item.causation_id))
-            raise DomainRuleViolation("Impact conflict policy does not permit application.")
-        before = simulation.state
+            self._record_conflict(item, conflicts)
+            self._fail_apply(item, simulation, before, "Impact conflict policy does not permit application.")
         try: applied, skipped, values = self._calculate(before, item.definition.changes)
         except DomainRuleViolation as error:
-            item.transition(ImpactStatus.FAILED); self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, str(error), item.correlation_id, item.causation_id)); raise
+            self._fail_apply(item, simulation, before, str(error))
         after = before if not applied else before.with_values(values)
         if after is not before: simulation.replace_simulation_state(after)
         result = ImpactResult(item.id, self.simulation_id, self.scenario_id, item.definition.source, ImpactStatus.APPLIED, applied, skipped, tuple(x.reason for x in skipped), simulation.current_time, before.version, after.version, item.correlation_id, item.causation_id)
@@ -219,6 +221,12 @@ class ImpactEngine:
         if item.definition.temporary:
             self._record(item, ImpactActivated(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, "activated", item.correlation_id, item.causation_id))
         return result
+
+    def _fail_apply(self, item: ImpactInstance, simulation: Simulation, before: SimulationState, reason: str) -> NoReturn:
+        item.transition(ImpactStatus.FAILED)
+        self._record(item, ImpactFailed(self.simulation_id, self.scenario_id, item.id, item.definition.version, simulation.current_time, reason, item.correlation_id, item.causation_id))
+        item.result = ImpactResult(item.id, self.simulation_id, self.scenario_id, item.definition.source, ImpactStatus.FAILED, (), (), (reason,), simulation.current_time, before.version, before.version, item.correlation_id, item.causation_id)
+        raise DomainRuleViolation(reason)
 
     def cancel(self, instance_id: ImpactInstanceId, occurred_at: datetime) -> None:
         item = self._item(instance_id); item.transition(ImpactStatus.CANCELLED); self._record(item, ImpactCancelled(self.simulation_id, self.scenario_id, item.id, item.definition.version, occurred_at, "cancelled", item.correlation_id, item.causation_id))
