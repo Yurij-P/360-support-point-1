@@ -5,11 +5,12 @@ from secrets import token_urlsafe
 from typing import Any, TypeVar
 from uuid import UUID
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from tps360.api.dependencies import sessions
+from tps360.api.dependencies import get_session_repo
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
+from tps360.db.repositories import SQLSessionRepository
 from tps360.simulation.domain.decision_payload import validate_decision_payload
 from tps360.simulation.domain.session import (
     FacilitatedSession,
@@ -23,6 +24,7 @@ from tps360.simulation.domain.session import (
 from tps360.simulation.services import (
     AARTelemetryService,
     AfterActionReviewReport,
+    AICrisisCopilotService,
     CrisisLifecycleProjectionVariant,
     FacilitatorConsoleReadModel,
     FacilitatorConsoleService,
@@ -100,6 +102,13 @@ class SubmitDecisionRequest(BaseModel):
     decision_payload: dict[str, Any]
 
 
+class AIResourceEstimateResponse(BaseModel):
+    session_id: str
+    action_type: str
+    hazard_radius_km: float
+    ai_recommended_resources: dict[str, Decimal]
+
+
 class SessionResponse(BaseModel):
     id: UUID
     community_id: UUID
@@ -122,9 +131,9 @@ class CreateSessionResponse(SessionResponse):
     join_token: str
 
 
-def item(session_id: UUID) -> FacilitatedSession:
+def item(session_id: UUID, session_repo: SQLSessionRepository) -> FacilitatedSession:
     try:
-        return sessions.get(session_id)
+        return session_repo.get(session_id)
     except NotFoundError as exc:
         raise HTTPException(404, str(exc)) from exc
 
@@ -139,10 +148,13 @@ def domain_action(action: Callable[[], T]) -> T:
 
 
 @router.post("")
-def create(request: CreateSessionRequest) -> CreateSessionResponse:
+def create(
+    request: CreateSessionRequest,
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> CreateSessionResponse:
     facilitator_token = token_urlsafe(32)
     join_token = token_urlsafe(32)
-    session = sessions.add(
+    session = session_repo.add(
         FacilitatedSession(
             **request.model_dump(),
             facilitator_token_digest=FacilitatedSession.digest_facilitator_token(
@@ -313,6 +325,23 @@ def transfer_resources_oms(
         raise HTTPException(409, str(exc))
 
 
+@router.get("/{session_id}/ai-resource-estimate", response_model=AIResourceEstimateResponse)
+def get_ai_resource_estimate(
+    session_id: str,
+    action_type: str = Query(..., min_length=1),
+    hazard_radius_km: float = Query(default=1.0, ge=0.0),
+) -> AIResourceEstimateResponse:
+    return AIResourceEstimateResponse(
+        session_id=session_id,
+        action_type=action_type.strip().upper(),
+        hazard_radius_km=hazard_radius_km,
+        ai_recommended_resources=AICrisisCopilotService.calculate_ai_recommended_resources(
+            action_type=action_type,
+            hazard_radius_km=hazard_radius_km,
+        ),
+    )
+
+
 class ParticipantInjectResponse(BaseModel):
     id: UUID
     title: str
@@ -341,20 +370,26 @@ class ParticipantJoinResponse(ParticipantViewResponse):
 def get_session(
     session_id: UUID,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> SessionResponse:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     authorize_facilitator(session, facilitator_token)
     return SessionResponse.from_domain(session)
 
 
 @router.post("/{session_id}/participants/join")
-def join_participant(session_id: UUID, request: JoinSessionRequest) -> ParticipantJoinResponse:
-    session = item(session_id)
+def join_participant(
+    session_id: UUID,
+    request: JoinSessionRequest,
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> ParticipantJoinResponse:
+    session = item(session_id, session_repo)
     participant, participant_token = domain_action(
         lambda: session.join_participant(
             request.display_name, request.join_token, request.participant_token
         )
     )
+    session_repo.save(session)
     return ParticipantJoinResponse(
         participant_id=participant.id,
         display_name=participant.display_name,
@@ -371,17 +406,24 @@ def join_participant(session_id: UUID, request: JoinSessionRequest) -> Participa
 
 
 @router.post("/{session_id}/participants")
-def join(session_id: UUID, request: JoinSessionRequest) -> Participant:
-    session = item(session_id)
-    return domain_action(lambda: session.join(request.display_name))
+def join(
+    session_id: UUID,
+    request: JoinSessionRequest,
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> Participant:
+    session = item(session_id, session_repo)
+    participant = domain_action(lambda: session.join(request.display_name))
+    session_repo.save(session)
+    return participant
 
 
 @router.get("/{session_id}/participant")
 def get_participant(
     session_id: UUID,
     participant_token: str | None = Header(None, alias="X-Participant-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> ParticipantViewResponse:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     participant = authorize_participant(session, participant_token)
     return ParticipantViewResponse(
         participant_id=participant.id,
@@ -403,20 +445,25 @@ def assign_role(
     participant_id: UUID,
     request: AssignRoleRequest,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> Participant:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     authorize_facilitator(session, facilitator_token)
-    return domain_action(lambda: session.assign_role(participant_id, request.role_id))
+    participant = domain_action(lambda: session.assign_role(participant_id, request.role_id))
+    session_repo.save(session)
+    return participant
 
 
 @router.post("/{session_id}/start")
 def start(
     session_id: UUID,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> SessionResponse:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     authorize_facilitator(session, facilitator_token)
     domain_action(session.start)
+    session_repo.save(session)
     return SessionResponse.from_domain(session)
 
 
@@ -425,16 +472,19 @@ def send_inject(
     session_id: UUID,
     request: SendInjectRequest,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> SessionInject:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     authorize_facilitator(session, facilitator_token)
-    return domain_action(
+    inject = domain_action(
         lambda: session.send_inject(
             request.title,
             request.description,
             request.payload,
         )
     )
+    session_repo.save(session)
+    return inject
 
 
 @router.post("/{session_id}/injects/{inject_id}/decisions")
@@ -443,8 +493,9 @@ def submit_decision(
     inject_id: UUID,
     request: SubmitDecisionRequest,
     participant_token: str | None = Header(None, alias="X-Participant-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> ParticipantDecision:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     participant = authorize_participant(session, participant_token)
     if request.participant_id is not None and request.participant_id != participant.id:
         raise HTTPException(403, "Participant token does not match participant_id")
@@ -455,23 +506,27 @@ def submit_decision(
         decision_payload = validate_decision_payload(request.decision_payload)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
-    return domain_action(
+    decision = domain_action(
         lambda: session.submit_decision(
             inject_id,
             participant.id,
             decision_payload,
         )
     )
+    session_repo.save(session)
+    return decision
 
 
 @router.post("/{session_id}/complete")
 def complete(
     session_id: UUID,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> SessionResponse:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     authorize_facilitator(session, facilitator_token)
     domain_action(session.complete)
+    session_repo.save(session)
     return SessionResponse.from_domain(session)
 
 
@@ -479,8 +534,9 @@ def complete(
 def get_journal(
     session_id: UUID,
     facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> list[SessionJournalEntry]:
-    session = item(session_id)
+    session = item(session_id, session_repo)
     authorize_facilitator(session, facilitator_token)
     return session.journal
 
@@ -559,4 +615,3 @@ def get_participant_experience(participant_id: str) -> ParticipantExperienceReco
             participant_id=participant_id, community_id="verkhovyna"
         )
     return rec
-

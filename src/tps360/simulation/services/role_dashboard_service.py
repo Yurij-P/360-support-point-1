@@ -21,6 +21,7 @@ ROLE_INITIAL_RESOURCES: dict[str, dict[str, Decimal]] = {
         "medical_personnel": Decimal("30"),
         "medical_kits": Decimal("500"),
         "generators": Decimal("4"),
+        "backup_generators": Decimal("4"),
         "fuel_liters": Decimal("2000"),
     },
     "chief_sanitary_inspector": {

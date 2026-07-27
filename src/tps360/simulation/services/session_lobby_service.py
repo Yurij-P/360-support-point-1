@@ -78,9 +78,9 @@ class SessionLobbyService:
             self.create_room(session_id=session_id, capacity=10)
 
         room = self._rooms[session_id]
-        participants: list[LobbyParticipantStatus] = room["participants"]  # type: ignore
+        participants: list[LobbyParticipantStatus] = room["participants"]
 
-        if len(participants) >= int(room["capacity"]):  # type: ignore
+        if len(participants) >= int(room["capacity"]):
             raise DomainRuleViolation(f"Lobby room for session '{session_id}' has reached maximum capacity ({room['capacity']}).")
 
         participant = LobbyParticipantStatus(
@@ -100,7 +100,7 @@ class SessionLobbyService:
             raise EntityNotFound(f"Lobby room for session '{session_id}' not found.")
 
         room = self._rooms[session_id]
-        participants: list[LobbyParticipantStatus] = room["participants"]  # type: ignore
+        participants: list[LobbyParticipantStatus] = room["participants"]
 
         target_index = -1
         for idx, p in enumerate(participants):
@@ -132,8 +132,8 @@ class SessionLobbyService:
             raise EntityNotFound(f"Lobby room for session '{session_id}' not found.")
 
         room = self._rooms[session_id]
-        participants: list[LobbyParticipantStatus] = room["participants"]  # type: ignore
-        capacity = int(room["capacity"])  # type: ignore
+        participants: list[LobbyParticipantStatus] = room["participants"]
+        capacity = int(room["capacity"])
 
         assigned_count = sum(1 for p in participants if p.is_assigned)
         connected_count = len(participants)
