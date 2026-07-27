@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="uk" data-theme="light">
+<html lang="uk" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TPS360 — Точка Підтримки 360 | Платформа Симуляційних Навчань</title>
-  <meta name="description" content="Платформа симуляційного моделювання кризових подій та стійкості територіальних громад.">
+  <title>TPS360 — Точка Підтримки 360 | Платформа Симуляційних Навчань Громад</title>
+  <meta name="description" content="Платформа симуляційного моделювання кризових подій та стійкості територіальних громад. РОЗРОБЛЕНО ГО «ПРОТИ КОРУПЦІЇ».">
   
   <!-- Fonts & Leaflet GIS CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,48 +21,56 @@
     <!-- Top Navigation Header -->
     <header class="app-header">
       <div class="logo-group">
-        <span class="logo-title">TPS360</span>
-        <span class="logo-subtitle">Точка підтримки 360</span>
-        <span class="version-badge">v0.2.8</span>
+        <div class="logo-badge">360</div>
+        <div>
+          <div class="logo-title">TPS360 DIGITAL RESILIENCE</div>
+          <div class="logo-subtitle">Точка Підтримки 360 · ГО «Проти Корупції»</div>
+        </div>
       </div>
 
       <nav class="main-nav" aria-label="Головне меню">
-        <button type="button" class="nav-btn active" data-screen="catalog">Громади</button>
-        <button type="button" class="nav-btn" data-screen="scenarios">Сценарії</button>
-        <button type="button" class="nav-btn" data-screen="facilitator">Пульт Фасилітатора</button>
-        <button type="button" class="nav-btn" data-screen="workspace">Кабінет Гравця</button>
-        <button type="button" class="nav-btn" data-screen="aar">AAR Дебрифінг</button>
+        <button type="button" class="nav-btn active" id="navCatalogBtn" data-screen="catalog">🏛️ Громади & OSM</button>
+        <button type="button" class="nav-btn" id="navScenariosBtn" data-screen="scenarios">⚠️ Сценарії НС</button>
+        <button type="button" class="nav-btn" id="navWorkspaceBtn" data-screen="workspace">🎯 Кабінет Гравця</button>
+        <button type="button" class="nav-btn" id="navFacilitatorBtn" data-screen="facilitator">🕹️ Пульт Фасилітатора</button>
+        <button type="button" class="nav-btn" id="navAarBtn" data-screen="aar">📊 AAR Дебрифінг</button>
       </nav>
 
       <div class="header-actions">
-        <button type="button" id="themeToggleBtn" class="action-icon-btn" title="Переключити тему">
-          <span class="theme-icon">🌙</span>
+        <button type="button" id="themeToggleBtn" class="theme-btn" title="Змінити тему">
+          <span id="themeIcon">🌙</span> <span id="themeText">Dark</span>
         </button>
         <div class="connection-status online">
           <span class="status-dot"></span>
-          <span class="status-text">Онлайн</span>
+          <span>LIVE SESSION</span>
         </div>
       </div>
     </header>
 
     <!-- Sub-header Context Bar -->
     <div class="context-bar">
-      <span class="context-label">ПОТОЧНИЙ КОНТЕКСТ:</span>
-      <div id="activeContextChips" class="context-chips">
-        <span class="chip chip-community">Громада: Верховинська селищна</span>
-        <span class="chip chip-threat">Загроза: Зсув ґрунту внаслідок злив</span>
-        <span class="chip chip-session">Сесія: ACTIVE (#sess_demo_99)</span>
+      <div class="context-item">
+        <span class="context-label">АКТИВНА ГРОМАДА:</span>
+        <span class="context-val" id="activeCommunityName">Верховинська селищна ТГ</span>
+      </div>
+      <div class="context-item">
+        <span class="context-label">СЦЕНАРІЙ:</span>
+        <span class="context-val" id="activeScenarioTitle">scen_landslide_v1 (Зсув ґрунту)</span>
+      </div>
+      <div class="context-item">
+        <span class="context-label">СТАТУС:</span>
+        <span class="chip chip-active" id="activeSessionStatus">ACTIVE · Раунд 1 (2.5 год)</span>
       </div>
     </div>
 
-    <!-- Main Content Dynamic Container -->
+    <!-- Main Dynamic Viewport -->
     <main id="mainContent" class="main-viewport">
-      <!-- Screens rendered dynamically by app.js -->
+      <!-- Dynamic Screen Content Loaded Here -->
     </main>
 
     <!-- Footer Status Bar -->
     <footer class="app-footer">
-      <span class="footer-text">TPS360 Digital Resilience Simulation Engine · Розроблено ГО «Проти Корупції»</span>
+      <span class="footer-text">TPS360 Digital Resilience Simulation Engine · <strong>Розроблено ГО «Проти Корупції»</strong></span>
       <span class="footer-status" id="footerClock">Дилатація часу: 1:30 | Такт раунду: 2.5 години</span>
     </footer>
   </div>

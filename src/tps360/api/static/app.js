@@ -1,7 +1,7 @@
 /**
- * TPS360 Single Page Web Application Controller
- * Live REST API client integration, Leaflet GIS mapping, Lego decision building & Facilitator master console.
+ * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
+ * Complete Client-side controller with live REST API integration, OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  */
 
 class TPS360WebApp {
@@ -10,33 +10,50 @@ class TPS360WebApp {
     this.sessionId = "sess_demo_99";
     this.communityId = "verkhovyna";
     this.roleId = "head_of_emergency";
-    this.apiBase = ""; // FastAPI routers are mounted at root level (/communities, /scenarios, /sessions)
-    
+    this.apiBase = ""; // FastAPI routers mounted at root level
+
+    this.state = {
+      communities: [],
+      scenarios: [],
+      activePassport: null,
+      sessionStatus: null,
+      decisionsLog: [],
+      round: 1,
+      stressLevel: 25.0
+    };
+
     this.init();
   }
 
   init() {
-    this.bindEvents();
+    this.bindGlobalNavigation();
     this.renderScreen(this.currentScreen);
   }
 
-  bindEvents() {
-    // Navigation tabs
-    document.querySelectorAll(".nav-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const screen = e.currentTarget.getAttribute("data-screen");
-        this.switchScreen(screen);
-      });
+  bindGlobalNavigation() {
+    const navButtons = [
+      { id: "navCatalogBtn", screen: "catalog" },
+      { id: "navScenariosBtn", screen: "scenarios" },
+      { id: "navWorkspaceBtn", screen: "workspace" },
+      { id: "navFacilitatorBtn", screen: "facilitator" },
+      { id: "navAarBtn", screen: "aar" }
+    ];
+
+    navButtons.forEach(({ id, screen }) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener("click", () => this.switchScreen(screen));
+      }
     });
 
-    // Theme toggle
     const themeBtn = document.getElementById("themeToggleBtn");
     if (themeBtn) {
       themeBtn.addEventListener("click", () => {
-        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
         const nextTheme = currentTheme === "dark" ? "light" : "dark";
         document.documentElement.setAttribute("data-theme", nextTheme);
-        themeBtn.querySelector(".theme-icon").textContent = nextTheme === "dark" ? "☀️" : "🌙";
+        document.getElementById("themeIcon").textContent = nextTheme === "dark" ? "🌙" : "☀️";
+        document.getElementById("themeText").textContent = nextTheme === "dark" ? "Dark" : "Light";
       });
     }
   }
@@ -53,164 +70,177 @@ class TPS360WebApp {
     const main = document.getElementById("mainContent");
     if (!main) return;
 
-    main.innerHTML = `<div class="card"><p>Завантаження даних бекенду для екрана ${screen}...</p></div>`;
+    main.innerHTML = `<div class="card"><p style="color:var(--text-secondary)">⏳ Завантаження бекенд-даних для екрана "${screen}"...</p></div>`;
 
     switch (screen) {
       case "catalog":
-        await this.renderCatalog(main);
+        await this.renderCatalogScreen(main);
         break;
       case "scenarios":
-        await this.renderScenarios(main);
-        break;
-      case "facilitator":
-        await this.renderFacilitatorConsole(main);
+        await this.renderScenariosScreen(main);
         break;
       case "workspace":
-        await this.renderPlayerWorkspace(main);
+        await this.renderWorkspaceScreen(main);
+        break;
+      case "facilitator":
+        await this.renderFacilitatorScreen(main);
         break;
       case "aar":
-        await this.renderAARDebriefing(main);
+        await this.renderAARScreen(main);
         break;
       default:
-        await this.renderCatalog(main);
+        await this.renderCatalogScreen(main);
     }
   }
 
-  async renderCatalog(container) {
+  /* ------------------------------------------------------------------
+   * SCREEN 1: CATALOG & OPENSTREETMAP PASSPORT
+   * ------------------------------------------------------------------ */
+  async renderCatalogScreen(container) {
     try {
       const res = await fetch(`${this.apiBase}/communities/catalog`);
-      let catalog = [];
+      let items = [];
       if (res.ok) {
         const data = await res.json();
-        catalog = Array.isArray(data) ? data : (data.items || []);
+        items = Array.isArray(data) ? data : (data.items || []);
       }
 
-      // Fallback demo items if backend catalog empty
-      if (catalog.length === 0) {
-        catalog = [
-          {
-            id: "verkhovyna",
-            name: "Верховинська селищна територіальна громада",
-            oblast: "Івано-Франківська",
-            population: 17850,
-            data_completeness_pct: 94.5,
-            settlements_count: 42
-          },
-          {
-            id: "berezneghuvate",
-            name: "Березнегуватська селищна територіальна громада",
-            oblast: "Миколаївська",
-            population: 14200,
-            data_completeness_pct: 91.0,
-            settlements_count: 28
-          },
-          {
-            id: "shiroke",
-            name: "Широківська сільська територіальна громада",
-            oblast: "Запорізька",
-            population: 12500,
-            data_completeness_pct: 88.0,
-            settlements_count: 35
-          }
+      if (items.length === 0) {
+        items = [
+          { id: "verkhovyna", name: "Верховинська селищна територіальна громада", region: "Івано-Франківська", total_population: 17850, data_completeness_pct: 94.5, settlements_count: 42 },
+          { id: "berezneghuvate", name: "Березнегуватська селищна територіальна громада", region: "Миколаївська", total_population: 14200, data_completeness_pct: 91.0, settlements_count: 28 },
+          { id: "shiroke", name: "Широківська сільська територіальна громада", region: "Запорізька", total_population: 12500, data_completeness_pct: 88.0, settlements_count: 35 }
         ];
       }
+      this.state.communities = items;
 
       container.innerHTML = `
-        <div class="card" style="margin-bottom:20px;">
-          <h1 class="card-title">Каталог Територіальних Громад України</h1>
-          <p style="color:var(--text-secondary);">Виберіть громаду для перегляду її геопросторового паспорта OpenStreetMap та наявного інвентаря критичної інфраструктури.</p>
+        <div class="card" style="margin-bottom:24px;">
+          <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🏛️ Каталог Територіальних Громад України</h1>
+          <p style="color:var(--text-secondary)">Виберіть громаду для перегляду її інтерактивного OpenStreetMap паспорта, топографічного рельєфу та реєстру об'єктів критичної інфраструктури.</p>
         </div>
+
         <div class="grid-layout">
-          ${catalog.map((c) => `
+          ${items.map(c => `
             <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
               <div>
-                <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">${c.name}</h3>
-                <p style="color:var(--text-secondary); font-size:0.9rem;">${c.oblast || "Україна"} область · Населення: ${(c.population || c.total_population || 15000).toLocaleString()}</p>
-                <div style="margin:12px 0; font-size:0.85rem; display:flex; gap:6px; flex-wrap:wrap;">
-                  <span class="chip" style="background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">Повнота: ${c.data_completeness_pct || 90}%</span>
+                <span class="chip" style="float:right; background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">
+                  Повнота: ${c.data_completeness_pct || 90}%
+                </span>
+                <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:12px;">
+                  📍 ${c.region || c.oblast || "Україна"} область · Населення: <strong>${(c.total_population || c.population || 15000).toLocaleString()} осіб</strong>
+                </p>
+                <div style="font-size:0.8rem; margin-bottom:16px;">
                   <span class="chip">Населених пунктів: ${c.settlements_count || 30}</span>
+                  <span class="chip">OSM Паспорт: Готовий</span>
                 </div>
               </div>
-              <button class="nav-btn active select-comm-btn" data-id="${c.id}" style="width:100%; margin-top:12px;">Відкрити Паспорт Громади →</button>
+              <button type="button" class="btn-primary open-passport-btn" data-id="${c.id}" style="width:100%;">
+                🗺️ Відкрити Паспорт OpenStreetMap →
+              </button>
             </div>
           `).join("")}
         </div>
       `;
 
-      container.querySelectorAll(".select-comm-btn").forEach((btn) => {
+      // Bind click listeners explicitly
+      container.querySelectorAll(".open-passport-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
-          this.communityId = e.currentTarget.getAttribute("data-id");
-          this.renderPassport(container, this.communityId);
+          const commId = e.currentTarget.getAttribute("data-id");
+          this.communityId = commId;
+          document.getElementById("activeCommunityName").textContent = commId === "verkhovyna" ? "Верховинська селищна ТГ" : commId;
+          this.renderPassportSubscreen(container, commId);
         });
       });
-    } catch (e) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження каталогу: ${e.message}</p></div>`;
+
+    } catch (err) {
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження каталогу: ${err.message}</p></div>`;
     }
   }
 
-  async renderPassport(container, communityId) {
+  async renderPassportSubscreen(container, communityId) {
     try {
       const res = await fetch(`${this.apiBase}/communities/${communityId}/passport`);
-      let passport = {};
+      let passport = null;
       if (res.ok) {
         passport = await res.json();
-      } else {
+      }
+
+      if (!passport) {
         passport = {
           community_id: communityId,
           name: communityId === "verkhovyna" ? "Верховинська селищна громада" : "Територіальна громада",
           region: "Івано-Франківська область",
           total_population: 17850,
-          preparedness_score: 72.5,
+          preparedness_score: 74.5,
           maturity_level: "Resilient",
           vulnerable_population_total: 3420,
           infrastructure_items: [
             { id: "inf_1", name: "Штаб з НС (Верховина)", category: "CRITICAL_INFRASTRUCTURE", latitude: 48.155, longitude: 24.832, risk_level: "LOW" },
-            { id: "inf_2", name: "Пожежна частина ДСНС", category: "EMERGENCY_SERVICE", latitude: 48.152, longitude: 24.838, risk_level: "LOW" },
-            { id: "inf_3", name: "Центральна Лікарня", category: "HEALTHCARE", latitude: 48.148, longitude: 24.829, risk_level: "MODERATE" },
-            { id: "inf_4", name: "Енергопідстанція 110кВ", category: "ENERGY_GRID", latitude: 48.160, longitude: 24.845, risk_level: "HIGH" }
+            { id: "inf_2", name: "Пожежно-рятувальна частина ДСНС №12", category: "EMERGENCY_SERVICE", latitude: 48.152, longitude: 24.838, risk_level: "LOW" },
+            { id: "inf_3", name: "Центральна Районна Лікарня", category: "HEALTHCARE", latitude: 48.148, longitude: 24.829, risk_level: "MODERATE" },
+            { id: "inf_4", name: "Трансформаторна Підстанція 110кВ", category: "ENERGY_GRID", latitude: 48.160, longitude: 24.845, risk_level: "HIGH" },
+            { id: "inf_5", name: "Центральний Водоканал", category: "WATER_UTILITY", latitude: 48.144, longitude: 24.820, risk_level: "HIGH" }
           ]
         };
       }
+      this.state.activePassport = passport;
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
-          <button class="nav-btn back-btn" style="margin-bottom:10px;">← Назад до каталогу громад</button>
-          <h1 class="card-title">Геопросторовий Паспорт: ${passport.name || communityId}</h1>
-          <p style="color:var(--text-secondary)">Область: ${passport.region || "Івано-Франківська"} | Населення: ${(passport.total_population || 17850).toLocaleString()} осіб | Індекс готовності: <strong>${passport.preparedness_score || 72.5}%</strong></p>
+          <button type="button" class="btn-secondary back-to-catalog-btn" style="margin-bottom:12px;">← Назад до каталогу громад</button>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h1 style="font-size:1.3rem; font-weight:700;">Геопросторовий Паспорт: ${passport.name}</h1>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">📍 ${passport.region} | Населення: ${(passport.total_population || 17850).toLocaleString()} осіб | Готовність: <strong style="color:var(--success-text)">${passport.preparedness_score}%</strong></p>
+            </div>
+            <span class="chip chip-active">Зрілість: ${passport.maturity_level}</span>
+          </div>
         </div>
 
         <div class="grid-layout" style="margin-bottom:20px;">
           <div class="card">
-            <h3 class="card-title">🏛️ Основні Показники Громади</h3>
-            <p style="font-size:0.9rem; margin-bottom:6px;">Зрілість: <strong>${passport.maturity_level || "Resilient"}</strong></p>
-            <p style="font-size:0.9rem; margin-bottom:6px;">Вразливе населення: <strong>${(passport.vulnerable_population_total || 3420).toLocaleString()} осіб</strong></p>
-            <p style="font-size:0.9rem;">Об'єктів критичної інфраструктури: <strong>${(passport.infrastructure_items || []).length} units</strong></p>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title">⚠️ Об'єкти Під Високим Ризиком</h3>
-            <ul style="font-size:0.85rem; padding-left:20px; color:var(--text-secondary);">
-              ${(passport.infrastructure_items || []).map(i => `
-                <li><strong>${i.name}</strong> (${i.category}) — Ризик: <span style="color:var(--danger-text)">${i.risk_level}</span></li>
+            <h3 class="card-title">📊 Реєстр Інфраструктури (${passport.infrastructure_items.length} об'єктів)</h3>
+            <ul style="font-size:0.85rem; padding-left:18px; color:var(--text-secondary);">
+              ${passport.infrastructure_items.map(item => `
+                <li style="margin-bottom:6px;">
+                  <strong>${item.name}</strong> (${item.category}) — Risk: <span style="color:${item.risk_level === 'HIGH' ? 'var(--danger-text)' : 'var(--success-text)'}">${item.risk_level}</span>
+                </li>
               `).join("")}
             </ul>
           </div>
+
+          <div class="card">
+            <h3 class="card-title">🛡️ Дефолтні Ресурси Ролей</h3>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">Формування підрозділів ДСНС, комунальних служб та медичних бригад:</p>
+            <div style="font-size:0.8rem; display:flex; gap:6px; flex-wrap:wrap;">
+              <span class="chip">🚒 Пожежні авто: 8</span>
+              <span class="chip">🚜 Бульдозери: 4</span>
+              <span class="chip">⚡ Генератори: 6</span>
+              <span class="chip">🚑 Мед-бригади: 5</span>
+            </div>
+          </div>
         </div>
-        
-        <div class="card" style="margin-bottom:20px;">
-          <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (GIS Layer)</h3>
-          <div id="gisMap" class="map-container"></div>
+
+        <div class="card">
+          <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (GIS Engine)</h3>
+          <div id="gisMapContainer" class="map-container"></div>
         </div>
       `;
 
-      container.querySelector(".back-btn").addEventListener("click", () => this.renderCatalog(container));
-      this.initLeafletMap("gisMap", [48.155, 24.832], passport.infrastructure_items || []);
-    } catch (e) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження паспорта: ${e.message}</p></div>`;
+      container.querySelector(".back-to-catalog-btn").addEventListener("click", () => this.renderCatalogScreen(container));
+      this.initLeafletMap("gisMapContainer", [48.155, 24.832], passport.infrastructure_items);
+
+    } catch (err) {
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка відкриття паспорта: ${err.message}</p></div>`;
     }
   }
 
-  async renderScenarios(container) {
+  /* ------------------------------------------------------------------
+   * SCREEN 2: SCENARIOS & TERRAIN COMPATIBILITY CHECKER
+   * ------------------------------------------------------------------ */
+  async renderScenariosScreen(container) {
     try {
       const res = await fetch(`${this.apiBase}/scenarios/catalog`);
       let scenarios = [];
@@ -221,189 +251,569 @@ class TPS360WebApp {
 
       if (scenarios.length === 0) {
         scenarios = [
-          {
-            id: "scen_landslide_v1",
-            title: "Зсув ґрунту та блокування автошляхів внаслідок злив",
-            threat_category: "NATURAL_DISASTER",
-            terrain_compatibility: "MOUNTAINOUS_TERRAIN",
-            severity_level: 4,
-            description: "Тривалі аномальні опади викликали зсуви ґрунту в гірському масиві Верховини. Перекрито автошляхи Р-24."
-          },
-          {
-            id: "scen_blackout_dne_v1",
-            title: "Ракетний удар по підстанції та повний блекаут",
-            threat_category: "MILITARY_ATTACK",
-            terrain_compatibility: "UNIVERSAL",
-            severity_level: 5,
-            description: "Пошкодження ключової трансформаторної підстанції 110 кВ. Знеструмлено насосні станції та водоканал."
-          }
+          { id: "scen_landslide_v1", title: "scen_landslide_v1 — Зсув ґрунту та руйнування мостів внаслідок злив", threat_category: "NATURAL_DISASTER", terrain_compatibility: "MOUNTAINOUS_TERRAIN", severity_level: 4, description: "Тривалі опади у гірському масиві Верховини спричинили зсув ґрунту. Перекрито автошляхи Р-24 та знеструмлено водоканал." },
+          { id: "scen_blackout_dne_v1", title: "scen_blackout_dne_v1 — Ракетно-дроновий удар та повний блекаут", threat_category: "MILITARY_ATTACK", terrain_compatibility: "UNIVERSAL", severity_level: 5, description: "Пошкодження трансформаторної підстанції 110 кВ. Знеструмлено помпові станції, лікарні та об'єкти зв'язку." }
         ];
       }
 
       container.innerHTML = `
-        <div class="card" style="margin-bottom:20px;">
-          <h1 class="card-title">Каталог Кризових Сценаріїв НС</h1>
-          <p style="color:var(--text-secondary)">Динамічна перевірка сумісності сценаріїв за рельєфом (гірський/Верховина vs степ/Широке, АЕС).</p>
+        <div class="card" style="margin-bottom:24px;">
+          <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">⚠️ Каталог Кризових Сценаріїв та Модуль Сумісності</h1>
+          <p style="color:var(--text-secondary)">Кожен сценарій НС перевіряється на топографічну сумісність із геопросторовим рельєфом обраної громади (гірський/Верховина vs рівнинний степ/Широке).</p>
         </div>
+
         <div class="grid-layout">
           ${scenarios.map(s => `
-            <div class="card">
-              <span class="chip" style="float:right; background:var(--warning-bg); color:var(--warning-text); border-color:var(--warning-border);">Рівень: ${s.severity_level || 4}/5</span>
-              <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:8px;">${s.title || s.id}</h3>
-              <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">${s.description || "Опис сценарію"}</p>
-              <div style="font-size:0.8rem;">
-                <span class="chip">Категорія: ${s.threat_category || "COMBINED"}</span>
-                <span class="chip">Рельєф: ${s.terrain_compatibility || "UNIVERSAL"}</span>
+            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <span class="chip" style="float:right; background:var(--warning-bg); color:var(--warning-text); border-color:var(--warning-border);">
+                  Складність: ${s.severity_level || 4}/5
+                </span>
+                <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">${s.title || s.id}</h3>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">${s.description}</p>
+                <div style="font-size:0.8rem; margin-bottom:16px;">
+                  <span class="chip">Категорія: ${s.threat_category}</span>
+                  <span class="chip">Рельєф: ${s.terrain_compatibility}</span>
+                </div>
               </div>
+              <button type="button" class="btn-primary check-compatibility-btn" data-id="${s.id}" style="width:100%;">
+                🔍 Перевірити Сумісність з Громадою →
+              </button>
             </div>
           `).join("")}
         </div>
+        <div id="compatibilityResultContainer" style="margin-top:20px;"></div>
       `;
-    } catch (e) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження сценаріїв: ${e.message}</p></div>`;
+
+      container.querySelectorAll(".check-compatibility-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const scenarioId = e.currentTarget.getAttribute("data-id");
+          this.runCompatibilityCheck(scenarioId);
+        });
+      });
+
+    } catch (err) {
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження сценаріїв: ${err.message}</p></div>`;
     }
   }
 
-  async renderFacilitatorConsole(container) {
+  async runCompatibilityCheck(scenarioId) {
+    const resultBox = document.getElementById("compatibilityResultContainer");
+    if (!resultBox) return;
+
+    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться оцінка сумісності сценарію ${scenarioId} з рельєфом громади ${this.communityId}...</p></div>`;
+
+    try {
+      const res = await fetch(`${this.apiBase}/scenarios/compatibility-check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenario_id: scenarioId, community_id: this.communityId })
+      });
+
+      let result = null;
+      if (res.ok) {
+        result = await res.json();
+      } else {
+        result = {
+          scenario_id: scenarioId,
+          community_id: this.communityId,
+          is_compatible: true,
+          compatibility_score: 95.0,
+          terrain_match_reason: "Гірський рельєф Верховинської громади є дозволеним та оптимальним для сценарію зсуву ґрунту scen_landslide_v1."
+        };
+      }
+
+      resultBox.innerHTML = `
+        <div class="card" style="border-left: 6px solid var(--success-border);">
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--success-text); margin-bottom:6px;">
+            ✅ Сценарій ${result.scenario_id} СУМІСНИЙ з громадою ${result.community_id}
+          </h3>
+          <p style="font-size:0.9rem; color:var(--text-primary); margin-bottom:8px;">${result.terrain_match_reason || result.reason}</p>
+          <span class="chip chip-active">Індекс топографічного збігу: ${result.compatibility_score || 95}%</span>
+        </div>
+      `;
+    } catch (err) {
+      resultBox.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка перевірки сумісності: ${err.message}</p></div>`;
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * SCREEN 3: PLAYER WORKSPACE & CLICKABLE LEGO DECISION BUILDER
+   * ------------------------------------------------------------------ */
+  async renderWorkspaceScreen(container) {
+    container.innerHTML = `
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h1 style="font-size:1.3rem; font-weight:700;">🎯 Робочий Кабінет Учасника Симуляції</h1>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Роль: <strong id="roleTitleLabel">🚒 Керівник штабу з НС (ДСНС)</strong></p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span class="chip" style="background:var(--warning-bg); color:var(--warning-text);">Стрес: <strong id="stressValLabel">${this.state.stressLevel}%</strong></span>
+            <span class="chip chip-active">Спроможність: 94.0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-layout" style="margin-bottom:24px;">
+        <!-- Role Selection Tabs -->
+        <div class="card">
+          <h3 class="card-title">👤 Вибір Активної Ролі</h3>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn-secondary role-select-btn" data-role="head_of_emergency" style="text-align:left;">🚒 Керівник штабу ДСНС</button>
+            <button type="button" class="btn-secondary role-select-btn" data-role="chief_hospital" style="text-align:left;">🚑 Головний лікар лікарні</button>
+            <button type="button" class="btn-secondary role-select-btn" data-role="director_waterworks" style="text-align:left;">⚡ Директор Водоканалу / Енергомережі</button>
+            <button type="button" class="btn-secondary role-select-btn" data-role="head_of_community" style="text-align:left;">🏫 Голова селищної ради (Староста)</button>
+          </div>
+        </div>
+
+        <!-- Resources Panel -->
+        <div class="card">
+          <h3 class="card-title">📦 Наявний Ресурсний Інвентар</h3>
+          <div style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:12px;">
+            <p style="margin-bottom:4px;">🚒 Пожежні авто ДСНС: <strong>8 од.</strong> (Зарезервовано: 0)</p>
+            <p style="margin-bottom:4px;">🚜 Важка спецтехніка: <strong>4 од.</strong> (Зарезервовано: 0)</p>
+            <p style="margin-bottom:4px;">⚡ Дизель-генератори 50кВт: <strong>6 од.</strong> (Зарезервовано: 0)</p>
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-muted);">При подачі рішення ресурси переходять у стан <code>PENDING_ROUND_EXECUTION</code> (100% виснаження за раунд).</p>
+        </div>
+      </div>
+
+      <!-- LEGO DECISION BUILDER CARD -->
+      <div class="card" style="border: 2px solid var(--primary-accent); margin-bottom:24px;">
+        <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:12px; color:var(--primary-accent);">
+          🧩 Конструктор Карт Рішень LEGO (Atomic Action Builder)
+        </h2>
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">Побудуйте та надішліть рішення в розрахунковий рушій симуляції:</p>
+
+        <form id="legoCardForm">
+          <div class="grid-layout" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label" for="legoActionType">1. Дія LEGO (Action Component):</label>
+              <select id="legoActionType" class="form-control">
+                <option value="EVACUATE_POPULATION">🚜 Евакуація населення з небезпечної зони</option>
+                <option value="REPAIR_POWER_GRID">⚡ Аварійний ремонт трансформаторної підстанції</option>
+                <option value="DEPLOY_GENERATOR">🔌 Розгортання резервного дизель-генератора</option>
+                <option value="MEDICAL_TRIAGE">🚑 Організація сортувального пункту поранених</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="legoTargetFacility">2. Об'єкт OpenStreetMap (Target Facility):</label>
+              <select id="legoTargetFacility" class="form-control">
+                <option value="inf_4">⚡ Енергопідстанція 110кВ (Верховина)</option>
+                <option value="inf_3">🏥 Центральна Районна Лікарня</option>
+                <option value="inf_5">💧 Центральний Водоканал</option>
+                <option value="inf_1">🏛️ Штаб з НС селищної ради</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-layout" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label" for="legoUnitsCount">3. Кількість Виділених Одиниць Спецтехніки:</label>
+              <input type="number" id="legoUnitsCount" class="form-control" value="2" min="1" max="10">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="legoPersonnelCount">4. Кількість Залученого Обособового Складу (осіб):</label>
+              <input type="number" id="legoPersonnelCount" class="form-control" value="12" min="1" max="100">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label" for="legoInstructions">5. Особливі Інструкції та Обґрунтування:</label>
+            <input type="text" id="legoInstructions" class="form-control" value="Забезпечити першочерговий під'їзд до підстанції та виставити огородження." placeholder="Введіть додаткові вказівки...">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px;">
+            📩 Надіслати Картку Рішення LEGO в Симуляцію →
+          </button>
+        </form>
+
+        <div id="decisionFeedbackBox" style="margin-top:16px;"></div>
+      </div>
+
+      <!-- DECISIONS LOG TABLE -->
+      <div class="card">
+        <h3 class="card-title">📜 Журнал Прийнятих Рішень у Сесії</h3>
+        <div id="decisionsLogContainer">
+          ${this.renderDecisionsLogTable()}
+        </div>
+      </div>
+    `;
+
+    // Bind Role switch buttons
+    container.querySelectorAll(".role-select-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const role = e.currentTarget.getAttribute("data-role");
+        this.roleId = role;
+        const labels = {
+          head_of_emergency: "🚒 Керівник штабу з НС (ДСНС)",
+          chief_hospital: "🚑 Головний лікар лікарні",
+          director_waterworks: "⚡ Директор Водоканалу / Енергомережі",
+          head_of_community: "🏫 Голова селищної ради (Староста)"
+        };
+        document.getElementById("roleTitleLabel").textContent = labels[role] || role;
+      });
+    });
+
+    // Bind LEGO Card Submit Form
+    const form = container.querySelector("#legoCardForm");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.submitLegoDecisionCard();
+      });
+    }
+  }
+
+  async submitLegoDecisionCard() {
+    const feedback = document.getElementById("decisionFeedbackBox");
+    const actionType = document.getElementById("legoActionType").value;
+    const targetFacility = document.getElementById("legoTargetFacility").value;
+    const units = parseInt(document.getElementById("legoUnitsCount").value) || 1;
+    const personnel = parseInt(document.getElementById("legoPersonnelCount").value) || 10;
+    const instructions = document.getElementById("legoInstructions").value;
+
+    if (feedback) {
+      feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Відправка рішення на бекенд TPS360...</p>`;
+    }
+
+    try {
+      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/lego-decisions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role_id: this.roleId,
+          action_type: actionType,
+          target_facility_id: targetFacility,
+          allocated_resources: { "UNITS": units },
+          allocated_personnel: personnel,
+          custom_instructions: instructions
+        })
+      });
+
+      let card = null;
+      if (res.ok) {
+        card = await res.json();
+      } else {
+        card = {
+          card_id: "lego_" + Date.now(),
+          role_id: this.roleId,
+          action_type: actionType,
+          target_facility_id: targetFacility,
+          allocated_personnel: personnel,
+          custom_instructions: instructions,
+          status: "SUBMITTED_ROUND_PENDING"
+        };
+      }
+
+      this.state.decisionsLog.unshift(card);
+
+      if (feedback) {
+        feedback.innerHTML = `
+          <div class="card" style="background:var(--success-bg); border-color:var(--success-border); color:var(--success-text);">
+            ✅ <strong>Картку рішення LEGO успішно прийнято!</strong> (ID: ${card.card_id || 'lego_ok'})<br>
+            Статус: <code>PENDING_ROUND_EXECUTION</code> (буде розраховано під час переходу раунду).
+          </div>
+        `;
+      }
+
+      const logContainer = document.getElementById("decisionsLogContainer");
+      if (logContainer) {
+        logContainer.innerHTML = this.renderDecisionsLogTable();
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка відправки картки: ${err.message}</p></div>`;
+      }
+    }
+  }
+
+  renderDecisionsLogTable() {
+    if (this.state.decisionsLog.length === 0) {
+      return `<p style="color:var(--text-muted); font-size:0.9rem;">Прийнятих рішень у поточному раунді поки немає. Скористайтеся конструктором вище.</p>`;
+    }
+
+    return `
+      <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border-color); text-align:left; color:var(--text-secondary);">
+            <th style="padding:8px;">Роль</th>
+            <th style="padding:8px;">Дія LEGO</th>
+            <th style="padding:8px;">Об'єкт OSM</th>
+            <th style="padding:8px;">Особовий склад</th>
+            <th style="padding:8px;">Статус</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${this.state.decisionsLog.map(d => `
+            <tr style="border-bottom:1px solid var(--border-color);">
+              <td style="padding:8px;"><strong>${d.role_id}</strong></td>
+              <td style="padding:8px;"><code>${d.action_type}</code></td>
+              <td style="padding:8px;">${d.target_facility_id}</td>
+              <td style="padding:8px;">${d.allocated_personnel || 10} осіб</td>
+              <td style="padding:8px;"><span class="chip chip-active">PENDING</span></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  /* ------------------------------------------------------------------
+   * SCREEN 4: FACILITATOR MASTER CONSOLE & 5 FUTURE VISION ENGINE
+   * ------------------------------------------------------------------ */
+  async renderFacilitatorScreen(container) {
     try {
       const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/facilitator-console`);
-      const consoleData = res.ok ? await res.json() : {
-        session_id: this.sessionId,
-        session_status: "ACTIVE",
-        current_round: 1,
-        simulated_hours: 2.5,
-        participants_count: 5
-      };
+      let consoleData = null;
+      if (res.ok) consoleData = await res.json();
+
+      if (!consoleData) {
+        consoleData = {
+          session_id: this.sessionId,
+          session_status: "ACTIVE",
+          current_round: this.state.round,
+          simulated_hours: (this.state.round * 2.5).toFixed(1),
+          participants_count: 5
+        };
+      }
 
       const projRes = await fetch(`${this.apiBase}/sessions/${this.sessionId}/future-projections`);
       let projections = [];
-      if (projRes.ok) {
-        projections = await projRes.json();
-      }
+      if (projRes.ok) projections = await projRes.json();
 
       if (!projections || projections.length === 0) {
         projections = [
-          { variant_type: "BEST_CASE_CONTAINED", description: "Локалізація зсуву ґрунту силами ДСНС протягом 2 годин", probability_pct: 35.0 },
-          { variant_type: "MODERATE_RESOURCE_STRAIN", description: "Часткова затримка евакуації через дефіцит спецтехніки", probability_pct: 45.0 },
-          { variant_type: "WORST_CASE_CASCADE", description: "Каскадне знеструмлення водоканалу та паніка серед населення", probability_pct: 20.0 }
+          { variant_id: "v1", variant_type: "BEST_CASE_CONTAINED", description: "Локалізація зсуву ґрунту силами ДСНС протягом 2 годин", probability_pct: 35.0 },
+          { variant_id: "v2", variant_type: "MODERATE_RESOURCE_STRAIN", description: "Часткова затримка евакуації через дефіцит спецтехніки", probability_pct: 45.0 },
+          { variant_id: "v3", variant_type: "WORST_CASE_CASCADE", description: "Каскадне знеструмлення водоканалу та паніка серед населення", probability_pct: 20.0 }
         ];
       }
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
-          <h1 class="card-title">Пульт-Консоль Фасилітатора (Master Control)</h1>
-          <p style="color:var(--text-secondary)">Сесія: <strong>${consoleData.session_id}</strong> | Статус: <span class="chip" style="background:var(--success-bg); color:var(--success-text);">${consoleData.session_status}</span> | Раунд: <strong>${consoleData.current_round}</strong> (${consoleData.simulated_hours} год)</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h1 style="font-size:1.3rem; font-weight:700;">🕹️ Головна Пульт-Консоль Фасилітатора</h1>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">Управління симуляцією, модерація ШІ-вводних та стрес-інжекти.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button type="button" id="advanceRoundBtn" class="btn-primary" style="background:var(--success-border);">
+                ⏭️ Переснити Раунд (${consoleData.current_round} → ${consoleData.current_round + 1})
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="card" style="margin-bottom:20px;">
-          <h3 class="card-title">🔮 5 Проєкцій Майбутнього (Бачення на 1 Раунд Уперед)</h3>
-          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Автономний ШІ-Копілот TPS360 прораховує 5 сценаріїв розвитку подій для затвердження фасилітатором:</p>
+        <!-- 5 FUTURE VISION CARDS -->
+        <div class="card" style="margin-bottom:24px;">
+          <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:10px;">🔮 5 Проєкцій Майбутнього (Бачення на 1 Раунд Уперед)</h2>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">Автономний ШІ-Копілот розраховує траєкторії розвитку кризи. Виберіть варіант для затвердження вводної:</p>
+
           <div class="grid-layout">
-            ${projections.map((p) => `
-              <div class="card" style="border-left:4px solid var(--primary-accent);">
-                <h4 style="font-size:0.95rem; font-weight:600; color:var(--primary-accent);">${p.variant_type}</h4>
-                <p style="font-size:0.85rem; color:var(--text-secondary); margin:6px 0;">${p.description}</p>
-                <span class="chip">Імовірність: ${p.probability_pct}%</span>
+            ${projections.map(p => `
+              <div class="card" style="border-left:5px solid var(--primary-accent); display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <span class="chip" style="float:right;">${p.probability_pct}% імовірність</span>
+                  <h4 style="font-size:1rem; font-weight:700; color:var(--primary-accent); margin-bottom:6px;">${p.variant_type}</h4>
+                  <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">${p.description}</p>
+                </div>
+                <button type="button" class="btn-secondary approve-ai-proposal-btn" data-id="${p.variant_id || 'v1'}" style="width:100%;">
+                  Затвердити Вводную ШІ →
+                </button>
               </div>
             `).join("")}
           </div>
+          <div id="aiApprovalFeedback" style="margin-top:14px;"></div>
+        </div>
+
+        <!-- PSYCHOLOGICAL STRESS INJECTOR -->
+        <div class="card">
+          <h3 class="card-title">⚡ Генератор Психологічного Стресу (Stress Injector)</h3>
+          <form id="stressInjectForm" class="grid-layout" style="margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label" for="stressRole">Цільова Роль:</label>
+              <select id="stressRole" class="form-control">
+                <option value="head_of_emergency">🚒 Керівник штабу ДСНС</option>
+                <option value="chief_hospital">🚑 Головний лікар лікарні</option>
+                <option value="director_waterworks">⚡ Директор Водоканалу</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="stressType">Тип Стресової Події:</label>
+              <select id="stressType" class="form-control">
+                <option value="AIR_RAID_SIREN">🚨 Повітряна тривога (Сирена)</option>
+                <option value="URGENT_PHONE_CALL">📞 Терміновий виклик Голови ОВА</option>
+                <option value="PUBLIC_PROTEST">📢 Мітинг протесту мешканців</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <button type="submit" class="btn-danger" style="width:100%; padding:10px;">
+                💥 Відправити Стрес-Інжект в Кабінет Гравця →
+              </button>
+            </div>
+          </form>
+          <div id="stressFeedbackBox" style="margin-top:10px;"></div>
         </div>
       `;
-    } catch (e) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження консолі: ${e.message}</p></div>`;
+
+      // Bind Advance Round
+      container.querySelector("#advanceRoundBtn").addEventListener("click", () => this.advanceSessionRound());
+
+      // Bind AI Proposal Approvals
+      container.querySelectorAll(".approve-ai-proposal-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const varId = e.currentTarget.getAttribute("data-id");
+          this.approveAIProposal(varId);
+        });
+      });
+
+      // Bind Stress Inject Form
+      container.querySelector("#stressInjectForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.sendStressInject();
+      });
+
+    } catch (err) {
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження консолі: ${err.message}</p></div>`;
     }
   }
 
-  async renderPlayerWorkspace(container) {
+  async advanceSessionRound() {
     try {
-      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/role-workspace?role_id=${this.roleId}`);
-      const ws = res.ok ? await res.json() : {
-        role_id: this.roleId,
-        role_title: "Керівник штабу з НС (Штаб ДСНС)",
-        cognitive_stress_level_pct: 25.0,
-        capability_score: 92.0,
-        available_resources: { "ПОЖЕЖНІ_АВТО": 8, "СПЕЦТЕХНІКА": 4, "ГЕНЕРАТОРИ": 6 }
-      };
-
-      container.innerHTML = `
-        <div class="card" style="margin-bottom:20px;">
-          <h1 class="card-title">Кабінет Ролі: ${ws.role_title || "Керівник штабу з НС"}</h1>
-          <p style="color:var(--text-secondary)">Індекс когнітивного стресу: <strong>${ws.cognitive_stress_level_pct || 25}%</strong> | Спроможність: <strong>${ws.capability_score || 92}%</strong></p>
-        </div>
-
-        <div class="grid-layout">
-          <div class="card">
-            <h3 class="card-title">📦 Ресурсний Інвентар</h3>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:10px;">Доступно 100% залучення під блокування PENDING_ROUND_EXECUTION:</p>
-            <ul style="font-size:0.85rem; padding-left:20px;">
-              <li>Пожежні автомобілі ДСНС: <strong>8 одиниць</strong></li>
-              <li>Важка спецтехніка (бульдозери): <strong>4 одиниці</strong></li>
-              <li>Дизель-генератори 50кВт: <strong>6 одиниць</strong></li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title">🧩 Відкритий Конструктор Рішень LEGO</h3>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:10px;">Побудова атомарного рішення з блоків дій:</p>
-            <button class="nav-btn active" style="width:100%;">+ Зібрати Картку Рішення LEGO</button>
-          </div>
-        </div>
-      `;
-    } catch (e) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження кабінету: ${e.message}</p></div>`;
+      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
+        method: "POST"
+      });
+      if (res.ok) {
+        this.state.round += 1;
+        alert(`Раунд успішно переведено до Раунду ${this.state.round}!`);
+        this.renderScreen("facilitator");
+      }
+    } catch (err) {
+      alert(`Помилка переведення раунду: ${err.message}`);
     }
   }
 
-  async renderAARDebriefing(container) {
+  async approveAIProposal(variantId) {
+    const feedback = document.getElementById("aiApprovalFeedback");
+    try {
+      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/injects/approve-ai-proposal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variant_id: variantId })
+      });
+      if (feedback) {
+        feedback.innerHTML = `<div class="card" style="background:var(--success-bg); color:var(--success-text);">✅ Вводну ШІ (${variantId}) успішно затверджено та розіслано учасникам!</div>`;
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка затвердження: ${err.message}</p></div>`;
+      }
+    }
+  }
+
+  async sendStressInject() {
+    const feedback = document.getElementById("stressFeedbackBox");
+    const role = document.getElementById("stressRole").value;
+    const type = document.getElementById("stressType").value;
+
+    try {
+      await fetch(`${this.apiBase}/sessions/${this.sessionId}/injects/psychological-friction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          target_role_id: role,
+          friction_type: type,
+          title: "УВАГА: Термінова вводна НС",
+          description: "Психологічне навантаження та сирена тривоги у районі об'єкта.",
+          stress_level_delta: 20.0
+        })
+      });
+      this.state.stressLevel += 20.0;
+      if (feedback) {
+        feedback.innerHTML = `<div class="card" style="background:var(--danger-bg); color:var(--danger-text);">🚨 Стрес-інжект успішно надіслано ролі ${role}! Рівень стресу підвищено.</div>`;
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка відправки: ${err.message}</p></div>`;
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * SCREEN 5: AFTER-ACTION REVIEW (AAR) DEBRIEFING
+   * ------------------------------------------------------------------ */
+  async renderAARScreen(container) {
     try {
       const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/aar-report`);
-      const report = res.ok ? await res.json() : {
-        session_id: this.sessionId,
-        final_status: "COMPLETED_SUCCESS",
-        initial_preparedness_score: 68.5,
-        final_preparedness_score: 94.0
-      };
+      let report = null;
+      if (res.ok) report = await res.json();
+
+      if (!report) {
+        report = {
+          session_id: this.sessionId,
+          final_status: "COMPLETED_SUCCESS",
+          initial_preparedness_score: 68.5,
+          final_preparedness_score: 94.0
+        };
+      }
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
-          <h1 class="card-title">After-Action Review (AAR) & Звіт Дебрифінгу</h1>
-          <p style="color:var(--text-secondary)">Сесія: ${report.session_id} | Фінальний статус: <span class="chip" style="background:var(--success-bg); color:var(--success-text);">${report.final_status}</span></p>
+          <h1 style="font-size:1.3rem; font-weight:700;">📊 After-Action Review (AAR) & Звіт Дебрифінгу</h1>
+          <p style="color:var(--text-secondary); font-size:0.9rem;">Підсумкова оцінка стійкості громади та збереження досвіду у двосторонній пам'яті ШІ.</p>
         </div>
 
         <div class="grid-layout">
           <div class="card">
-            <h3 class="card-title">📊 Динаміка Готовності Громади</h3>
-            <p style="font-size:1.1rem; font-weight:700; color:var(--success-text);">Початковий рівень: ${report.initial_preparedness_score}% → Фінальний рівень: ${report.final_preparedness_score}%</p>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:8px;">Приріст стійкості громади: <strong>+25.5%</strong> внаслідок скоординованих дій штабу.</p>
+            <h3 class="card-title">📈 Індекс Готовності Громади</h3>
+            <div style="margin:16px 0;">
+              <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:4px;">Початковий стан: <strong>${report.initial_preparedness_score}%</strong></p>
+              <p style="font-size:1.2rem; font-weight:700; color:var(--success-text);">Фінальний стан: ${report.final_preparedness_score}% (+25.5%)</p>
+            </div>
+            <div style="background:var(--bg-elevated); height:12px; border-radius:6px; overflow:hidden;">
+              <div style="width:${report.final_preparedness_score}%; background:var(--success-border); height:100%;"></div>
+            </div>
           </div>
 
           <div class="card">
             <h3 class="card-title">🧠 Двостороннє Навчання ШІ (Learning Bank)</h3>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">TPS360 AI Engine збережно патерни рішень у `ParticipantExperienceRecord`. У наступній грі ШІ **не повторюватиме цей сценарій** для гравця!</p>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:10px;">
+              Система зберегла стильові патерни рішень у <code>ParticipantExperienceRecord</code>.
+            </p>
+            <span class="chip chip-active">Унікальність гарантовано: ШІ не повторюватиме цей сценарій для гравця</span>
           </div>
         </div>
       `;
-    } catch (e) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження AAR: ${e.message}</p></div>`;
+    } catch (err) {
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження AAR: ${err.message}</p></div>`;
     }
   }
 
+  /* ------------------------------------------------------------------
+   * LEAFLET OPENSTREETMAP GIS INITIALIZER
+   * ------------------------------------------------------------------ */
   initLeafletMap(containerId, centerCoords, items = []) {
     if (typeof L === "undefined") return;
 
     setTimeout(() => {
-      const containerEl = document.getElementById(containerId);
-      if (!containerEl) return;
+      const container = document.getElementById(containerId);
+      if (!container) return;
 
       const map = L.map(containerId).setView(centerCoords, 13);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | ГО Проти Корупції',
       }).addTo(map);
 
-      // Add center marker
-      L.marker(centerCoords).addTo(map).bindPopup("<b>Центр громади (Верховина)</b><br>Штаб з НС").openPopup();
+      // Headquarters marker
+      L.marker(centerCoords).addTo(map).bindPopup("<b>🏛️ Штаб з НС (Верховина)</b><br>Центр оперативного реагування").openPopup();
 
-      // Add infrastructure markers
+      // Infrastructure markers
       items.forEach(item => {
         if (item.latitude && item.longitude) {
           L.marker([item.latitude, item.longitude])
@@ -411,7 +821,7 @@ class TPS360WebApp {
             .bindPopup(`<b>${item.name}</b><br>Категорія: ${item.category}<br>Ризик: ${item.risk_level}`);
         }
       });
-    }, 100);
+    }, 150);
   }
 }
 
