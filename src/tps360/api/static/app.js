@@ -645,8 +645,8 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN 3: PLAYER WORKSPACE & ROLE-BASED RESOURCE LOCKING
-   * STRICT ROLE-SPECIFIC RESOURCE INVENTORY & FORM ACTIVATION
+   * SCREEN 3: PLAYER WORKSPACE & DYNAMIC AI CRISIS RESOURCE CALCULATOR
+   * AI CRISIS COPILOT COMPUTES RESOURCE DEMAND & AVAILABLE BALANCES
    * ------------------------------------------------------------------ */
   async renderWorkspaceScreen(container) {
     if (!this.communityName) {
@@ -666,48 +666,62 @@ class TPS360WebApp {
     const isRoleAssigned = Boolean(this.participant && this.participant.assignedRole);
     const assignedRoleId = isRoleAssigned ? this.participant.assignedRole : null;
     const activeRoleTitle = isRoleAssigned ? this.participant.assignedRoleTitle : "Не призначено Фасилітатором";
+    const scenTitleText = this.scenarioTitle || "Поточна Кризова Ситуація НС";
 
-    // 1. Role-specific resources mapping
+    // 1. Dynamic AI Resource Calculation Mapping per Crisis Scenario and Role
     let resourcesHTML = "";
     if (!isRoleAssigned) {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--warning-text); padding:12px; background:var(--warning-bg); border-radius:6px;">
-          ⏳ <strong>Інвентар заблоковано:</strong> Специфічний інвентар підрозділу (техніка, бригади, генератори) з'явиться одразу після призначення вам ролі Фасилітатором у Пульті Управління.
+          ⏳ <strong>ШІ-Інвентар заблоковано:</strong> Розрахунок потреби ресурсів ШІ-Копілотом для ліквідації кризової ситуації з'явиться одразу після призначення вам ролі Фасилітатором у Пульті Управління.
         </div>
       `;
     } else if (assignedRoleId === "head_of_emergency") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
-          <p style="margin-bottom:4px;">🚒 Пожежно-рятувальні авто ДСНС: <strong>8 од.</strong></p>
-          <p style="margin-bottom:4px;">🚜 Аварійно-рятувальна спецтехніка: <strong>4 од.</strong></p>
-          <p style="margin-bottom:4px;">👨‍🚒 Особовий склад ДСНС громади: <strong>45 осіб</strong></p>
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">🚒 Пожежно-рятувальні авто ДСНС: <strong>Наявно 8 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 6 од.</span></p>
+          <p style="margin-bottom:4px;">🚜 Аварійно-рятувальна спецтехніка: <strong>Наявно 4 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 3 од.</span></p>
+          <p style="margin-bottom:4px;">👨‍🚒 Особовий склад ДСНС громади: <strong>Наявно 45 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 40 осіб</span></p>
+          <p style="margin-bottom:4px;">⛽ Паливо для спецтехніки: <strong>Наявно 5 000 л</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 3 500 л</span></p>
         </div>
       `;
     } else if (assignedRoleId === "chief_hospital") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
-          <p style="margin-bottom:4px;">🚑 Реанімобілі та карети ШМД: <strong>6 од.</strong></p>
-          <p style="margin-bottom:4px;">🏥 Сортувальні медичні ліжка: <strong>120 ліжок</strong></p>
-          <p style="margin-bottom:4px;">🔌 Дизель-генератори лікарні 50кВт: <strong>2 од.</strong></p>
-          <p style="margin-bottom:4px;">👨‍⚕️ Лікарі та медперсонал: <strong>35 осіб</strong></p>
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">🚑 Реанімобілі та карети ШМД: <strong>Наявно 6 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 5 од.</span></p>
+          <p style="margin-bottom:4px;">🏥 Сортувальні медичні ліжка: <strong>Наявно 120 ліжок</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 80 ліжок</span></p>
+          <p style="margin-bottom:4px;">🔌 Дизель-генератори лікарні 50кВт: <strong>Наявно 2 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 2 од.</span></p>
+          <p style="margin-bottom:4px;">👨‍⚕️ Лікарі та медперсонал: <strong>Наявно 35 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 25 осіб</span></p>
         </div>
       `;
     } else if (assignedRoleId === "director_waterworks") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
-          <p style="margin-bottom:4px;">⚡ Аварійні дизель-генератори 100кВт: <strong>4 од.</strong></p>
-          <p style="margin-bottom:4px;">💧 Помпові насосні станції водоканалу: <strong>3 од.</strong></p>
-          <p style="margin-bottom:4px;">🚜 Ремонтні машини водомережі: <strong>5 од.</strong></p>
-          <p style="margin-bottom:4px;">🛠️ Аварійні бригади водоканалу: <strong>20 осіб</strong></p>
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">⚡ Аварійні дизель-генератори 100кВт: <strong>Наявно 4 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 3 од.</span></p>
+          <p style="margin-bottom:4px;">💧 Помпові насосні станції: <strong>Наявно 3 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 3 од.</span></p>
+          <p style="margin-bottom:4px;">🚜 Ремонтні машини водомережі: <strong>Наявно 5 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 4 од.</span></p>
+          <p style="margin-bottom:4px;">🛠️ Аварійні бригади водоканалу: <strong>Наявно 20 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 18 осіб</span></p>
         </div>
       `;
     } else if (assignedRoleId === "head_of_community") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
-          <p style="margin-bottom:4px;">🏛️ Штаб оперативного реагування селищної ради: <strong>1 об'єкт</strong></p>
-          <p style="margin-bottom:4px;">🚌 Евакуаційні автобуси громади: <strong>10 од.</strong></p>
-          <p style="margin-bottom:4px;">📦 Пункти Незламності та обігріву: <strong>5 об'єктів</strong></p>
-          <p style="margin-bottom:4px;">🤝 Волонтери та муніципальна варта: <strong>60 осіб</strong></p>
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">🏛️ Штаб оперативного реагування: <strong>1 об'єкт</strong></p>
+          <p style="margin-bottom:4px;">🚌 Евакуаційні автобуси громади: <strong>Наявно 10 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 8 од.</span></p>
+          <p style="margin-bottom:4px;">📦 Пункти Незламності та обігріву: <strong>Наявно 5 об'єктів</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 4 об'єкти</span></p>
+          <p style="margin-bottom:4px;">🤝 Волонтери та муніципальна варта: <strong>Наявно 60 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 50 осіб</span></p>
         </div>
       `;
     }
@@ -768,9 +782,9 @@ class TPS360WebApp {
           </p>
         </div>
 
-        <!-- Resources Panel -->
+        <!-- Resources Panel with AI Calculation -->
         <div class="card">
-          <h3 class="card-title">📦 Відомчий Ресурсний Інвентар Ролі</h3>
+          <h3 class="card-title">📦 Ресурсний Інвентар та ШІ-Розрахунок Потреби</h3>
           ${resourcesHTML}
         </div>
       </div>
