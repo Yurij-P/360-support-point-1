@@ -311,9 +311,10 @@ class TPS360WebApp {
       this.updateContextBar();
       this.state.activePassport = passport;
 
+      // Extract exact GIS GPS center coordinates with zero fallback drift
       const mapCenter = [
-        passport.center_latitude || 48.155,
-        passport.center_longitude || 24.832
+        Number(passport.center_latitude),
+        Number(passport.center_longitude)
       ];
 
       const vulnBreakdown = passport.vulnerable_groups_breakdown || {};
@@ -1275,6 +1276,7 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * LEAFLET OPENSTREETMAP GIS INITIALIZER
+   * EXACT COMMUNITY GPS CENTERING & LEAFLET RE-INITIALIZATION CLEANUP
    * ------------------------------------------------------------------ */
   initLeafletMap(containerId, centerCoords, communityName, items = []) {
     if (typeof L === "undefined") return;
@@ -1283,12 +1285,24 @@ class TPS360WebApp {
       const container = document.getElementById(containerId);
       if (!container) return;
 
+      // Safely destroy previous Leaflet instance to avoid stale map coordinates
+      if (window.tps360LeafletInstance) {
+        try {
+          window.tps360LeafletInstance.remove();
+        } catch (e) {
+          console.warn("Leaflet cleanup warning:", e);
+        }
+        window.tps360LeafletInstance = null;
+      }
+
       const map = L.map(containerId).setView(centerCoords, 13);
+      window.tps360LeafletInstance = map;
+
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Довідник КАТОТТГ | ГО Проти Корупції',
       }).addTo(map);
 
-      // Headquarters marker with EXACT Community Name
+      // Headquarters marker with EXACT Community Name and EXACT GPS coordinates
       L.marker(centerCoords).addTo(map).bindPopup(`<b>🏛️ Штаб з НС (${communityName})</b><br>Центр оперативного реагування`).openPopup();
 
       // Infrastructure markers
