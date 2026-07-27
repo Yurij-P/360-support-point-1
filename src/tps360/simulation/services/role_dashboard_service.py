@@ -201,11 +201,11 @@ class RoleDashboardService:
         total_stress = min(100.0, sum(i.stress_level_delta for i in psych_injects))
 
         role_name_map = {
-            "emerg-dsns": "Голова ДСНС / Керівник штабу з НС",
-            "emerg-ems": "Головний медичний офіцер громади",
-            "chief_sanitary_inspector": "Головний санітарний інспектор",
-            "emerg-police": "Керівник поліції громади",
-            "communal-utility": "Керівник комунальних служб",
+            "emerg-dsns": "Представник ДСНС",
+            "emerg-ems": "Представник екстреної медичної допомоги",
+            "chief_sanitary_inspector": "Санітарний інспектор",
+            "emerg-police": "Представник поліції",
+            "communal-utility": "Представник комунального підприємства",
         }
 
         return RoleWorkspaceReadModel(
