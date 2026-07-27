@@ -98,6 +98,15 @@ assumed result.
 Before commit or publication, review the full diff against the mapping and verify
 that no hard-coded community, crisis, role or resource has been introduced.
 
+## Mandatory Execution Reporting Rule
+
+ALWAYS provide a comprehensive, structured completion report in Ukrainian after EVERY execution turn.
+The report MUST contain:
+1. **Звіт про виконані роботи (Summary of Completed Work):** Detailed list of modified files, features, and UI/backend fixes.
+2. **Результати аудит-перевірок (Quality Audit Verification):** Exact test output counts (e.g. `550 / 550 passed`), ruff lint status, and mypy type checks.
+3. **Стан активної громади та КАТОТТГ (Active Community & KATOTTG Context):** Current selected community, KATOTTG code, and map alignment status.
+4. **Покліковий план наступних кроків (Next Steps & Recommendations).**
+
 ## Stop conditions
 
 Stop and ask the user when:
@@ -110,3 +119,4 @@ Stop and ask the user when:
 
 Ask a concrete question grounded in files already inspected. Do not fill gaps with
 plausible domain language.
+

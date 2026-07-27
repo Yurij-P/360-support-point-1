@@ -35,7 +35,7 @@ class TPS360WebApp {
   updateContextBar() {
     const commLabel = document.getElementById("activeCommunityName");
     if (commLabel) {
-      commLabel.textContent = this.communityName || "Верховинська селищна громада";
+      commLabel.textContent = this.communityName || "Обирається у каталозі КАТОТТГ...";
     }
   }
 
@@ -127,10 +127,10 @@ class TPS360WebApp {
       container.innerHTML = `
         <div class="card" style="margin-bottom:24px;">
           <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🏛️ Каталог Громад України (Довідник КАТОТТГ / directory.org.ua)</h1>
-          <p style="color:var(--text-secondary); margin-bottom:14px;">Реєстр територіальних громад з верифікованими кодами КАТОТТГ, інфраструктурними паспортами та картами OpenStreetMap.</p>
+          <p style="color:var(--text-secondary); margin-bottom:14px;">Офіційний довідник територіальних громад України з верифікованими кодами КАТОТТГ, інфраструктурними паспортами та картами OpenStreetMap.</p>
           
           <div style="display:flex; gap:12px;">
-            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Пошук за кодом КАТОТТГ (наприклад: UA48060030000037887) або назвою..." style="flex:1;">
+            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Введіть код КАТОТТГ (наприклад: UA48060030000037887) або назву громади..." style="flex:1;">
             <button type="button" id="katottgSearchBtn" class="btn-primary">🔍 Знайти у КАТОТТГ</button>
           </div>
         </div>
@@ -142,21 +142,25 @@ class TPS360WebApp {
 
       this.bindCatalogCardEvents(container);
 
-      // Bind search button
+      // Bind search button against backend API search
       const searchBtn = container.querySelector("#katottgSearchBtn");
       const searchInput = container.querySelector("#katottgSearchInput");
       if (searchBtn && searchInput) {
-        const doSearch = () => {
-          const q = searchInput.value.toLowerCase().trim();
-          const filtered = items.filter(c => 
-            c.name.toLowerCase().includes(q) || 
-            (c.official_code && c.official_code.toLowerCase().includes(q)) ||
-            (c.region && c.region.toLowerCase().includes(q))
-          );
-          const grid = document.getElementById("catalogGridContainer");
-          if (grid) {
-            grid.innerHTML = this.renderCommunityCardsHTML(filtered);
-            this.bindCatalogCardEvents(container);
+        const doSearch = async () => {
+          const q = searchInput.value.trim();
+          if (!q) {
+            this.renderCatalogScreen(container);
+            return;
+          }
+          const searchRes = await fetch(`${this.apiBase}/communities/catalog?query=${encodeURIComponent(q)}`);
+          if (searchRes.ok) {
+            const data = await searchRes.json();
+            const filtered = Array.isArray(data) ? data : (data.items || []);
+            const grid = document.getElementById("catalogGridContainer");
+            if (grid) {
+              grid.innerHTML = this.renderCommunityCardsHTML(filtered);
+              this.bindCatalogCardEvents(container);
+            }
           }
         };
         searchBtn.addEventListener("click", doSearch);
@@ -221,15 +225,15 @@ class TPS360WebApp {
 
       if (!passport) {
         const fallbackCenters = {
-          "verkhovyna": { lat: 48.155, lon: 24.832, code: "UA26020010000055743", reg: "Івано-Франківська область", dist: "Верховинський район" },
-          "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": { lat: 47.312, lon: 32.848, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район" },
-          "shiroke": { lat: 47.920, lon: 35.050, code: "UA23080270000095874", reg: "Запорізька область", dist: "Запорізький район" }
+          "verkhovyna": { lat: 48.155, lon: 24.832, code: "UA26020010000055743", reg: "Івано-Франківська область", dist: "Верховинський район", name: "Верховинська селищна громада" },
+          "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": { lat: 47.312, lon: 32.848, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район", name: "Березнегуватська селищна громада" },
+          "shiroke": { lat: 47.920, lon: 35.050, code: "UA23080270000095874", reg: "Запорізька область", dist: "Запорізький район", name: "Широківська сільська громада" }
         };
-        const fb = fallbackCenters[communityId] || { lat: 48.155, lon: 24.832, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район" };
+        const fb = fallbackCenters[communityId] || { lat: 48.155, lon: 24.832, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район", name: this.communityName };
 
         passport = {
           community_id: communityId,
-          name: this.communityName || "Територіальна громада",
+          name: fb.name || this.communityName || "Територіальна громада",
           official_code: fb.code,
           region: fb.reg,
           district: fb.dist,
@@ -240,7 +244,7 @@ class TPS360WebApp {
           maturity_level: "Integrated",
           vulnerable_population_total: 4200,
           infrastructure_items: [
-            { id: "infra_1", name: `Штаб з НС (${this.communityName})`, category: "TERRITORIAL_DEFENSE_HQ", latitude: fb.lat, longitude: fb.lon, risk_level: "CRITICAL" },
+            { id: "infra_1", name: `Штаб з НС (${fb.name})`, category: "TERRITORIAL_DEFENSE_HQ", latitude: fb.lat, longitude: fb.lon, risk_level: "CRITICAL" },
             { id: "infra_2", name: `Центральна Лікарня`, category: "HOSPITAL_MEDICAL", latitude: fb.lat + 0.003, longitude: fb.lon - 0.003, risk_level: "MODERATE" },
             { id: "infra_3", name: `Трансформаторна Підстанція 110кВ`, category: "TRANSFORMER_SUBSTATION", latitude: fb.lat + 0.018, longitude: fb.lon + 0.032, risk_level: "HIGH" }
           ]

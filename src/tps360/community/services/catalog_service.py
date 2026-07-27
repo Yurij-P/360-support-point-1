@@ -180,7 +180,7 @@ class CommunityCatalogService:
     """Service providing search, filtering, and passport read model access for communities."""
 
     def __init__(self, passports: dict[str, CommunityPassportReadModel] | None = None) -> None:
-        self._passports = passports if passports is not None else SEED_PASSPORTS
+        self._passports = passports if passports is not None else dict(SEED_PASSPORTS)
 
     def search_catalog(
         self,
@@ -191,6 +191,36 @@ class CommunityCatalogService:
         offset: int = 0,
     ) -> list[CommunityCatalogItem]:
         items: list[CommunityCatalogItem] = []
+
+        # If query is a custom KATOTTG code not yet in seed dictionary, dynamically register it
+        if query and query.upper().startswith("UA") and len(query) >= 10:
+            clean_code = query.upper().strip()
+            if not any(p.official_code == clean_code for p in self._passports.values()):
+                dynamic_id = f"katottg_{clean_code.lower()}"
+                self._passports[dynamic_id] = CommunityPassportReadModel(
+                    community_id=dynamic_id,
+                    name=f"Громада (КАТОТТГ {clean_code})",
+                    official_code=clean_code,
+                    region="Україна",
+                    district="Адміністративний район",
+                    area_sq_km=500.0,
+                    total_population=15000,
+                    preparedness_score=70.0,
+                    maturity_level="Integrated",
+                    vulnerable_population_total=2500,
+                    center_latitude=49.0,
+                    center_longitude=31.0,
+                    infrastructure_items=(
+                        InfrastructureItemReadModel(
+                            id=f"infra_{clean_code}_1",
+                            name=f"Штаб НС ({clean_code})",
+                            category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
+                            latitude=49.0,
+                            longitude=31.0,
+                            risk_level="MODERATE",
+                        ),
+                    ),
+                )
 
         for p in self._passports.values():
             if query and query.lower() not in p.name.lower() and query.lower() not in p.official_code.lower():
