@@ -645,7 +645,8 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN 3: PLAYER WORKSPACE & CLICKABLE LEGO DECISION BUILDER
+   * SCREEN 3: PLAYER WORKSPACE & ROLE-BASED RESOURCE LOCKING
+   * STRICT ROLE-SPECIFIC RESOURCE INVENTORY & FORM ACTIVATION
    * ------------------------------------------------------------------ */
   async renderWorkspaceScreen(container) {
     if (!this.communityName) {
@@ -662,20 +663,60 @@ class TPS360WebApp {
       return;
     }
 
-    // Role assignment check
-    let activeRoleTitle = "Не призначено Фасилітатором";
-    let isRoleAssigned = false;
+    const isRoleAssigned = Boolean(this.participant && this.participant.assignedRole);
+    const assignedRoleId = isRoleAssigned ? this.participant.assignedRole : null;
+    const activeRoleTitle = isRoleAssigned ? this.participant.assignedRoleTitle : "Не призначено Фасилітатором";
 
-    if (this.participant && this.participant.assignedRole) {
-      activeRoleTitle = this.participant.assignedRoleTitle;
-      isRoleAssigned = true;
+    // 1. Role-specific resources mapping
+    let resourcesHTML = "";
+    if (!isRoleAssigned) {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--warning-text); padding:12px; background:var(--warning-bg); border-radius:6px;">
+          ⏳ <strong>Інвентар заблоковано:</strong> Специфічний інвентар підрозділу (техніка, бригади, генератори) з'явиться одразу після призначення вам ролі Фасилітатором у Пульті Управління.
+        </div>
+      `;
+    } else if (assignedRoleId === "head_of_emergency") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <p style="margin-bottom:4px;">🚒 Пожежно-рятувальні авто ДСНС: <strong>8 од.</strong></p>
+          <p style="margin-bottom:4px;">🚜 Аварійно-рятувальна спецтехніка: <strong>4 од.</strong></p>
+          <p style="margin-bottom:4px;">👨‍🚒 Особовий склад ДСНС громади: <strong>45 осіб</strong></p>
+        </div>
+      `;
+    } else if (assignedRoleId === "chief_hospital") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <p style="margin-bottom:4px;">🚑 Реанімобілі та карети ШМД: <strong>6 од.</strong></p>
+          <p style="margin-bottom:4px;">🏥 Сортувальні медичні ліжка: <strong>120 ліжок</strong></p>
+          <p style="margin-bottom:4px;">🔌 Дизель-генератори лікарні 50кВт: <strong>2 од.</strong></p>
+          <p style="margin-bottom:4px;">👨‍⚕️ Лікарі та медперсонал: <strong>35 осіб</strong></p>
+        </div>
+      `;
+    } else if (assignedRoleId === "director_waterworks") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <p style="margin-bottom:4px;">⚡ Аварійні дизель-генератори 100кВт: <strong>4 од.</strong></p>
+          <p style="margin-bottom:4px;">💧 Помпові насосні станції водоканалу: <strong>3 од.</strong></p>
+          <p style="margin-bottom:4px;">🚜 Ремонтні машини водомережі: <strong>5 од.</strong></p>
+          <p style="margin-bottom:4px;">🛠️ Аварійні бригади водоканалу: <strong>20 осіб</strong></p>
+        </div>
+      `;
+    } else if (assignedRoleId === "head_of_community") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <p style="margin-bottom:4px;">🏛️ Штаб оперативного реагування селищної ради: <strong>1 об'єкт</strong></p>
+          <p style="margin-bottom:4px;">🚌 Евакуаційні автобуси громади: <strong>10 од.</strong></p>
+          <p style="margin-bottom:4px;">📦 Пункти Незламності та обігріву: <strong>5 об'єктів</strong></p>
+          <p style="margin-bottom:4px;">🤝 Волонтери та муніципальна варта: <strong>60 осіб</strong></p>
+        </div>
+      `;
     }
 
-    const participantInfo = this.participant ? `
+    const participantStatusBanner = this.participant ? `
       <div class="card" style="background:var(--bg-elevated); margin-bottom:20px; border-left:4px solid ${isRoleAssigned ? 'var(--success-border)' : 'var(--warning-border)'};">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
-            <span class="chip ${isRoleAssigned ? 'chip-active' : ''}">${isRoleAssigned ? 'Роль підтверджено Фасилітатором' : '⏳ Очікує призначення ролі'}</span>
+            <span class="chip ${isRoleAssigned ? 'chip-active' : ''}">${isRoleAssigned ? '✅ Роль підтверджено Фасилітатором' : '⏳ Очікує призначення ролі Фасилітатором у Пульті'}</span>
             <h3 style="font-size:1.05rem; font-weight:700; margin-top:4px;">👤 ${this.participant.name}</h3>
             <p style="color:var(--text-secondary); font-size:0.85rem;">
               Організація: <strong>${this.participant.organization}</strong> | Посада: ${this.participant.position}
@@ -701,7 +742,7 @@ class TPS360WebApp {
           <div>
             <h1 style="font-size:1.3rem; font-weight:700;">🎯 Робочий Кабінет Учасника Симуляції</h1>
             <p style="color:var(--text-secondary); font-size:0.9rem;">
-              Активна громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Призначена Фасилітатором Роль: <strong id="roleTitleLabel" style="color:var(--primary-accent);">${activeRoleTitle}</strong>
+              Активна громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Статус Ролі: <strong id="roleTitleLabel" style="color:${isRoleAssigned ? 'var(--success-text)' : 'var(--warning-text)'};">${activeRoleTitle}</strong>
             </p>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
@@ -711,82 +752,91 @@ class TPS360WebApp {
         </div>
       </div>
 
-      ${participantInfo}
+      ${participantStatusBanner}
 
       <div class="grid-layout" style="margin-bottom:24px;">
         <!-- Assigned Role Info Box -->
         <div class="card">
-          <h3 class="card-title">🛡️ Ваша Призначена Роль</h3>
-          <p style="font-size:0.9rem; color:var(--text-primary); margin-bottom:8px;">
-            <strong>${activeRoleTitle}</strong>
+          <h3 class="card-title">🛡️ Ваша Оперативна Роль</h3>
+          <p style="font-size:1rem; font-weight:700; color:${isRoleAssigned ? 'var(--success-text)' : 'var(--warning-text)'}; margin-bottom:8px;">
+            ${activeRoleTitle}
           </p>
-          <p style="font-size:0.8rem; color:var(--text-secondary);">
-            Згідно з регламентом TPS360, призначення ролей виконується модератором (Фасилітатором) у Пульті Управління.
+          <p style="font-size:0.82rem; color:var(--text-secondary);">
+            ${isRoleAssigned 
+              ? 'Ваші повноваження та відомчі ресурси підтверджено у Пульті Фасилітатора. Ви маєте право подавати Картки Рішень LEGO.' 
+              : 'За регламентом TPS360, призначення ролей виконується модератором (Фасилітатором) у Пульті Управління. Очікуйте на підтвердження.'}
           </p>
         </div>
 
         <!-- Resources Panel -->
         <div class="card">
-          <h3 class="card-title">📦 Наявний Ресурсний Інвентар Громади</h3>
-          <div style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:12px;">
-            <p style="margin-bottom:4px;">🚒 Пожежні авто ДСНС: <strong>8 од.</strong></p>
-            <p style="margin-bottom:4px;">🚜 Важка спецтехніка: <strong>4 од.</strong></p>
-            <p style="margin-bottom:4px;">⚡ Дизель-генератори 50кВт: <strong>6 од.</strong></p>
-          </div>
-          <p style="font-size:0.8rem; color:var(--text-muted);">При поданні рішення ресурси переходять у стан <code>PENDING_ROUND_EXECUTION</code>.</p>
+          <h3 class="card-title">📦 Відомчий Ресурсний Інвентар Ролі</h3>
+          ${resourcesHTML}
         </div>
       </div>
 
-      <!-- LEGO DECISION BUILDER CARD -->
-      <div class="card" style="border: 2px solid var(--primary-accent); margin-bottom:24px;">
-        <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:12px; color:var(--primary-accent);">
-          🧩 Конструктор Карт Рішень LEGO (Atomic Action Builder)
-        </h2>
-        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">Побудуйте та надішліть рішення в розрахунковий рушій симуляції для громади "${this.communityName}":</p>
+      <!-- LEGO DECISION BUILDER CARD (LOCKED IF ROLE NOT ASSIGNED) -->
+      <div class="card" style="border: 2px solid ${isRoleAssigned ? 'var(--primary-accent)' : 'var(--border-color)'}; margin-bottom:24px; opacity:${isRoleAssigned ? '1' : '0.85'};">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <h2 style="font-size:1.25rem; font-weight:700; color:var(--primary-accent);">
+            🧩 Конструктор Карт Рішень LEGO (Atomic Action Builder)
+          </h2>
+          ${isRoleAssigned 
+            ? '<span class="chip chip-active">✅ Активно для ролі ' + activeRoleTitle + '</span>' 
+            : '<span class="chip" style="background:var(--warning-bg); color:var(--warning-text);">🔒 Блоковано до призначення ролі Фасилітатором</span>'}
+        </div>
+
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">
+          ${isRoleAssigned 
+            ? `Побудуйте та надішліть рішення в розрахунковий рушій симуляції для громади "${this.communityName}":`
+            : `Конструктор рішень розблокується одразу після того, як Фасилітатор у своєму Пульті призначить вам оперативну роль.`}
+        </p>
 
         <form id="legoCardForm">
-          <div class="grid-layout" style="margin-bottom:16px;">
-            <div class="form-group">
-              <label class="form-label" for="legoActionType">1. Дія LEGO (Action Component):</label>
-              <select id="legoActionType" class="form-control">
-                <option value="EVACUATE_POPULATION">🚜 Евакуація населения з небезпечної зони</option>
-                <option value="REPAIR_POWER_GRID">⚡ Аварійний ремонт трансформаторної підстанції</option>
-                <option value="DEPLOY_GENERATOR">🔌 Розгортання резервного дизель-генератора</option>
-                <option value="MEDICAL_TRIAGE">🚑 Організація сортувального пункту поранених</option>
-              </select>
+          <fieldset ${isRoleAssigned ? '' : 'disabled="disabled"'} style="border:none; padding:0; margin:0;">
+            <div class="grid-layout" style="margin-bottom:16px;">
+              <div class="form-group">
+                <label class="form-label" for="legoActionType">1. Дія LEGO (Action Component):</label>
+                <select id="legoActionType" class="form-control">
+                  <option value="EVACUATE_POPULATION">🚜 Евакуація населення з небезпечної зони</option>
+                  <option value="REPAIR_POWER_GRID">⚡ Аварійний ремонт трансформаторної підстанції</option>
+                  <option value="DEPLOY_GENERATOR">🔌 Розгортання резервного дизель-генератора</option>
+                  <option value="MEDICAL_TRIAGE">🚑 Організація сортувального пункту поранених</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="legoTargetFacility">2. Об'єкт OpenStreetMap (Target Facility):</label>
+                <select id="legoTargetFacility" class="form-control">
+                  <option value="infra_1">⚡ Трансформаторна підстанція</option>
+                  <option value="infra_2">🏥 Центральна Лікарня</option>
+                  <option value="infra_3">💧 Центральний Водоканал</option>
+                  <option value="infra_hq">🏛️ Штаб з НС селищної ради</option>
+                </select>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="legoTargetFacility">2. Об'єкт OpenStreetMap (Target Facility):</label>
-              <select id="legoTargetFacility" class="form-control">
-                <option value="infra_1">⚡ Трансформаторна підстанція</option>
-                <option value="infra_2">🏥 Центральна Лікарня</option>
-                <option value="infra_3">💧 Центральний Водоканал</option>
-                <option value="infra_hq">🏛️ Штаб з НС селищної ради</option>
-              </select>
-            </div>
-          </div>
+            <div class="grid-layout" style="margin-bottom:16px;">
+              <div class="form-group">
+                <label class="form-label" for="legoUnitsCount">3. Кількість Виділених Одиниць Спецтехніки:</label>
+                <input type="number" id="legoUnitsCount" class="form-control" value="2" min="1" max="10">
+              </div>
 
-          <div class="grid-layout" style="margin-bottom:16px;">
-            <div class="form-group">
-              <label class="form-label" for="legoUnitsCount">3. Кількість Виділених Одиниць Спецтехніки:</label>
-              <input type="number" id="legoUnitsCount" class="form-control" value="2" min="1" max="10">
+              <div class="form-group">
+                <label class="form-label" for="legoPersonnelCount">4. Кількість Залученого Особового Складу (осіб):</label>
+                <input type="number" id="legoPersonnelCount" class="form-control" value="12" min="1" max="100">
+              </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="legoPersonnelCount">4. Кількість Залученого Обособового Складу (осіб):</label>
-              <input type="number" id="legoPersonnelCount" class="form-control" value="12" min="1" max="100">
+            <div class="form-group" style="margin-bottom:16px;">
+              <label class="form-label" for="legoInstructions">5. Особливі Інструкції та Обґрунтування:</label>
+              <input type="text" id="legoInstructions" class="form-control" value="Забезпечити першочерговий під'їзд до об'єкта та виставити огородження." placeholder="Введіть додаткові вказівки...">
             </div>
-          </div>
 
-          <div class="form-group" style="margin-bottom:16px;">
-            <label class="form-label" for="legoInstructions">5. Особливі Інструкції та Обґрунтування:</label>
-            <input type="text" id="legoInstructions" class="form-control" value="Забезпечити першочерговий під'їзд до підстанції та виставити огородження." placeholder="Введіть додаткові вказівки...">
-          </div>
-
-          <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px;">
-            📩 Надіслати Картку Рішення LEGO в Симуляцію →
-          </button>
+            <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px; ${isRoleAssigned ? '' : 'opacity:0.6; cursor:not-allowed;'}" ${isRoleAssigned ? '' : 'disabled'}>
+              ${isRoleAssigned ? '📩 Надіслати Картку Рішення LEGO в Симуляцію →' : '🔒 Очікування призначення ролі Фасилітатором...'}
+            </button>
+          </fieldset>
         </form>
 
         <div id="decisionFeedbackBox" style="margin-top:16px;"></div>
@@ -801,13 +851,15 @@ class TPS360WebApp {
       </div>
     `;
 
-    // Bind LEGO Card Submit Form
-    const form = container.querySelector("#legoCardForm");
-    if (form) {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.submitLegoDecisionCard();
-      });
+    // Bind LEGO Card Submit Form if role is assigned
+    if (isRoleAssigned) {
+      const form = container.querySelector("#legoCardForm");
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          this.submitLegoDecisionCard();
+        });
+      }
     }
   }
 
