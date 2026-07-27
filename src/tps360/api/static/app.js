@@ -3,6 +3,7 @@
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
  * Dynamic Client-side controller with Instant Search Engine, Facilitator-controlled Role Assignment, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  * ZERO HARDCODED DEMO DATA PRE-POPULATION
+ * FULL 7 OPERATIVE ROLES ARCHITECTURE (5-7 PLAYERS MINIMUM REQUIREMENT)
  */
 
 class TPS360WebApp {
@@ -530,7 +531,7 @@ class TPS360WebApp {
       <div class="card" style="margin-bottom:24px;">
         <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🔑 Реєстрація Ідентичності Учасника (Participant Registration)</h1>
         <p style="color:var(--text-secondary)">
-          Учасники реєструють ПІБ, організацію та посаду. <strong>Оперативну роль у симуляції призначає виключно Фасилітатор сесії.</strong>
+          Учасники реєструють ПІБ, організацію та посаду. <strong>Оперативну роль у симуляції (із 7 можливих ролей) призначає виключно Фасилітатор сесії.</strong>
         </p>
       </div>
 
@@ -566,7 +567,7 @@ class TPS360WebApp {
 
           <div class="card" style="background:var(--bg-elevated); padding:12px; margin-bottom:16px; font-size:0.82rem; color:var(--text-secondary);">
             ℹ️ <strong>Регламент призначення ролей:</strong> Після відправки заявки ваша картка потрапляє у Кімнату Очікування (Lobby). 
-            Фасилітатор сесії розпреділить оперативні ролі (ДСНС, Лікарня, Водоканал, Селищна рада) у своему Пульті.
+            Фасилітатор сесії розпреділить 7 оперативних ролей (ДСНС, Лікарня, Водоканал, Поліція, Санепід, Соцзахист, Голова) у своєму Пульті.
           </div>
 
           <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px;">
@@ -646,7 +647,7 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * SCREEN 3: PLAYER WORKSPACE & DYNAMIC AI CRISIS RESOURCE CALCULATOR
-   * AI CRISIS COPILOT COMPUTES RESOURCE DEMAND & AVAILABLE BALANCES
+   * SUPPORTING ALL 7 OPERATIVE ROLES
    * ------------------------------------------------------------------ */
   async renderWorkspaceScreen(container) {
     if (!this.communityName) {
@@ -668,12 +669,12 @@ class TPS360WebApp {
     const activeRoleTitle = isRoleAssigned ? this.participant.assignedRoleTitle : "Не призначено Фасилітатором";
     const scenTitleText = this.scenarioTitle || "Поточна Кризова Ситуація НС";
 
-    // 1. Dynamic AI Resource Calculation Mapping per Crisis Scenario and Role
+    // 1. Dynamic AI Resource Calculation Mapping per Crisis Scenario across all 7 Roles
     let resourcesHTML = "";
     if (!isRoleAssigned) {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--warning-text); padding:12px; background:var(--warning-bg); border-radius:6px;">
-          ⏳ <strong>ШІ-Інвентар заблоковано:</strong> Розрахунок потреби ресурсів ШІ-Копілотом для ліквідації кризової ситуації з'явиться одразу після призначення вам ролі Фасилітатором у Пульті Управління.
+          ⏳ <strong>ШІ-Інвентар заблоковано:</strong> Розрахунок потреби ресурсів ШІ-Копілотом для ліквідації кризової ситуації з'явиться одразу після призначення вам однієї з 7 ролей Фасилітатором у Пульті Управління.
         </div>
       `;
     } else if (assignedRoleId === "head_of_emergency") {
@@ -688,7 +689,7 @@ class TPS360WebApp {
           <p style="margin-bottom:4px;">⛽ Паливо для спецтехніки: <strong>Наявно 5 000 л</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 3 500 л</span></p>
         </div>
       `;
-    } else if (assignedRoleId === "chief_hospital") {
+    } else if (assignedRoleId === "chief_medical_officer") {
       resourcesHTML = `
         <div style="font-size:0.88rem; color:var(--text-secondary);">
           <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
@@ -722,6 +723,39 @@ class TPS360WebApp {
           <p style="margin-bottom:4px;">🚌 Евакуаційні автобуси громади: <strong>Наявно 10 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 8 од.</span></p>
           <p style="margin-bottom:4px;">📦 Пункти Незламності та обігріву: <strong>Наявно 5 об'єктів</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 4 об'єкти</span></p>
           <p style="margin-bottom:4px;">🤝 Волонтери та муніципальна варта: <strong>Наявно 60 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 50 осіб</span></p>
+        </div>
+      `;
+    } else if (assignedRoleId === "chief_police_officer") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">🚔 Патрульні авто Нацполіції: <strong>Наявно 12 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 10 од.</span></p>
+          <p style="margin-bottom:4px;">🛡️ Офіцери поліції громади: <strong>Наявно 50 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 40 осіб</span></p>
+          <p style="margin-bottom:4px;">🚧 Мобільні блокпости та перекриття: <strong>Наявно 40 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 25 од.</span></p>
+        </div>
+      `;
+    } else if (assignedRoleId === "chief_sanitary_inspector") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">🧪 Мобільні лабораторії аналізу води/ґрунту: <strong>Наявно 3 од.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 2 од.</span></p>
+          <p style="margin-bottom:4px;">🧴 Засоби масової дезінфекції: <strong>Наявно 1000 л</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 800 л</span></p>
+          <p style="margin-bottom:4px;">🔬 Санітарні інспектори: <strong>Наявно 15 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 12 осіб</span></p>
+        </div>
+      `;
+    } else if (assignedRoleId === "head_of_social_protection") {
+      resourcesHTML = `
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          <div style="margin-bottom:8px; padding:6px 10px; background:var(--bg-elevated); border-radius:4px; font-weight:600; color:var(--primary-accent);">
+            🧠 ШІ-Розрахунок Потреби Ресурсів під Кризу: «${scenTitleText}»
+          </div>
+          <p style="margin-bottom:4px;">🍱 Продоволі та гуманітарні набори: <strong>Наявно 2000 шт.</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 1500 шт.</span></p>
+          <p style="margin-bottom:4px;">🛌 Тимчасові спальні місця ДСНС/ВПО: <strong>Наявно 300 ліжок</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 250 ліжок</span></p>
+          <p style="margin-bottom:4px;">🤝 Соціальні працівники та психологи: <strong>Наявно 25 осіб</strong> | <span style="color:var(--warning-text)">ШІ-Потреба: 20 осіб</span></p>
         </div>
       `;
     }
@@ -812,7 +846,7 @@ class TPS360WebApp {
               <div class="form-group">
                 <label class="form-label" for="legoActionType">1. Дія LEGO (Action Component):</label>
                 <select id="legoActionType" class="form-control">
-                  <option value="EVACUATE_POPULATION">🚜 Евакуація населення з небезпечної зони</option>
+                  <option value="EVACUATE_POPULATION">🚜 Евакуація населения з небезпечної зони</option>
                   <option value="REPAIR_POWER_GRID">⚡ Аварійний ремонт трансформаторної підстанції</option>
                   <option value="DEPLOY_GENERATOR">🔌 Розгортання резервного дизель-генератора</option>
                   <option value="MEDICAL_TRIAGE">🚑 Організація сортувального пункту поранених</option>
@@ -976,7 +1010,7 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * SCREEN 4: FACILITATOR MASTER CONSOLE & ROLE ASSIGNMENT CONTROL
-   * ZERO FAKE DEMO SEEDING
+   * SUPPORTING ALL 7 OPERATIVE ROLES IN THE MASTER CONTROL PANEL
    * ------------------------------------------------------------------ */
   async renderFacilitatorScreen(container) {
     if (!this.communityName) {
@@ -1006,7 +1040,7 @@ class TPS360WebApp {
           session_status: "ACTIVE",
           current_round: this.state.round,
           simulated_hours: (this.state.round * 2.5).toFixed(1),
-          participants_count: 4
+          participants_count: 7
         };
       }
 
@@ -1027,7 +1061,7 @@ class TPS360WebApp {
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
               <h1 style="font-size:1.3rem; font-weight:700;">🕹️ Головна Пульт-Консоль Фасилітатора</h1>
-              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Управління раундами, <strong>призначення ролей гравцям</strong> та модерація вводних.</p>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Управління раундами, <strong>призначення 7 оперативних ролей гравцям</strong> та модерація вводних.</p>
             </div>
             <div style="display:flex; gap:10px;">
               <button type="button" id="advanceRoundBtn" class="btn-primary" style="background:var(--success-border);">
@@ -1037,13 +1071,13 @@ class TPS360WebApp {
           </div>
         </div>
 
-        <!-- PARTICIPANT ROLE ASSIGNMENT LOBBY PANEL -->
+        <!-- PARTICIPANT ROLE ASSIGNMENT LOBBY PANEL (7 OPERATIVE ROLES) -->
         <div class="card" style="margin-bottom:24px; border: 2px solid var(--primary-accent);">
           <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:8px; color:var(--primary-accent);">
-            👥 Реєстр Заявок Лоббі та Призначення Ролей Фасилітатором
+            👥 Реєстр Заявок Лоббі та Призначення Ролей Фасилітатором (7 Ролей)
           </h2>
           <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">
-            За регламентом TPS360, саме Фасилітатор призначає оперативні ролі підключеним учасникам:
+            За регламентом TPS360 (5-7 гравців у групі), Фасилітатор розподіляє 7 оперативних ролей між підключеними учасниками:
           </p>
 
           <div id="facilitatorRoleAssignTable">
@@ -1081,8 +1115,12 @@ class TPS360WebApp {
               <label class="form-label" for="stressRole">Цільова Роль:</label>
               <select id="stressRole" class="form-control">
                 <option value="head_of_emergency">🚒 Керівник штабу ДСНС</option>
-                <option value="chief_hospital">🚑 Головний лікар лікарні</option>
+                <option value="chief_medical_officer">🚑 Головний лікар лікарні</option>
                 <option value="director_waterworks">⚡ Директор Водоканалу</option>
+                <option value="head_of_community">🏫 Голова громади / Староста</option>
+                <option value="chief_police_officer">🛡️ Керівник Поліції</option>
+                <option value="chief_sanitary_inspector">🔬 Санітарний інспектор</option>
+                <option value="head_of_social_protection">🤝 Керівник Соцзахисту</option>
               </select>
             </div>
 
@@ -1150,7 +1188,7 @@ class TPS360WebApp {
             <th style="padding:8px;">ПІБ Учасника</th>
             <th style="padding:8px;">Організація та Посада</th>
             <th style="padding:8px;">Поточний Статус Ролі</th>
-            <th style="padding:8px;">Призначити Оперативну Роль</th>
+            <th style="padding:8px;">Призначити Оперативну Роль (із 7 ролей)</th>
             <th style="padding:8px;">Дія</th>
           </tr>
         </thead>
@@ -1164,10 +1202,13 @@ class TPS360WebApp {
               </td>
               <td style="padding:8px;">
                 <select class="form-control role-assign-select" data-part-id="${p.id}" style="padding:4px 8px; font-size:0.8rem;">
-                  <option value="head_of_emergency" ${p.assignedRole === 'head_of_emergency' ? 'selected' : ''}>🚒 Керівник штабу ДСНС</option>
-                  <option value="chief_hospital" ${p.assignedRole === 'chief_hospital' ? 'selected' : ''}>🚑 Головний лікар лікарні</option>
-                  <option value="director_waterworks" ${p.assignedRole === 'director_waterworks' ? 'selected' : ''}>⚡ Директор Водоканалу</option>
-                  <option value="head_of_community" ${p.assignedRole === 'head_of_community' ? 'selected' : ''}>🏫 Голова селищної ради (Староста)</option>
+                  <option value="head_of_emergency" ${p.assignedRole === 'head_of_emergency' ? 'selected' : ''}>1. 🚒 Керівник штабу ДСНС</option>
+                  <option value="chief_medical_officer" ${p.assignedRole === 'chief_medical_officer' ? 'selected' : ''}>2. 🚑 Головний лікар лікарні</option>
+                  <option value="director_waterworks" ${p.assignedRole === 'director_waterworks' ? 'selected' : ''}>3. ⚡ Директор Водоканалу / Комунальник</option>
+                  <option value="head_of_community" ${p.assignedRole === 'head_of_community' ? 'selected' : ''}>4. 🏫 Голова громади / Староста</option>
+                  <option value="chief_police_officer" ${p.assignedRole === 'chief_police_officer' ? 'selected' : ''}>5. 🛡️ Керівник Поліції громади</option>
+                  <option value="chief_sanitary_inspector" ${p.assignedRole === 'chief_sanitary_inspector' ? 'selected' : ''}>6. 🔬 Санітарний інспектор (Держпродспожив)</option>
+                  <option value="head_of_social_protection" ${p.assignedRole === 'head_of_social_protection' ? 'selected' : ''}>7. 🤝 Керівник Соціального захисту / Волонтери</option>
                 </select>
               </td>
               <td style="padding:8px;">
@@ -1191,10 +1232,13 @@ class TPS360WebApp {
 
         const chosenRole = select.value;
         const roleTitles = {
-          head_of_emergency: "🚒 Керівник штабу ДСНС",
-          chief_hospital: "🚑 Головний лікар лікарні",
-          director_waterworks: "⚡ Директор Водоканалу / Енергомережі",
-          head_of_community: "🏫 Голова селищної ради (Староста)"
+          head_of_emergency: "1. 🚒 Керівник штабу ДСНС",
+          chief_medical_officer: "2. 🚑 Головний лікар лікарні",
+          director_waterworks: "3. ⚡ Директор Водоканалу / Комунальник",
+          head_of_community: "4. 🏫 Голова громади / Староста",
+          chief_police_officer: "5. 🛡️ Керівник Поліції громади",
+          chief_sanitary_inspector: "6. 🔬 Санітарний інспектор",
+          head_of_social_protection: "7. 🤝 Керівник Соціального захисту"
         };
 
         const targetPart = this.state.lobbyParticipants.find(p => p.id === partId);
