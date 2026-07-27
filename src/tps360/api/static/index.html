@@ -31,12 +31,14 @@
       <nav class="main-nav" aria-label="Головне меню">
         <button type="button" class="nav-btn active" id="navCatalogBtn" data-screen="catalog">🏛️ Громади & OSM</button>
         <button type="button" class="nav-btn" id="navScenariosBtn" data-screen="scenarios">⚠️ Сценарії НС</button>
+        <button type="button" class="nav-btn" id="navLoginBtn" data-screen="login">🔑 Вхід Учасника</button>
         <button type="button" class="nav-btn" id="navWorkspaceBtn" data-screen="workspace">🎯 Кабінет Гравця</button>
         <button type="button" class="nav-btn" id="navFacilitatorBtn" data-screen="facilitator">🕹️ Пульт Фасилітатора</button>
         <button type="button" class="nav-btn" id="navAarBtn" data-screen="aar">📊 AAR Дебрифінг</button>
       </nav>
 
       <div class="header-actions">
+        <button type="button" id="headerLoginBtn" class="btn-primary" style="font-size:0.82rem; padding:6px 12px;">🔑 Увійти</button>
         <button type="button" id="themeToggleBtn" class="theme-btn" title="Змінити тему">
           <span id="themeIcon">🌙</span> <span id="themeText">Dark</span>
         </button>
@@ -56,6 +58,10 @@
       <div class="context-item">
         <span class="context-label">СЦЕНАРІЙ:</span>
         <span class="context-val" id="activeScenarioTitle">—</span>
+      </div>
+      <div class="context-item">
+        <span class="context-label">УЧАСНИК:</span>
+        <span class="context-val" id="activeParticipantName">—</span>
       </div>
       <div class="context-item">
         <span class="context-label">СТАТУС:</span>

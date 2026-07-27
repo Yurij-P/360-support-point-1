@@ -16,10 +16,12 @@ def test_web_app_root_serving_index_html() -> None:
     # Context bar must default to clean dashes '—'
     assert 'id="activeCommunityName">—' in response.text
     assert 'id="activeScenarioTitle">—' in response.text
+    assert 'id="activeParticipantName">—' in response.text
     assert 'id="activeSessionStatus"' in response.text
     # Required navigation button IDs check
     assert "navCatalogBtn" in response.text
     assert "navScenariosBtn" in response.text
+    assert "navLoginBtn" in response.text
     assert "navWorkspaceBtn" in response.text
     assert "navFacilitatorBtn" in response.text
     assert "navAarBtn" in response.text
@@ -34,8 +36,9 @@ def test_web_app_static_css_and_js_serving() -> None:
     js_res = client.get("/static/app.js")
     assert js_res.status_code == 200
     assert "javascript" in js_res.headers["content-type"]
-    # App JS must not contain hardcoded dummy percentages like 68.5% or fake numbers
-    assert "initial_preparedness_score: 68.5" not in js_res.text
+    # App JS must contain participant login screen rendering
+    assert "renderLoginScreen" in js_res.text
+    assert "participantLoginForm" in js_res.text
 
 
 def test_community_passport_gis_coordinates_and_katottg_alignment() -> None:

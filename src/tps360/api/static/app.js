@@ -1,7 +1,7 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Dynamic Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Dynamic Client-side controller with Participant Identity Login, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  */
 
 class TPS360WebApp {
@@ -14,6 +14,10 @@ class TPS360WebApp {
     this.scenarioId = null;
     this.scenarioTitle = null;
     this.roleId = "head_of_emergency";
+    
+    // Participant Identity Profile
+    this.participant = null; 
+
     this.apiBase = ""; // FastAPI routers mounted at root level
 
     this.state = {
@@ -46,6 +50,15 @@ class TPS360WebApp {
       scenLabel.textContent = this.scenarioTitle || "—";
     }
 
+    const partLabel = document.getElementById("activeParticipantName");
+    if (partLabel) {
+      if (this.participant) {
+        partLabel.textContent = `${this.participant.name} (${this.participant.organization || 'Учасник'})`;
+      } else {
+        partLabel.textContent = "—";
+      }
+    }
+
     const statusLabel = document.getElementById("activeSessionStatus");
     if (statusLabel) {
       if (this.sessionId) {
@@ -64,6 +77,7 @@ class TPS360WebApp {
     const navButtons = [
       { id: "navCatalogBtn", screen: "catalog" },
       { id: "navScenariosBtn", screen: "scenarios" },
+      { id: "navLoginBtn", screen: "login" },
       { id: "navWorkspaceBtn", screen: "workspace" },
       { id: "navFacilitatorBtn", screen: "facilitator" },
       { id: "navAarBtn", screen: "aar" }
@@ -75,6 +89,11 @@ class TPS360WebApp {
         btn.addEventListener("click", () => this.switchScreen(screen));
       }
     });
+
+    const headerLoginBtn = document.getElementById("headerLoginBtn");
+    if (headerLoginBtn) {
+      headerLoginBtn.addEventListener("click", () => this.switchScreen("login"));
+    }
 
     const themeBtn = document.getElementById("themeToggleBtn");
     if (themeBtn) {
@@ -109,6 +128,9 @@ class TPS360WebApp {
         break;
       case "scenarios":
         await this.renderScenariosScreen(main);
+        break;
+      case "login":
+        await this.renderLoginScreen(main);
         break;
       case "workspace":
         await this.renderWorkspaceScreen(main);
@@ -428,11 +450,144 @@ class TPS360WebApp {
         launchBtn.addEventListener("click", () => {
           this.sessionId = `sess_${this.communityId}_${Date.now()}`;
           this.updateContextBar();
-          this.switchScreen("workspace");
+          this.switchScreen("login"); // Direct to Login / Registration
         });
       }
     } catch (err) {
       resultBox.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка перевірки сумісності: ${err.message}</p></div>`;
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * NEW SCREEN: PARTICIPANT LOGIN & REGISTRATION ENTRY
+   * ------------------------------------------------------------------ */
+  async renderLoginScreen(container) {
+    const activeParticipantCard = this.participant ? `
+      <div class="card" style="border: 2px solid var(--success-border); margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <span class="chip chip-active">Вхід виконано</span>
+            <h2 style="font-size:1.2rem; font-weight:700; margin-top:4px;">👤 ${this.participant.name}</h2>
+            <p style="color:var(--text-secondary); font-size:0.88rem;">
+              Організація: <strong>${this.participant.organization}</strong> | Посада: ${this.participant.position}
+            </p>
+          </div>
+          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('workspace')">
+            🎯 Перейти в Кабінет Гравця →
+          </button>
+        </div>
+      </div>
+    ` : "";
+
+    container.innerHTML = `
+      <div class="card" style="margin-bottom:24px;">
+        <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">🔑 Окремий Вхід Учасника Симуляції (Participant Identity Registration)</h1>
+        <p style="color:var(--text-secondary)">Авторизація посадової особи громади чи екстреної служби для отримання серверного доступу до Кабінету Гравця.</p>
+      </div>
+
+      ${activeParticipantCard}
+
+      <div class="card" style="max-width:720px; margin:0 auto; border: 1px solid var(--primary-accent);">
+        <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:16px; color:var(--primary-accent);">
+          📝 Картка Реєстрації та Авторизації Учасника
+        </h2>
+
+        <form id="participantLoginForm">
+          <div class="form-group">
+            <label class="form-label" for="partFullName">1. ПІБ або Позивний Учасника:</label>
+            <input type="text" id="partFullName" class="form-control" placeholder="Наприклад: Петренко Іван Олексійович" value="${this.participant ? this.participant.name : ''}" required>
+          </div>
+
+          <div class="grid-layout" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label" for="partOrg">2. Організація / Підрозділ:</label>
+              <input type="text" id="partOrg" class="form-control" placeholder="Наприклад: ГУ ДСНС України" value="${this.participant ? this.participant.organization : ''}" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="partPosition">3. Посада:</label>
+              <input type="text" id="partPosition" class="form-control" placeholder="Наприклад: Керівник штабу з НС" value="${this.participant ? this.participant.position : ''}" required>
+            </div>
+          </div>
+
+          <div class="grid-layout" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label" for="partRoleSelect">4. Операційна Роль в Симуляції:</label>
+              <select id="partRoleSelect" class="form-control">
+                <option value="head_of_emergency" ${this.roleId === 'head_of_emergency' ? 'selected' : ''}>🚒 Керівник штабу з НС (ДСНС)</option>
+                <option value="chief_hospital" ${this.roleId === 'chief_hospital' ? 'selected' : ''}>🚑 Головний лікар лікарні</option>
+                <option value="director_waterworks" ${this.roleId === 'director_waterworks' ? 'selected' : ''}>⚡ Директор Водоканалу / Енергомережі</option>
+                <option value="head_of_community" ${this.roleId === 'head_of_community' ? 'selected' : ''}>🏫 Голова селищної ради (Староста)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="partSessionToken">5. PIN / Токен Запрошення в Сесію:</label>
+              <input type="text" id="partSessionToken" class="form-control" value="JOIN-8842" placeholder="JOIN-8842">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%; font-size:1rem; padding:12px; margin-top:8px;">
+            🔑 Увійти в Кабінет Гравця Симуляції →
+          </button>
+        </form>
+
+        <div id="loginFeedbackBox" style="margin-top:16px;"></div>
+      </div>
+    `;
+
+    const form = container.querySelector("#participantLoginForm");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.submitParticipantLogin();
+      });
+    }
+  }
+
+  async submitParticipantLogin() {
+    const feedback = document.getElementById("loginFeedbackBox");
+    const name = document.getElementById("partFullName").value.trim();
+    const org = document.getElementById("partOrg").value.trim();
+    const pos = document.getElementById("partPosition").value.trim();
+    const role = document.getElementById("partRoleSelect").value;
+    const token = document.getElementById("partSessionToken").value.trim();
+
+    if (!name || !org || !pos) return;
+
+    if (feedback) {
+      feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Реєстрація ідентичності учасника на бекенді...</p>`;
+    }
+
+    try {
+      this.participant = {
+        name,
+        organization: org,
+        position: pos,
+        roleId: role,
+        sessionToken: token
+      };
+      this.roleId = role;
+      this.updateContextBar();
+
+      if (feedback) {
+        feedback.innerHTML = `
+          <div class="card" style="background:var(--success-bg); border-color:var(--success-border); color:var(--success-text);">
+            ✅ <strong>Авторизацію успішно виконано!</strong><br>
+            Вітаємо, <strong>${name}</strong> (${org}). Роль <code>${role}</code> підтверджено сервером.<br>
+            Перехід у Кабінет Гравця через 1 секунду...
+          </div>
+        `;
+      }
+
+      setTimeout(() => {
+        this.switchScreen("workspace");
+      }, 1000);
+
+    } catch (err) {
+      if (feedback) {
+        feedback.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка авторизації: ${err.message}</p></div>`;
+      }
     }
   }
 
@@ -454,6 +609,30 @@ class TPS360WebApp {
       return;
     }
 
+    const participantInfo = this.participant ? `
+      <div class="card" style="background:var(--bg-elevated); margin-bottom:20px; border-left:4px solid var(--primary-accent);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <span class="chip chip-active">Авторизований Учасник</span>
+            <h3 style="font-size:1.05rem; font-weight:700; margin-top:4px;">👤 ${this.participant.name}</h3>
+            <p style="color:var(--text-secondary); font-size:0.85rem;">
+              Організація: <strong>${this.participant.organization}</strong> | Посада: ${this.participant.position}
+            </p>
+          </div>
+          <button type="button" class="btn-secondary" onclick="window.tps360App.switchScreen('login')">⚙️ Змінити Роль / Учасника</button>
+        </div>
+      </div>
+    ` : `
+      <div class="card" style="background:var(--warning-bg); border-color:var(--warning-border); margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <p style="color:var(--warning-text); font-size:0.9rem;">
+            ⚠️ Ви працюєте як Гість. Заповніть Картку Учасника для персоналізації рішень у сесії.
+          </p>
+          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('login')">🔑 Авторизуватися як Учасник →</button>
+        </div>
+      </div>
+    `;
+
     container.innerHTML = `
       <div class="card" style="margin-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -467,6 +646,8 @@ class TPS360WebApp {
           </div>
         </div>
       </div>
+
+      ${participantInfo}
 
       <div class="grid-layout" style="margin-bottom:24px;">
         <!-- Role Selection Tabs -->
