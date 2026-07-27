@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TPS360 — Точка Підтримки 360 | Платформа Симуляційних Навчань</title>
+  <meta name="description" content="Платформа симуляційного моделювання кризових подій та стійкості територіальних громад.">
+  
+  <!-- Fonts & Leaflet GIS CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="logo-group">
+        <span class="logo-title">TPS360</span>
+        <span class="logo-subtitle">Точка підтримки 360</span>
+        <span class="version-badge">v0.2.8</span>
+      </div>
+
+      <nav class="main-nav" aria-label="Головне меню">
+        <button type="button" class="nav-btn active" data-screen="catalog">Громади</button>
+        <button type="button" class="nav-btn" data-screen="scenarios">Сценарії</button>
+        <button type="button" class="nav-btn" data-screen="facilitator">Пульт Фасилітатора</button>
+        <button type="button" class="nav-btn" data-screen="workspace">Кабінет Гравця</button>
+        <button type="button" class="nav-btn" data-screen="aar">AAR Дебрифінг</button>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" id="themeToggleBtn" class="action-icon-btn" title="Переключити тему">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <div class="connection-status online">
+          <span class="status-dot"></span>
+          <span class="status-text">Онлайн</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub-header Context Bar -->
+    <div class="context-bar">
+      <span class="context-label">ПОТОЧНИЙ КОНТЕКСТ:</span>
+      <div id="activeContextChips" class="context-chips">
+        <span class="chip chip-community">Громада: Верховинська селищна</span>
+        <span class="chip chip-threat">Загроза: Зсув ґрунту внаслідок злив</span>
+        <span class="chip chip-session">Сесія: ACTIVE (#sess_demo_99)</span>
+      </div>
+    </div>
+
+    <!-- Main Content Dynamic Container -->
+    <main id="mainContent" class="main-viewport">
+      <!-- Screens rendered dynamically by app.js -->
+    </main>
+
+    <!-- Footer Status Bar -->
+    <footer class="app-footer">
+      <span class="footer-text">TPS360 Digital Resilience Simulation Engine · Державна служба України з надзвичайних ситуацій / ОМА</span>
+      <span class="footer-status" id="footerClock">Дилатація часу: 1:30 | Такт раунду: 2.5 години</span>
+    </footer>
+  </div>
+
+  <!-- Leaflet GIS & App Logic Script -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/static/app.js" type="module"></script>
+</body>
+</html>
