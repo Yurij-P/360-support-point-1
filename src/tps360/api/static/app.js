@@ -117,9 +117,9 @@ class TPS360WebApp {
 
       if (items.length === 0) {
         items = [
-          { community_id: "verkhovyna", name: "Верховинська селищна громада", official_code: "UA26020010000055743", region: "Івано-Франківська область", district: "Верховинський район", total_population: 17850, preparedness_score: 74.5, maturity_level: "Resilient", critical_infrastructure_count: 5 },
-          { community_id: "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3", name: "Березнегуватська селищна громада", official_code: "UA48060030000037887", region: "Миколаївська область", district: "Баштанський район", total_population: 23500, preparedness_score: 68.5, maturity_level: "Integrated", critical_infrastructure_count: 8 },
-          { community_id: "shiroke", name: "Широківська сільська громада", official_code: "UA23080270000095874", region: "Запорізька область", district: "Запорізький район", total_population: 12500, preparedness_score: 62.0, maturity_level: "Managed", critical_infrastructure_count: 4 }
+          { community_id: "verkhovyna", name: "Верховинська селищна громада", official_code: "UA26020010000055743", region: "Івано-Франківська область", district: "Верховинський район", total_population: 17850, preparedness_score: 74.5, maturity_level: "Resilient", critical_infrastructure_count: 5, center_latitude: 48.155, center_longitude: 24.832 },
+          { community_id: "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3", name: "Березнегуватська селищна громада", official_code: "UA48060030000037887", region: "Миколаївська область", district: "Баштанський район", total_population: 23500, preparedness_score: 68.5, maturity_level: "Integrated", critical_infrastructure_count: 8, center_latitude: 47.312, center_longitude: 32.848 },
+          { community_id: "shiroke", name: "Широківська сільська громада", official_code: "UA23080270000095874", region: "Запорізька область", district: "Запорізький район", total_population: 12500, preparedness_score: 62.0, maturity_level: "Managed", critical_infrastructure_count: 4, center_latitude: 47.920, center_longitude: 35.050 }
         ];
       }
       this.state.communities = items;
@@ -177,7 +177,7 @@ class TPS360WebApp {
       <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
         <div>
           <span class="chip" style="float:right; background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">
-            Оценка готовності: ${c.preparedness_score || 70}%
+            Готовність: ${c.preparedness_score || 70}%
           </span>
           <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
           <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:8px;">
@@ -220,26 +220,41 @@ class TPS360WebApp {
       }
 
       if (!passport) {
+        const fallbackCenters = {
+          "verkhovyna": { lat: 48.155, lon: 24.832, code: "UA26020010000055743", reg: "Івано-Франківська область", dist: "Верховинський район" },
+          "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": { lat: 47.312, lon: 32.848, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район" },
+          "shiroke": { lat: 47.920, lon: 35.050, code: "UA23080270000095874", reg: "Запорізька область", dist: "Запорізький район" }
+        };
+        const fb = fallbackCenters[communityId] || { lat: 48.155, lon: 24.832, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район" };
+
         passport = {
           community_id: communityId,
           name: this.communityName || "Територіальна громада",
-          official_code: "UA26020010000055743",
-          region: "Івано-Франківська область",
-          district: "Верховинський район",
-          total_population: 17850,
-          preparedness_score: 74.5,
-          maturity_level: "Resilient",
-          vulnerable_population_total: 3420,
+          official_code: fb.code,
+          region: fb.reg,
+          district: fb.dist,
+          center_latitude: fb.lat,
+          center_longitude: fb.lon,
+          total_population: 23500,
+          preparedness_score: 68.5,
+          maturity_level: "Integrated",
+          vulnerable_population_total: 4200,
           infrastructure_items: [
-            { id: "inf_1", name: "Штаб з НС (Верховина)", category: "CRITICAL_INFRASTRUCTURE", latitude: 48.155, longitude: 24.832, risk_level: "LOW" },
-            { id: "inf_2", name: "Пожежно-рятувальна частина ДСНС №12", category: "EMERGENCY_SERVICE", latitude: 48.152, longitude: 24.838, risk_level: "LOW" },
-            { id: "inf_3", name: "Центральна Районна Лікарня", category: "HOSPITAL_MEDICAL", latitude: 48.148, longitude: 24.829, risk_level: "MODERATE" },
-            { id: "inf_4", name: "Трансформаторна Підстанція 110кВ", category: "ENERGY_GRID", latitude: 48.160, longitude: 24.845, risk_level: "HIGH" },
-            { id: "inf_5", name: "Центральний Водоканал", category: "WATER_UTILITY", latitude: 48.144, longitude: 24.820, risk_level: "HIGH" }
+            { id: "infra_1", name: `Штаб з НС (${this.communityName})`, category: "TERRITORIAL_DEFENSE_HQ", latitude: fb.lat, longitude: fb.lon, risk_level: "CRITICAL" },
+            { id: "infra_2", name: `Центральна Лікарня`, category: "HOSPITAL_MEDICAL", latitude: fb.lat + 0.003, longitude: fb.lon - 0.003, risk_level: "MODERATE" },
+            { id: "infra_3", name: `Трансформаторна Підстанція 110кВ`, category: "TRANSFORMER_SUBSTATION", latitude: fb.lat + 0.018, longitude: fb.lon + 0.032, risk_level: "HIGH" }
           ]
         };
       }
+
+      this.communityName = passport.name;
+      this.updateContextBar();
       this.state.activePassport = passport;
+
+      const mapCenter = [
+        passport.center_latitude || 48.155,
+        passport.center_longitude || 24.832
+      ];
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
@@ -272,21 +287,21 @@ class TPS360WebApp {
             <p style="font-size:0.9rem; margin-bottom:6px;">Загальне населення: <strong>${(passport.total_population || 17850).toLocaleString()} осіб</strong></p>
             <p style="font-size:0.9rem; margin-bottom:6px;">Вразливе населення: <strong>${(passport.vulnerable_population_total || 3420).toLocaleString()} осіб</strong></p>
             <div style="font-size:0.8rem; display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-              <span class="chip">Діти: 1,400</span>
-              <span class="chip">Літні: 1,200</span>
-              <span class="chip">ВПО: 500</span>
+              <span class="chip">Діти: 1,800</span>
+              <span class="chip">Літні: 1,500</span>
+              <span class="chip">ВПО: 450</span>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (GIS Layer)</h3>
+          <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (${passport.name})</h3>
           <div id="gisMapContainer" class="map-container"></div>
         </div>
       `;
 
       container.querySelector(".back-to-catalog-btn").addEventListener("click", () => this.renderCatalogScreen(container));
-      this.initLeafletMap("gisMapContainer", [48.155, 24.832], passport.infrastructure_items);
+      this.initLeafletMap("gisMapContainer", mapCenter, passport.name, passport.infrastructure_items);
 
     } catch (err) {
       container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка відкриття паспорта: ${err.message}</p></div>`;
@@ -357,7 +372,7 @@ class TPS360WebApp {
     const resultBox = document.getElementById("compatibilityResultContainer");
     if (!resultBox) return;
 
-    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться оцінка сумісності сценарію ${scenarioId} з рельєфом громади ${this.communityName}...</p></div>`;
+    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться оцінка сумісності сценарію ${scenarioId} з рельєфом громади "${this.communityName}"...</p></div>`;
 
     try {
       const res = await fetch(`${this.apiBase}/scenarios/compatibility-check`, {
@@ -375,7 +390,7 @@ class TPS360WebApp {
           community_id: this.communityId,
           is_compatible: true,
           compatibility_score: 95.0,
-          terrain_match_reason: `Гірський рельєф громади "${this.communityName}" є дозволеним та оптимальним для сценарію ${scenarioId}.`
+          terrain_match_reason: `Рельєф громади "${this.communityName}" є дозволеним та сумісним для проведення симуляції за сценарієм ${scenarioId}.`
         };
       }
 
@@ -457,10 +472,10 @@ class TPS360WebApp {
             <div class="form-group">
               <label class="form-label" for="legoTargetFacility">2. Об'єкт OpenStreetMap (Target Facility):</label>
               <select id="legoTargetFacility" class="form-control">
-                <option value="inf_4">⚡ Енергопідстанція 110кВ (Верховина)</option>
-                <option value="inf_3">🏥 Центральна Районна Лікарня</option>
-                <option value="inf_5">💧 Центральний Водоканал</option>
-                <option value="inf_1">🏛️ Штаб з НС селищної ради</option>
+                <option value="infra_1">⚡ Трансформаторна підстанція 110кВ (${this.communityName})</option>
+                <option value="infra_2">🏥 Центральна Районна Лікарня</option>
+                <option value="infra_3">💧 Центральний Водоканал</option>
+                <option value="infra_hq">🏛️ Штаб з НС селищної ради</option>
               </select>
             </div>
           </div>
@@ -643,7 +658,7 @@ class TPS360WebApp {
 
       if (!projections || projections.length === 0) {
         projections = [
-          { variant_id: "v1", variant_type: "BEST_CASE_CONTAINED", description: "Локалізація зсуву ґрунту силами ДСНС протягом 2 годин", probability_pct: 35.0 },
+          { variant_id: "v1", variant_type: "BEST_CASE_CONTAINED", description: `Локалізація аварії у громаді "${this.communityName}" силами ДСНС протягом 2 годин`, probability_pct: 35.0 },
           { variant_id: "v2", variant_type: "MODERATE_RESOURCE_STRAIN", description: "Часткова затримка евакуації через дефіцит спецтехніки", probability_pct: 45.0 },
           { variant_id: "v3", variant_type: "WORST_CASE_CASCADE", description: "Каскадне знеструмлення водоканалу та паніка серед населення", probability_pct: 20.0 }
         ];
@@ -854,7 +869,7 @@ class TPS360WebApp {
   /* ------------------------------------------------------------------
    * LEAFLET OPENSTREETMAP GIS INITIALIZER
    * ------------------------------------------------------------------ */
-  initLeafletMap(containerId, centerCoords, items = []) {
+  initLeafletMap(containerId, centerCoords, communityName, items = []) {
     if (typeof L === "undefined") return;
 
     setTimeout(() => {
@@ -866,8 +881,8 @@ class TPS360WebApp {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Довідник КАТОТТГ | ГО Проти Корупції',
       }).addTo(map);
 
-      // Headquarters marker
-      L.marker(centerCoords).addTo(map).bindPopup(`<b>🏛️ Штаб з НС (${this.communityName})</b><br>Центр оперативного реагування`).openPopup();
+      // Headquarters marker with EXACT Community Name
+      L.marker(centerCoords).addTo(map).bindPopup(`<b>🏛️ Штаб з НС (${communityName})</b><br>Центр оперативного реагування`).openPopup();
 
       // Infrastructure markers
       items.forEach(item => {

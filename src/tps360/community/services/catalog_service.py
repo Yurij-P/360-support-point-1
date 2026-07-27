@@ -23,6 +23,8 @@ class CommunityCatalogItem:
     preparedness_score: float
     maturity_level: str
     critical_infrastructure_count: int
+    center_latitude: float = 48.155
+    center_longitude: float = 24.832
 
 
 # Default catalog dataset grounded in KATOTTG Directory (directory.org.ua)
@@ -38,6 +40,8 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
         preparedness_score=74.5,
         maturity_level="Resilient",
         vulnerable_population_total=3420,
+        center_latitude=48.155,
+        center_longitude=24.832,
         vulnerable_groups_breakdown={
             "children": 1400,
             "elderly": 1200,
@@ -100,6 +104,8 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
         preparedness_score=68.5,
         maturity_level="Integrated",
         vulnerable_population_total=4200,
+        center_latitude=47.312,
+        center_longitude=32.848,
         vulnerable_groups_breakdown={
             "children": 1800,
             "elderly": 1500,
@@ -113,8 +119,8 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
                 id="infra_berez_substation_1",
                 name="Баштанська ТП 110кВ",
                 category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
-                latitude=47.33,
-                longitude=32.88,
+                latitude=47.330,
+                longitude=32.880,
                 risk_level="CRITICAL",
             ),
             InfrastructureItemReadModel(
@@ -124,6 +130,14 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
                 latitude=47.315,
                 longitude=32.845,
                 risk_level="MODERATE",
+            ),
+            InfrastructureItemReadModel(
+                id="infra_berez_tro_hq_1",
+                name="Штаб ТрО Березнегувате",
+                category=CriticalInfrastructureCategory.TERRITORIAL_DEFENSE_HQ,
+                latitude=47.318,
+                longitude=32.848,
+                risk_level="CRITICAL",
             ),
         ),
     ),
@@ -138,6 +152,8 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
         preparedness_score=62.0,
         maturity_level="Managed",
         vulnerable_population_total=2100,
+        center_latitude=47.920,
+        center_longitude=35.050,
         vulnerable_groups_breakdown={
             "children": 800,
             "elderly": 900,
@@ -151,8 +167,8 @@ SEED_PASSPORTS: dict[str, CommunityPassportReadModel] = {
                 id="infra_shir_substation_1",
                 name="Широківська ТП 35кВ",
                 category=CriticalInfrastructureCategory.TRANSFORMER_SUBSTATION,
-                latitude=47.92,
-                longitude=35.05,
+                latitude=47.920,
+                longitude=35.050,
                 risk_level="HIGH",
             ),
         ),
@@ -195,6 +211,8 @@ class CommunityCatalogService:
                     preparedness_score=p.preparedness_score,
                     maturity_level=p.maturity_level,
                     critical_infrastructure_count=p.critical_infrastructure_count,
+                    center_latitude=p.center_latitude,
+                    center_longitude=p.center_longitude,
                 )
             )
 

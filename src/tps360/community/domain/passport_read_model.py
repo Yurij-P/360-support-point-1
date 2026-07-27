@@ -50,6 +50,8 @@ class CommunityPassportReadModel:
     vulnerable_groups_breakdown: dict[str, int] = field(default_factory=dict)
     infrastructure_items: tuple[InfrastructureItemReadModel, ...] = ()
     topography_features: tuple[SpatialTopographyFeature, ...] = ()
+    center_latitude: float = 48.155
+    center_longitude: float = 24.832
     osm_relation_id: str | None = None
     bounding_box: dict[str, float] | None = None
 
