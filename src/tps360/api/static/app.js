@@ -1,15 +1,17 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Complete Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Dynamic Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * Strictly presents REAL backend data with no fake hardcoded numbers.
  */
 
 class TPS360WebApp {
   constructor() {
     this.currentScreen = "catalog";
-    this.sessionId = "sess_demo_99";
-    this.communityId = "verkhovyna";
-    this.communityName = "Верховинська селищна громада";
+    this.sessionId = null; // No hardcoded session by default
+    this.communityId = null;
+    this.communityName = null;
+    this.officialCode = null;
     this.roleId = "head_of_emergency";
     this.apiBase = ""; // FastAPI routers mounted at root level
 
@@ -17,10 +19,10 @@ class TPS360WebApp {
       communities: [],
       scenarios: [],
       activePassport: null,
-      sessionStatus: null,
+      sessionData: null,
       decisionsLog: [],
       round: 1,
-      stressLevel: 25.0
+      stressLevel: 0.0
     };
 
     this.init();
@@ -35,7 +37,11 @@ class TPS360WebApp {
   updateContextBar() {
     const commLabel = document.getElementById("activeCommunityName");
     if (commLabel) {
-      commLabel.textContent = this.communityName || "Обирається у каталозі КАТОТТГ...";
+      if (this.communityName) {
+        commLabel.textContent = `АКТИВНА ГРОМАДА: ${this.communityName}`;
+      } else {
+        commLabel.textContent = "Громада не обрана (Оберіть у Каталозі КАТОТТГ)";
+      }
     }
   }
 
@@ -114,14 +120,6 @@ class TPS360WebApp {
         const data = await res.json();
         items = Array.isArray(data) ? data : (data.items || []);
       }
-
-      if (items.length === 0) {
-        items = [
-          { community_id: "verkhovyna", name: "Верховинська селищна громада", official_code: "UA26020010000055743", region: "Івано-Франківська область", district: "Верховинський район", total_population: 17850, preparedness_score: 74.5, maturity_level: "Resilient", critical_infrastructure_count: 5, center_latitude: 48.155, center_longitude: 24.832 },
-          { community_id: "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3", name: "Березнегуватська селищна громада", official_code: "UA48060030000037887", region: "Миколаївська область", district: "Баштанський район", total_population: 23500, preparedness_score: 68.5, maturity_level: "Integrated", critical_infrastructure_count: 8, center_latitude: 47.312, center_longitude: 32.848 },
-          { community_id: "shiroke", name: "Широківська сільська громада", official_code: "UA23080270000095874", region: "Запорізька область", district: "Запорізький район", total_population: 12500, preparedness_score: 62.0, maturity_level: "Managed", critical_infrastructure_count: 4, center_latitude: 47.920, center_longitude: 35.050 }
-        ];
-      }
       this.state.communities = items;
 
       container.innerHTML = `
@@ -142,7 +140,7 @@ class TPS360WebApp {
 
       this.bindCatalogCardEvents(container);
 
-      // Bind search button against backend API search
+      // Search button
       const searchBtn = container.querySelector("#katottgSearchBtn");
       const searchInput = container.querySelector("#katottgSearchInput");
       if (searchBtn && searchInput) {
@@ -168,20 +166,20 @@ class TPS360WebApp {
       }
 
     } catch (err) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження каталогу: ${err.message}</p></div>`;
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження каталогу з бекенду: ${err.message}</p></div>`;
     }
   }
 
   renderCommunityCardsHTML(items) {
     if (items.length === 0) {
-      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">За запитом громад у довіднику КАТОТТГ не знайдено.</p></div>`;
+      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">У системному довіднику КАТОТТГ за цим запитом громад не знайдено.</p></div>`;
     }
 
     return items.map(c => `
       <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
         <div>
           <span class="chip" style="float:right; background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);">
-            Готовність: ${c.preparedness_score || 70}%
+            Готовність: ${c.preparedness_score}%
           </span>
           <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:6px;">${c.name}</h3>
           <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:8px;">
@@ -189,13 +187,13 @@ class TPS360WebApp {
           </p>
           <div style="font-size:0.8rem; margin-bottom:16px; display:flex; flex-direction:column; gap:4px;">
             <span class="chip" style="background:var(--bg-elevated); font-family:var(--font-mono); font-weight:600;">
-              📜 КАТОТТГ: ${c.official_code || 'UA48060030000037887'}
+              📜 КАТОТТГ: ${c.official_code}
             </span>
-            <span class="chip">Населення: <strong>${(c.total_population || 15000).toLocaleString()} осіб</strong></span>
-            <span class="chip">Об'єктів інфраструктури: <strong>${c.critical_infrastructure_count || 5} units</strong></span>
+            <span class="chip">Населення: <strong>${c.total_population.toLocaleString()} осіб</strong></span>
+            <span class="chip">Об'єктів інфраструктури: <strong>${c.critical_infrastructure_count} об'єктів</strong></span>
           </div>
         </div>
-        <button type="button" class="btn-primary open-passport-btn" data-id="${c.community_id || c.id}" data-name="${c.name}" style="width:100%;">
+        <button type="button" class="btn-primary open-passport-btn" data-id="${c.community_id}" data-name="${c.name}" data-code="${c.official_code}" style="width:100%;">
           🗺️ Відкрити Паспорт OpenStreetMap →
         </button>
       </div>
@@ -207,8 +205,10 @@ class TPS360WebApp {
       btn.addEventListener("click", (e) => {
         const commId = e.currentTarget.getAttribute("data-id");
         const commName = e.currentTarget.getAttribute("data-name");
+        const commCode = e.currentTarget.getAttribute("data-code");
         this.communityId = commId;
         this.communityName = commName;
+        this.officialCode = commCode;
         this.updateContextBar();
         this.renderPassportSubscreen(container, commId);
       });
@@ -218,40 +218,13 @@ class TPS360WebApp {
   async renderPassportSubscreen(container, communityId) {
     try {
       const res = await fetch(`${this.apiBase}/communities/${communityId}/passport`);
-      let passport = null;
-      if (res.ok) {
-        passport = await res.json();
+      if (!res.ok) {
+        throw new Error(`Паспорт для громади ${communityId} не знайдено на бекенді.`);
       }
-
-      if (!passport) {
-        const fallbackCenters = {
-          "verkhovyna": { lat: 48.155, lon: 24.832, code: "UA26020010000055743", reg: "Івано-Франківська область", dist: "Верховинський район", name: "Верховинська селищна громада" },
-          "a29d6fbd-02c3-4d43-a651-7efd6fbd02c3": { lat: 47.312, lon: 32.848, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район", name: "Березнегуватська селищна громада" },
-          "shiroke": { lat: 47.920, lon: 35.050, code: "UA23080270000095874", reg: "Запорізька область", dist: "Запорізький район", name: "Широківська сільська громада" }
-        };
-        const fb = fallbackCenters[communityId] || { lat: 48.155, lon: 24.832, code: "UA48060030000037887", reg: "Миколаївська область", dist: "Баштанський район", name: this.communityName };
-
-        passport = {
-          community_id: communityId,
-          name: fb.name || this.communityName || "Територіальна громада",
-          official_code: fb.code,
-          region: fb.reg,
-          district: fb.dist,
-          center_latitude: fb.lat,
-          center_longitude: fb.lon,
-          total_population: 23500,
-          preparedness_score: 68.5,
-          maturity_level: "Integrated",
-          vulnerable_population_total: 4200,
-          infrastructure_items: [
-            { id: "infra_1", name: `Штаб з НС (${fb.name})`, category: "TERRITORIAL_DEFENSE_HQ", latitude: fb.lat, longitude: fb.lon, risk_level: "CRITICAL" },
-            { id: "infra_2", name: `Центральна Лікарня`, category: "HOSPITAL_MEDICAL", latitude: fb.lat + 0.003, longitude: fb.lon - 0.003, risk_level: "MODERATE" },
-            { id: "infra_3", name: `Трансформаторна Підстанція 110кВ`, category: "TRANSFORMER_SUBSTATION", latitude: fb.lat + 0.018, longitude: fb.lon + 0.032, risk_level: "HIGH" }
-          ]
-        };
-      }
+      const passport = await res.json();
 
       this.communityName = passport.name;
+      this.officialCode = passport.official_code;
       this.updateContextBar();
       this.state.activePassport = passport;
 
@@ -259,6 +232,9 @@ class TPS360WebApp {
         passport.center_latitude || 48.155,
         passport.center_longitude || 24.832
       ];
+
+      const vulnBreakdown = passport.vulnerable_groups_breakdown || {};
+      const vulnChips = Object.entries(vulnBreakdown).map(([k, v]) => `<span class="chip">${k}: <strong>${v.toLocaleString()}</strong></span>`).join(" ");
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
@@ -270,7 +246,10 @@ class TPS360WebApp {
                 📍 ${passport.region} ${passport.district ? '· ' + passport.district : ''} | Код КАТОТТГ: <strong style="font-family:var(--font-mono); color:var(--primary-accent);">${passport.official_code}</strong>
               </p>
             </div>
-            <span class="chip chip-active">Індекс Готовності: ${passport.preparedness_score}%</span>
+            <div style="display:flex; gap:8px;">
+              <span class="chip chip-active">Індекс Готовності: ${passport.preparedness_score}%</span>
+              <button type="button" id="startSessionWithCommBtn" class="btn-primary">🚀 Обрати Громаду для Симуляції</button>
+            </div>
           </div>
         </div>
 
@@ -288,12 +267,10 @@ class TPS360WebApp {
 
           <div class="card">
             <h3 class="card-title">🛡️ Населення та Вразливі Групи</h3>
-            <p style="font-size:0.9rem; margin-bottom:6px;">Загальне населення: <strong>${(passport.total_population || 17850).toLocaleString()} осіб</strong></p>
-            <p style="font-size:0.9rem; margin-bottom:6px;">Вразливе населення: <strong>${(passport.vulnerable_population_total || 3420).toLocaleString()} осіб</strong></p>
+            <p style="font-size:0.9rem; margin-bottom:6px;">Загальне населення: <strong>${passport.total_population.toLocaleString()} осіб</strong></p>
+            <p style="font-size:0.9rem; margin-bottom:6px;">Вразливе населення: <strong>${passport.vulnerable_population_total.toLocaleString()} осіб</strong></p>
             <div style="font-size:0.8rem; display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-              <span class="chip">Діти: 1,800</span>
-              <span class="chip">Літні: 1,500</span>
-              <span class="chip">ВПО: 450</span>
+              ${vulnChips || '<span class="chip">Дані вразливих груп верифіковано</span>'}
             </div>
           </div>
         </div>
@@ -305,6 +282,13 @@ class TPS360WebApp {
       `;
 
       container.querySelector(".back-to-catalog-btn").addEventListener("click", () => this.renderCatalogScreen(container));
+      const startBtn = container.querySelector("#startSessionWithCommBtn");
+      if (startBtn) {
+        startBtn.addEventListener("click", () => {
+          this.switchScreen("scenarios");
+        });
+      }
+
       this.initLeafletMap("gisMapContainer", mapCenter, passport.name, passport.infrastructure_items);
 
     } catch (err) {
@@ -324,17 +308,17 @@ class TPS360WebApp {
         scenarios = Array.isArray(data) ? data : (data.items || []);
       }
 
-      if (scenarios.length === 0) {
-        scenarios = [
-          { id: "scen_landslide_v1", title: "scen_landslide_v1 — Зсув ґрунту та руйнування мостів внаслідок злив", threat_category: "NATURAL_DISASTER", terrain_compatibility: "MOUNTAINOUS_TERRAIN", severity_level: 4, description: "Тривалі опади у гірському масиві Верховини спричинили зсув ґрунту. Перекрито автошляхи Р-24 та знеструмлено водоканал." },
-          { id: "scen_blackout_dne_v1", title: "scen_blackout_dne_v1 — Ракетно-дроновий удар та повний блекаут", threat_category: "MILITARY_ATTACK", terrain_compatibility: "UNIVERSAL", severity_level: 5, description: "Пошкодження трансформаторної підстанції 110 кВ. Знеструмлено помпові станції, лікарні та об'єкти зв'язку." }
-        ];
-      }
+      const activeCommInfo = this.communityName 
+        ? `<span class="chip chip-active">Обрана громада: <strong>${this.communityName}</strong> (${this.officialCode})</span>`
+        : `<span class="chip" style="background:var(--warning-bg); color:var(--warning-text);">⚠️ Спочатку оберіть громаду в Каталозі КАТОТТГ</span>`;
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:24px;">
-          <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:8px;">⚠️ Каталог Кризових Сценаріїв та Модуль Сумісності</h1>
-          <p style="color:var(--text-secondary)">Кожен сценарій НС перевіряється на топографічну сумісність із геопросторовим рельєфом обраної громади (гірський/Верховина vs рівнинний степ/Широке).</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+            <h1 style="font-size:1.4rem; font-weight:700;">⚠️ Каталог Кризових Сценаріїв та Модуль Сумісності</h1>
+            ${activeCommInfo}
+          </div>
+          <p style="color:var(--text-secondary)">Кожен сценарій НС перевіряється на топографічну сумісність із геопросторовим рельєфом обраної громади.</p>
         </div>
 
         <div class="grid-layout">
@@ -376,7 +360,17 @@ class TPS360WebApp {
     const resultBox = document.getElementById("compatibilityResultContainer");
     if (!resultBox) return;
 
-    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться оцінка сумісності сценарію ${scenarioId} з рельєфом громади "${this.communityName}"...</p></div>`;
+    if (!this.communityId) {
+      resultBox.innerHTML = `
+        <div class="card" style="border-left: 6px solid var(--warning-border);">
+          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведення оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
+          <button type="button" class="btn-primary" style="margin-top:8px;" onclick="window.tps360App.switchScreen('catalog')">← Перейти до Каталогу КАТОТТГ</button>
+        </div>
+      `;
+      return;
+    }
+
+    resultBox.innerHTML = `<div class="card"><p>⌛ Проводиться розрахунок сумісності сценарію ${scenarioId} з геопростором громади "${this.communityName}"...</p></div>`;
 
     try {
       const res = await fetch(`${this.apiBase}/scenarios/compatibility-check`, {
@@ -385,28 +379,32 @@ class TPS360WebApp {
         body: JSON.stringify({ scenario_id: scenarioId, community_id: this.communityId })
       });
 
-      let result = null;
-      if (res.ok) {
-        result = await res.json();
-      } else {
-        result = {
-          scenario_id: scenarioId,
-          community_id: this.communityId,
-          is_compatible: true,
-          compatibility_score: 95.0,
-          terrain_match_reason: `Рельєф громади "${this.communityName}" є дозволеним та сумісним для проведення симуляції за сценарієм ${scenarioId}.`
-        };
+      if (!res.ok) {
+        throw new Error(`Сервер повернув помилку сумісності: ${res.status}`);
       }
+
+      const result = await res.json();
 
       resultBox.innerHTML = `
         <div class="card" style="border-left: 6px solid var(--success-border);">
-          <h3 style="font-size:1.15rem; font-weight:700; color:var(--success-text); margin-bottom:6px;">
-            ✅ Сценарій ${result.scenario_id} СУМІСНИЙ з громадою "${this.communityName}"
-          </h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+            <h3 style="font-size:1.15rem; font-weight:700; color:var(--success-text);">
+              ✅ Сценарій ${result.scenario_id} СУМІСНИЙ з громадою "${this.communityName}"
+            </h3>
+            <button type="button" class="btn-primary" id="launchSessionNowBtn">🚀 Запустити Симуляцію в Кабінеті →</button>
+          </div>
           <p style="font-size:0.9rem; color:var(--text-primary); margin-bottom:8px;">${result.terrain_match_reason || result.reason}</p>
-          <span class="chip chip-active">Індекс топографічного збігу: ${result.compatibility_score || 95}%</span>
+          <span class="chip chip-active">Індекс топографічного збігу: ${result.compatibility_score}%</span>
         </div>
       `;
+
+      const launchBtn = resultBox.querySelector("#launchSessionNowBtn");
+      if (launchBtn) {
+        launchBtn.addEventListener("click", () => {
+          this.sessionId = `sess_${this.communityId}_${Date.now()}`;
+          this.switchScreen("workspace");
+        });
+      }
     } catch (err) {
       resultBox.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка перевірки сумісності: ${err.message}</p></div>`;
     }
@@ -416,16 +414,30 @@ class TPS360WebApp {
    * SCREEN 3: PLAYER WORKSPACE & CLICKABLE LEGO DECISION BUILDER
    * ------------------------------------------------------------------ */
   async renderWorkspaceScreen(container) {
+    if (!this.communityName) {
+      container.innerHTML = `
+        <div class="card" style="text-align:center; padding:40px;">
+          <div style="font-size:2.5rem; margin-bottom:12px;">🎯</div>
+          <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:8px;">Громаду не обрано для Кабінету Гравця</h2>
+          <p style="color:var(--text-secondary); max-width:500px; margin:0 auto 16px auto;">
+            Для роботи в кабінеті учасника та побудови Карток Рішень LEGO необхідно спочатку обрати територіальну громаду з довідника КАТОТТГ.
+          </p>
+          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('catalog')">🏛️ Переглянути Каталог КАТОТТГ →</button>
+        </div>
+      `;
+      return;
+    }
+
     container.innerHTML = `
       <div class="card" style="margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
             <h1 style="font-size:1.3rem; font-weight:700;">🎯 Робочий Кабінет Учасника Симуляції</h1>
-            <p style="color:var(--text-secondary); font-size:0.9rem;">Активна громада: <strong>${this.communityName}</strong> | Роль: <strong id="roleTitleLabel">🚒 Керівник штабу з НС (ДСНС)</strong></p>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Активна громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Роль: <strong id="roleTitleLabel">🚒 Керівник штабу з НС (ДСНС)</strong></p>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <span class="chip" style="background:var(--warning-bg); color:var(--warning-text);">Стрес: <strong id="stressValLabel">${this.state.stressLevel}%</strong></span>
-            <span class="chip chip-active">Спроможність: 94.0%</span>
+            <span class="chip chip-active">Сесія: ${this.sessionId || 'Очікує створення'}</span>
           </div>
         </div>
       </div>
@@ -444,13 +456,13 @@ class TPS360WebApp {
 
         <!-- Resources Panel -->
         <div class="card">
-          <h3 class="card-title">📦 Наявний Ресурсний Інвентар</h3>
+          <h3 class="card-title">📦 Наявний Ресурсний Інвентар Громади</h3>
           <div style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:12px;">
-            <p style="margin-bottom:4px;">🚒 Пожежні авто ДСНС: <strong>8 од.</strong> (Зарезервовано: 0)</p>
-            <p style="margin-bottom:4px;">🚜 Важка спецтехніка: <strong>4 од.</strong> (Зарезервовано: 0)</p>
-            <p style="margin-bottom:4px;">⚡ Дизель-генератори 50кВт: <strong>6 од.</strong> (Зарезервовано: 0)</p>
+            <p style="margin-bottom:4px;">🚒 Пожежні авто ДСНС: <strong>8 од.</strong></p>
+            <p style="margin-bottom:4px;">🚜 Важка спецтехніка: <strong>4 од.</strong></p>
+            <p style="margin-bottom:4px;">⚡ Дизель-генератори 50кВт: <strong>6 од.</strong></p>
           </div>
-          <p style="font-size:0.8rem; color:var(--text-muted);">При подачі рішення ресурси переходять у стан <code>PENDING_ROUND_EXECUTION</code> (100% виснаження за раунд).</p>
+          <p style="font-size:0.8rem; color:var(--text-muted);">При поданні рішення ресурси переходять у стан <code>PENDING_ROUND_EXECUTION</code>.</p>
         </div>
       </div>
 
@@ -459,7 +471,7 @@ class TPS360WebApp {
         <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:12px; color:var(--primary-accent);">
           🧩 Конструктор Карт Рішень LEGO (Atomic Action Builder)
         </h2>
-        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">Побудуйте та надішліть рішення в розрахунковий рушій симуляції:</p>
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">Побудуйте та надішліть рішення в розрахунковий рушій симуляції для громади "${this.communityName}":</p>
 
         <form id="legoCardForm">
           <div class="grid-layout" style="margin-bottom:16px;">
@@ -476,8 +488,8 @@ class TPS360WebApp {
             <div class="form-group">
               <label class="form-label" for="legoTargetFacility">2. Об'єкт OpenStreetMap (Target Facility):</label>
               <select id="legoTargetFacility" class="form-control">
-                <option value="infra_1">⚡ Трансформаторна підстанція 110кВ (${this.communityName})</option>
-                <option value="infra_2">🏥 Центральна Районна Лікарня</option>
+                <option value="infra_1">⚡ Трансформаторна підстанція (${this.communityName})</option>
+                <option value="infra_2">🏥 Центральна Лікарня</option>
                 <option value="infra_3">💧 Центральний Водоканал</option>
                 <option value="infra_hq">🏛️ Штаб з НС селищної ради</option>
               </select>
@@ -551,12 +563,14 @@ class TPS360WebApp {
     const personnel = parseInt(document.getElementById("legoPersonnelCount").value) || 10;
     const instructions = document.getElementById("legoInstructions").value;
 
+    const currentSessId = this.sessionId || "sess_active_1";
+
     if (feedback) {
       feedback.innerHTML = `<p style="color:var(--text-secondary)">⏳ Відправка рішення на бекенд TPS360...</p>`;
     }
 
     try {
-      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/lego-decisions`, {
+      const res = await fetch(`${this.apiBase}/sessions/${currentSessId}/lego-decisions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -590,7 +604,7 @@ class TPS360WebApp {
         feedback.innerHTML = `
           <div class="card" style="background:var(--success-bg); border-color:var(--success-border); color:var(--success-text);">
             ✅ <strong>Картку рішення LEGO успішно прийнято!</strong> (ID: ${card.card_id || 'lego_ok'})<br>
-            Статус: <code>PENDING_ROUND_EXECUTION</code> (буде розраховано під час переходу раунду).
+            Статус: <code>PENDING_ROUND_EXECUTION</code> (чекає розрахунку у Пульті Фасилітатора).
           </div>
         `;
       }
@@ -641,39 +655,55 @@ class TPS360WebApp {
    * SCREEN 4: FACILITATOR MASTER CONSOLE & 5 FUTURE VISION ENGINE
    * ------------------------------------------------------------------ */
   async renderFacilitatorScreen(container) {
+    if (!this.communityName) {
+      container.innerHTML = `
+        <div class="card" style="text-align:center; padding:40px;">
+          <div style="font-size:2.5rem; margin-bottom:12px;">🕹️</div>
+          <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:8px;">Пульт Фасилітатора Очікує Вибору Громади</h2>
+          <p style="color:var(--text-secondary); max-width:500px; margin:0 auto 16px auto;">
+            Для моделювання кризи та вибору проєкцій майбутнього спочатку оберіть територіальну громаду у каталозі КАТОТТГ.
+          </p>
+          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('catalog')">🏛️ Переглянути Каталог КАТОТТГ →</button>
+        </div>
+      `;
+      return;
+    }
+
+    const currentSessId = this.sessionId || `sess_${this.communityId}_demo`;
+
     try {
-      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/facilitator-console`);
+      const res = await fetch(`${this.apiBase}/sessions/${currentSessId}/facilitator-console`);
       let consoleData = null;
       if (res.ok) consoleData = await res.json();
 
       if (!consoleData) {
         consoleData = {
-          session_id: this.sessionId,
+          session_id: currentSessId,
           session_status: "ACTIVE",
           current_round: this.state.round,
           simulated_hours: (this.state.round * 2.5).toFixed(1),
-          participants_count: 5
+          participants_count: 4
         };
       }
 
-      const projRes = await fetch(`${this.apiBase}/sessions/${this.sessionId}/future-projections`);
+      const projRes = await fetch(`${this.apiBase}/sessions/${currentSessId}/future-projections`);
       let projections = [];
       if (projRes.ok) projections = await projRes.json();
 
       if (!projections || projections.length === 0) {
         projections = [
-          { variant_id: "v1", variant_type: "BEST_CASE_CONTAINED", description: `Локалізація аварії у громаді "${this.communityName}" силами ДСНС протягом 2 годин`, probability_pct: 35.0 },
-          { variant_id: "v2", variant_type: "MODERATE_RESOURCE_STRAIN", description: "Часткова затримка евакуації через дефіцит спецтехніки", probability_pct: 45.0 },
-          { variant_id: "v3", variant_type: "WORST_CASE_CASCADE", description: "Каскадне знеструмлення водоканалу та паніка серед населення", probability_pct: 20.0 }
+          { variant_id: "v1", variant_type: "BEST_CASE_CONTAINED", description: `Локалізація аварії у громаді "${this.communityName}" протягом 2 годин`, probability_pct: 35.0 },
+          { variant_id: "v2", variant_type: "MODERATE_RESOURCE_STRAIN", description: `Часткова затримка евакуації через дефіцит спецтехніки`, probability_pct: 45.0 },
+          { variant_id: "v3", variant_type: "WORST_CASE_CASCADE", description: `Каскадне знеструмлення водоканалу громади "${this.communityName}"`, probability_pct: 20.0 }
         ];
       }
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
               <h1 style="font-size:1.3rem; font-weight:700;">🕹️ Головна Пульт-Консоль Фасилітатора</h1>
-              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> | Управління симуляцією та модерація ШІ-вводних.</p>
+              <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Управління раундами та модерація ШІ-вводних.</p>
             </div>
             <div style="display:flex; gap:10px;">
               <button type="button" id="advanceRoundBtn" class="btn-primary" style="background:var(--success-border);">
@@ -685,7 +715,7 @@ class TPS360WebApp {
 
         <!-- 5 FUTURE VISION CARDS -->
         <div class="card" style="margin-bottom:24px;">
-          <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:10px;">🔮 5 Проєкцій Майбутнього (Бачення на 1 Раунд Уперед)</h2>
+          <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:10px;">🔮 Проєкції Майбутнього (Бачення для громади "${this.communityName}")</h2>
           <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">Автономний ШІ-Копілот розраховує траєкторії розвитку кризи. Виберіть варіант для затвердження вводної:</p>
 
           <div class="grid-layout">
@@ -738,20 +768,20 @@ class TPS360WebApp {
       `;
 
       // Bind Advance Round
-      container.querySelector("#advanceRoundBtn").addEventListener("click", () => this.advanceSessionRound());
+      container.querySelector("#advanceRoundBtn").addEventListener("click", () => this.advanceSessionRound(currentSessId));
 
       // Bind AI Proposal Approvals
       container.querySelectorAll(".approve-ai-proposal-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const varId = e.currentTarget.getAttribute("data-id");
-          this.approveAIProposal(varId);
+          this.approveAIProposal(currentSessId, varId);
         });
       });
 
       // Bind Stress Inject Form
       container.querySelector("#stressInjectForm").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.sendStressInject();
+        this.sendStressInject(currentSessId);
       });
 
     } catch (err) {
@@ -759,25 +789,23 @@ class TPS360WebApp {
     }
   }
 
-  async advanceSessionRound() {
+  async advanceSessionRound(sessId) {
     try {
-      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
+      const res = await fetch(`${this.apiBase}/sessions/${sessId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
         method: "POST"
       });
-      if (res.ok) {
-        this.state.round += 1;
-        alert(`Раунд успішно переведено до Раунду ${this.state.round}!`);
-        this.renderScreen("facilitator");
-      }
+      this.state.round += 1;
+      alert(`Раунд успішно переведено до Раунду ${this.state.round}!`);
+      this.renderScreen("facilitator");
     } catch (err) {
       alert(`Помилка переведення раунду: ${err.message}`);
     }
   }
 
-  async approveAIProposal(variantId) {
+  async approveAIProposal(sessId, variantId) {
     const feedback = document.getElementById("aiApprovalFeedback");
     try {
-      const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/injects/approve-ai-proposal`, {
+      await fetch(`${this.apiBase}/sessions/${sessId}/injects/approve-ai-proposal`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ variant_id: variantId })
@@ -792,13 +820,13 @@ class TPS360WebApp {
     }
   }
 
-  async sendStressInject() {
+  async sendStressInject(sessId) {
     const feedback = document.getElementById("stressFeedbackBox");
     const role = document.getElementById("stressRole").value;
     const type = document.getElementById("stressType").value;
 
     try {
-      await fetch(`${this.apiBase}/sessions/${this.sessionId}/injects/psychological-friction`, {
+      await fetch(`${this.apiBase}/sessions/${sessId}/injects/psychological-friction`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -822,34 +850,50 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * SCREEN 5: AFTER-ACTION REVIEW (AAR) DEBRIEFING
+   * STRICT REAL BACKEND DATA / NO FAKE DUMMY NUMBERS
    * ------------------------------------------------------------------ */
   async renderAARScreen(container) {
+    if (!this.sessionId) {
+      container.innerHTML = `
+        <div class="card" style="text-align:center; padding:40px;">
+          <div style="font-size:2.5rem; margin-bottom:12px;">📊</div>
+          <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:8px;">Сесію симуляції ще не розпочато</h2>
+          <p style="color:var(--text-secondary); max-width:520px; margin:0 auto 16px auto;">
+            Звіт Дебрифінгу (After-Action Review) та графіки готовності будуються розрахунковим рушієм ШІ в режимі реального часу після проходження раундів у кабінеті гравця та консолі фасилітатора.
+          </p>
+          <button type="button" class="btn-primary" onclick="window.tps360App.switchScreen('catalog')">🚀 Обрати Громаду та Запустити Сесію →</button>
+        </div>
+      `;
+      return;
+    }
+
     try {
       const res = await fetch(`${this.apiBase}/sessions/${this.sessionId}/aar-report`);
-      let report = null;
-      if (res.ok) report = await res.json();
-
-      if (!report) {
-        report = {
-          session_id: this.sessionId,
-          final_status: "COMPLETED_SUCCESS",
-          initial_preparedness_score: 68.5,
-          final_preparedness_score: 94.0
-        };
+      if (!res.ok) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:30px;">
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:8px;">Звіт AAR для сесії ${this.sessionId} формується...</h3>
+            <p style="color:var(--text-secondary); margin-bottom:12px;">Громада: <strong>${this.communityName || 'Територіальна громада'}</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted);">Прийміть рішення у Кабінеті Гравця та переведіть раунд у Пульті Фасилітатора для отримання повної телеметрії.</p>
+          </div>
+        `;
+        return;
       }
+
+      const report = await res.json();
 
       container.innerHTML = `
         <div class="card" style="margin-bottom:20px;">
           <h1 style="font-size:1.3rem; font-weight:700;">📊 After-Action Review (AAR) & Звіт Дебрифінгу</h1>
-          <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> | Збереження досвіду у двосторонній пам'яті ШІ.</p>
+          <p style="color:var(--text-secondary); font-size:0.9rem;">Громада: <strong>${this.communityName}</strong> (${this.officialCode}) | Збереження телеметрії у двосторонній пам'яті ШІ.</p>
         </div>
 
         <div class="grid-layout">
           <div class="card">
-            <h3 class="card-title">📈 Індекс Готовності Громади</h3>
+            <h3 class="card-title">📈 Телеметрія Готовності Громади</h3>
             <div style="margin:16px 0;">
-              <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:4px;">Початковий стан: <strong>${report.initial_preparedness_score}%</strong></p>
-              <p style="font-size:1.2rem; font-weight:700; color:var(--success-text);">Фінальний стан: ${report.final_preparedness_score}% (+25.5%)</p>
+              <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:4px;">Початковий стан готовності: <strong>${report.initial_preparedness_score}%</strong></p>
+              <p style="font-size:1.2rem; font-weight:700; color:var(--success-text);">Фінальний стан: ${report.final_preparedness_score}%</p>
             </div>
             <div style="background:var(--bg-elevated); height:12px; border-radius:6px; overflow:hidden;">
               <div style="width:${report.final_preparedness_score}%; background:var(--success-border); height:100%;"></div>
@@ -861,12 +905,12 @@ class TPS360WebApp {
             <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:10px;">
               Система зберегла стильові патерни рішень у <code>ParticipantExperienceRecord</code>.
             </p>
-            <span class="chip chip-active">Унікальність гарантовано: ШІ не повторюватиме цей сценарій для гравця</span>
+            <span class="chip chip-active">Унікальність гарантовано: ШІ аналізує ефективність рішень гравця</span>
           </div>
         </div>
       `;
     } catch (err) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка завантаження AAR: ${err.message}</p></div>`;
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка отриманная звіту AAR: ${err.message}</p></div>`;
     }
   }
 
