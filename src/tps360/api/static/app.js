@@ -1,14 +1,13 @@
 /**
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
- * Dynamic Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
- * Strictly presents REAL backend data with no fake hardcoded numbers.
+ * Live Client-side controller with KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
  */
 
 class TPS360WebApp {
   constructor() {
     this.currentScreen = "catalog";
-    this.sessionId = null; // No hardcoded session by default
+    this.sessionId = null;
     this.communityId = null;
     this.communityName = null;
     this.officialCode = null;
@@ -110,7 +109,7 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN 1: CATALOG & KATOTTG DIRECTORY INTEGRATION
+   * SCREEN 1: CATALOG & LIVE KATOTTG DIRECTORY SEARCH
    * ------------------------------------------------------------------ */
   async renderCatalogScreen(container) {
     try {
@@ -128,7 +127,7 @@ class TPS360WebApp {
           <p style="color:var(--text-secondary); margin-bottom:14px;">Офіційний довідник територіальних громад України з верифікованими кодами КАТОТТГ, інфраструктурними паспортами та картами OpenStreetMap.</p>
           
           <div style="display:flex; gap:12px;">
-            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Введіть код КАТОТТГ (наприклад: UA48060030000037887) або назву громади..." style="flex:1;">
+            <input type="text" id="katottgSearchInput" class="form-control" placeholder="Миттєвий пошук: введіть код КАТОТТГ (наприклад UA4806), область або назву..." style="flex:1;">
             <button type="button" id="katottgSearchBtn" class="btn-primary">🔍 Знайти у КАТОТТГ</button>
           </div>
         </div>
@@ -140,29 +139,35 @@ class TPS360WebApp {
 
       this.bindCatalogCardEvents(container);
 
-      // Search button
+      // Instant live typeahead & button search
       const searchBtn = container.querySelector("#katottgSearchBtn");
       const searchInput = container.querySelector("#katottgSearchInput");
-      if (searchBtn && searchInput) {
+      if (searchInput) {
         const doSearch = async () => {
           const q = searchInput.value.trim();
-          if (!q) {
-            this.renderCatalogScreen(container);
-            return;
-          }
-          const searchRes = await fetch(`${this.apiBase}/communities/catalog?query=${encodeURIComponent(q)}`);
-          if (searchRes.ok) {
-            const data = await searchRes.json();
-            const filtered = Array.isArray(data) ? data : (data.items || []);
-            const grid = document.getElementById("catalogGridContainer");
-            if (grid) {
-              grid.innerHTML = this.renderCommunityCardsHTML(filtered);
-              this.bindCatalogCardEvents(container);
+          const searchUrl = q 
+            ? `${this.apiBase}/communities/catalog?query=${encodeURIComponent(q)}`
+            : `${this.apiBase}/communities/catalog`;
+
+          try {
+            const searchRes = await fetch(searchUrl);
+            if (searchRes.ok) {
+              const data = await searchRes.json();
+              const filtered = Array.isArray(data) ? data : (data.items || []);
+              const grid = document.getElementById("catalogGridContainer");
+              if (grid) {
+                grid.innerHTML = this.renderCommunityCardsHTML(filtered);
+                this.bindCatalogCardEvents(container);
+              }
             }
+          } catch (e) {
+            console.error("Search error:", e);
           }
         };
-        searchBtn.addEventListener("click", doSearch);
-        searchInput.addEventListener("keyup", (e) => { if (e.key === "Enter") doSearch(); });
+
+        // Live instant filtering as user types
+        searchInput.addEventListener("input", doSearch);
+        if (searchBtn) searchBtn.addEventListener("click", doSearch);
       }
 
     } catch (err) {
@@ -172,7 +177,7 @@ class TPS360WebApp {
 
   renderCommunityCardsHTML(items) {
     if (items.length === 0) {
-      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">У системному довіднику КАТОТТГ за цим запитом громад не знайдено.</p></div>`;
+      return `<div class="card" style="grid-column: 1 / -1;"><p style="color:var(--text-muted);">У довіднику КАТОТТГ за цим запитом громад не знайдено.</p></div>`;
     }
 
     return items.map(c => `
@@ -363,7 +368,7 @@ class TPS360WebApp {
     if (!this.communityId) {
       resultBox.innerHTML = `
         <div class="card" style="border-left: 6px solid var(--warning-border);">
-          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведення оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
+          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведения оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
           <button type="button" class="btn-primary" style="margin-top:8px;" onclick="window.tps360App.switchScreen('catalog')">← Перейти до Каталогу КАТОТТГ</button>
         </div>
       `;
@@ -791,7 +796,7 @@ class TPS360WebApp {
 
   async advanceSessionRound(sessId) {
     try {
-      const res = await fetch(`${this.apiBase}/sessions/${sessId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
+      await fetch(`${this.apiBase}/sessions/${sessId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
         method: "POST"
       });
       this.state.round += 1;
@@ -910,7 +915,7 @@ class TPS360WebApp {
         </div>
       `;
     } catch (err) {
-      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка отриманная звіту AAR: ${err.message}</p></div>`;
+      container.innerHTML = `<div class="card"><p style="color:var(--danger-text)">Помилка отримання звіту AAR: ${err.message}</p></div>`;
     }
   }
 
