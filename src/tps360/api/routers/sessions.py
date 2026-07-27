@@ -13,6 +13,8 @@ from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.db.repositories import SQLSessionRepository
 from tps360.simulation.domain.decision_payload import validate_decision_payload
 from tps360.simulation.domain.session import (
+    CrisisCondition,
+    CrisisDefinition,
     FacilitatedSession,
     Participant,
     ParticipantDecision,
@@ -615,3 +617,77 @@ def get_participant_experience(participant_id: str) -> ParticipantExperienceReco
             participant_id=participant_id, community_id="verkhovyna"
         )
     return rec
+
+
+# ── Crisis Constructor (B4) ───────────────────────────────────────────────────
+
+class DefineCrisisRequest(BaseModel):
+    title: str = Field(min_length=1)
+    category: str = Field(min_length=1)
+    primary_hazard: str = Field(min_length=1)
+    secondary_hazards: list[str] = Field(default_factory=list)
+    potential_impacts: list[str] = Field(default_factory=list)
+    description: str = Field(min_length=1)
+    affected_area_description: str = ""
+
+
+class AddCrisisConditionRequest(BaseModel):
+    description: str = Field(min_length=1)
+    value: str | None = None
+    unit: str | None = None
+    confirmed: bool = False
+
+
+@router.get("/{session_id}/crisis", response_model=CrisisDefinition | None)
+def get_crisis(
+    session_id: UUID,
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> CrisisDefinition | None:
+    return item(session_id, session_repo).crisis_definition
+
+
+@router.post("/{session_id}/crisis/define", response_model=CrisisDefinition)
+def define_crisis(
+    session_id: UUID,
+    request: DefineCrisisRequest,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> CrisisDefinition:
+    from tps360.core.domain.crisis_taxonomy import CrisisCategory, HazardType, ImpactType
+    session = item(session_id, session_repo)
+    authorize_facilitator(session, facilitator_token)
+    try:
+        definition = CrisisDefinition(
+            title=request.title,
+            category=CrisisCategory(request.category),
+            primary_hazard=HazardType(request.primary_hazard),
+            secondary_hazards=[HazardType(h) for h in request.secondary_hazards],
+            potential_impacts=[ImpactType(i) for i in request.potential_impacts],
+            description=request.description,
+            affected_area_description=request.affected_area_description,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    result = domain_action(lambda: session.define_crisis(definition))
+    session_repo.save(session)
+    return result
+
+
+@router.post("/{session_id}/crisis/add-condition", response_model=CrisisCondition)
+def add_crisis_condition(
+    session_id: UUID,
+    request: AddCrisisConditionRequest,
+    facilitator_token: str | None = Header(None, alias="X-Facilitator-Token"),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> CrisisCondition:
+    session = item(session_id, session_repo)
+    authorize_facilitator(session, facilitator_token)
+    condition = CrisisCondition(
+        description=request.description,
+        value=request.value,
+        unit=request.unit,
+        confirmed=request.confirmed,
+    )
+    result = domain_action(lambda: session.add_crisis_condition(condition))
+    session_repo.save(session)
+    return result
