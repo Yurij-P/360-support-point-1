@@ -2,6 +2,7 @@
  * TPS360 Single Page Web Application Engine
  * Developed by NGO Anti-Corruption (ГО "Проти Корупції")
  * Dynamic Client-side controller with Facilitator-controlled Role Assignment, KATOTTG Directory integration (directory.org.ua), OpenStreetMap GIS, LEGO decision builder & Facilitator master console.
+ * ZERO HARDCODED DEMO DATA PRE-POPULATION
  */
 
 class TPS360WebApp {
@@ -24,7 +25,7 @@ class TPS360WebApp {
       scenarios: [],
       activePassport: null,
       sessionData: null,
-      lobbyParticipants: [], // Managed by Facilitator
+      lobbyParticipants: [], // Managed dynamically by Facilitator
       decisionsLog: [],
       round: 1,
       stressLevel: 0.0
@@ -413,7 +414,7 @@ class TPS360WebApp {
     if (!this.communityId) {
       resultBox.innerHTML = `
         <div class="card" style="border-left: 6px solid var(--warning-border);">
-          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведення оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
+          <p style="color:var(--warning-text); font-weight:600;">⚠️ Для проведения оцінки сумісності спочатку оберіть громаду у Каталозі КАТОТТГ!</p>
           <button type="button" class="btn-primary" style="margin-top:8px;" onclick="window.tps360App.switchScreen('catalog')">← Перейти до Каталогу КАТОТТГ</button>
         </div>
       `;
@@ -462,7 +463,7 @@ class TPS360WebApp {
   }
 
   /* ------------------------------------------------------------------
-   * SCREEN: PARTICIPANT IDENTITY REGISTRATION (NO ROLE SELECTION!)
+   * SCREEN: PARTICIPANT IDENTITY REGISTRATION (NO PRE-POPULATED DATA)
    * ROLES ARE ASSIGNED EXCLUSIVELY BY THE FACILITATOR IN THE LOBBY
    * ------------------------------------------------------------------ */
   async renderLoginScreen(container) {
@@ -506,24 +507,24 @@ class TPS360WebApp {
         <form id="participantLoginForm">
           <div class="form-group">
             <label class="form-label" for="partFullName">1. ПІБ або Позивний Учасника:</label>
-            <input type="text" id="partFullName" class="form-control" placeholder="Наприклад: Путрич Юрій Миколайович" value="${this.participant ? this.participant.name : ''}" required>
+            <input type="text" id="partFullName" class="form-control" placeholder="Введіть ваші ПІБ або позивний..." value="${this.participant ? this.participant.name : ''}" required>
           </div>
 
           <div class="grid-layout" style="margin-bottom:16px;">
             <div class="form-group">
               <label class="form-label" for="partOrg">2. Організація / Підрозділ:</label>
-              <input type="text" id="partOrg" class="form-control" placeholder="Наприклад: Березнегуватська селищна рада" value="${this.participant ? this.participant.organization : ''}" required>
+              <input type="text" id="partOrg" class="form-control" placeholder="Введіть назву вашої організації чи підрозділу..." value="${this.participant ? this.participant.organization : ''}" required>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="partPosition">3. Посада:</label>
-              <input type="text" id="partPosition" class="form-control" placeholder="Наприклад: Селищний голова" value="${this.participant ? this.participant.position : ''}" required>
+              <input type="text" id="partPosition" class="form-control" placeholder="Введіть вашу посаду..." value="${this.participant ? this.participant.position : ''}" required>
             </div>
           </div>
 
           <div class="form-group" style="margin-bottom:16px;">
             <label class="form-label" for="partSessionToken">4. PIN / Токен Запрошення у Лоббі Сесії:</label>
-            <input type="text" id="partSessionToken" class="form-control" value="JOIN-8842" placeholder="JOIN-8842">
+            <input type="text" id="partSessionToken" class="form-control" value="" placeholder="Введіть PIN сесії (наприклад: JOIN-8842)">
           </div>
 
           <div class="card" style="background:var(--bg-elevated); padding:12px; margin-bottom:16px; font-size:0.82rem; color:var(--text-secondary);">
@@ -568,7 +569,7 @@ class TPS360WebApp {
         name,
         organization: org,
         position: pos,
-        sessionToken: token,
+        sessionToken: token || "SESSION_STANDBY",
         assignedRole: null, // Unassigned until Facilitator assigns it!
         assignedRoleTitle: "Не призначено"
       };
@@ -721,7 +722,7 @@ class TPS360WebApp {
             <div class="form-group">
               <label class="form-label" for="legoTargetFacility">2. Об'єкт OpenStreetMap (Target Facility):</label>
               <select id="legoTargetFacility" class="form-control">
-                <option value="infra_1">⚡ Трансформаторна підстанція (${this.communityName})</option>
+                <option value="infra_1">⚡ Трансформаторна підстанція</option>
                 <option value="infra_2">🏥 Центральна Лікарня</option>
                 <option value="infra_3">💧 Центральний Водоканал</option>
                 <option value="infra_hq">🏛️ Штаб з НС селищної ради</option>
@@ -872,6 +873,7 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * SCREEN 4: FACILITATOR MASTER CONSOLE & ROLE ASSIGNMENT CONTROL
+   * ZERO FAKE DEMO SEEDING
    * ------------------------------------------------------------------ */
   async renderFacilitatorScreen(container) {
     if (!this.communityName) {
@@ -1028,17 +1030,14 @@ class TPS360WebApp {
   renderFacilitatorLobbyTableHTML() {
     const list = this.state.lobbyParticipants;
 
-    // Seed default demo participant if empty so facilitator can test assigning immediately
+    // Clean empty state if no participants have submitted a join request yet
     if (list.length === 0) {
-      list.push({
-        id: "part_demo_1",
-        name: "Путрич Юрій Миколайович",
-        organization: "Березнегуватська селищна рада",
-        position: "Селищний голова",
-        sessionToken: "JOIN-8842",
-        assignedRole: null,
-        assignedRoleTitle: "Не призначено"
-      });
+      return `
+        <div style="padding:16px; background:var(--bg-elevated); border-radius:8px; font-size:0.88rem; color:var(--text-muted); text-align:center;">
+          У Кімнаті Очікування (Lobby) поки немає підключених учасників.<br>
+          Учасники підключаються та подають свої заявки у вкладці <strong>«🔑 Вхід Учасника»</strong>.
+        </div>
+      `;
     }
 
     return `
