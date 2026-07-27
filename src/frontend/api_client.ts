@@ -259,6 +259,35 @@ export class TPS360ApiClient {
     return res.json();
   }
 
+  async getAARReport(sessionId: string): Promise<{
+    session_id: string
+    community_id: string
+    total_rounds_played: number
+    final_status: string
+    initial_preparedness_score: number
+    final_preparedness_score: number
+    role_performance_summaries: Record<string, string>
+    identified_vulnerabilities: string[]
+    ai_learning_insights: string[]
+    ai_recommendations: string[]
+  }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/aar-report`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
+  async getSessionTelemetryTyped(sessionId: string): Promise<Array<{
+    round_number: number
+    simulated_hours: number
+    mitigation_pct: number
+    role_capabilities: Record<string, number>
+    cognitive_stress_indexes: Record<string, number>
+  }>> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/telemetry`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
+
   subscribeToSessionEvents(sessionId: string, onMessage: (event: MessageEvent) => void): EventSource {
     const eventSource = new EventSource(`${this.baseUrl}/events/session/${sessionId}/stream`);
     eventSource.onmessage = onMessage;
