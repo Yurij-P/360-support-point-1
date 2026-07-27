@@ -361,7 +361,7 @@ class TPS360WebApp {
 
         <div class="card">
           <h3 class="card-title">🗺️ Інтерактивна Карта OpenStreetMap (${passport.name})</h3>
-          <div id="gisMapContainer" class="map-container"></div>
+          <div id="gisMapContainer" class="map-container" style="height:480px; width:100%; border-radius:12px; overflow:hidden;"></div>
         </div>
       `;
 
@@ -1342,7 +1342,7 @@ class TPS360WebApp {
 
   /* ------------------------------------------------------------------
    * LEAFLET OPENSTREETMAP GIS INITIALIZER
-   * EXACT COMMUNITY GPS CENTERING & LEAFLET RE-INITIALIZATION CLEANUP
+   * EXACT COMMUNITY GPS CENTERING & CARTO DUAL TILE FALLBACK
    * ------------------------------------------------------------------ */
   initLeafletMap(containerId, centerCoords, communityName, items = []) {
     if (typeof L === "undefined") return;
@@ -1361,12 +1361,25 @@ class TPS360WebApp {
         window.tps360LeafletInstance = null;
       }
 
-      const map = L.map(containerId).setView(centerCoords, 13);
+      const map = L.map(containerId, {
+        center: centerCoords,
+        zoom: 12,
+        zoomControl: true,
+        fadeAnimation: true
+      });
       window.tps360LeafletInstance = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Довідник КАТОТТГ | ГО Проти Корупції',
+      // Primary CartoDB Voyager tiles with fallback to standard OpenStreetMap
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Довідник КАТОТТГ | ГО Проти Корупції',
       }).addTo(map);
+
+      // Force Leaflet container size recalculation to prevent grey tile rendering
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
 
       // Headquarters marker with EXACT Community Name and EXACT GPS coordinates
       L.marker(centerCoords).addTo(map).bindPopup(`<b>🏛️ Штаб з НС (${communityName})</b><br>Центр оперативного реагування`).openPopup();
@@ -1379,7 +1392,7 @@ class TPS360WebApp {
             .bindPopup(`<b>${item.name}</b><br>Категорія: ${item.category}<br>Ризик: ${item.risk_level}`);
         }
       });
-    }, 150);
+    }, 100);
   }
 }
 
