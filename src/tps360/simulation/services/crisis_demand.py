@@ -19,6 +19,11 @@ _STRIKE = ("missile", "artillery", "drone", "armed_conflict", "shelling", "explo
 _EPIDEMIC = ("epidemic", "pandemic", "waterborne", "epizootic")
 
 
+def hazard_family(hazard_type: str) -> str:
+    """Public classifier: map a HazardType value to its resource/response family."""
+    return _family(hazard_type)
+
+
 def _family(hazard_type: str) -> str:
     h = hazard_type.strip().lower()
     for name, keys in (
