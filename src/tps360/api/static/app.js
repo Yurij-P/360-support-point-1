@@ -489,10 +489,26 @@ class TPS360WebApp {
 
       const launchBtn = resultBox.querySelector("#launchSessionNowBtn");
       if (launchBtn) {
-        launchBtn.addEventListener("click", () => {
-          this.sessionId = `sess_${this.communityId}_${Date.now()}`;
-          this.updateContextBar();
-          this.switchScreen("login"); // Direct to Login / Registration Lobby
+        launchBtn.addEventListener("click", async () => {
+          try {
+            const res = await fetch(`${this.apiBase}/sessions`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                community_id: this.communityId, // KATOTTG code -> binds the passport
+                facilitator_name: "Фасилітатор",
+                player_capacity: 10
+              })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            this.sessionId = data.id; // real backend session id
+            this.facilitatorToken = data.facilitator_token;
+            this.updateContextBar();
+            this.switchScreen("login"); // Direct to Login / Registration Lobby
+          } catch (err) {
+            alert(`Не вдалося створити сесію на бекенді: ${err.message}`);
+          }
         });
       }
     } catch (err) {
@@ -1261,9 +1277,10 @@ class TPS360WebApp {
 
   async advanceSessionRound(sessId) {
     try {
-      await fetch(`${this.apiBase}/sessions/${sessId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
+      const res = await fetch(`${this.apiBase}/sessions/${sessId}/rounds/advance?current_round=${this.state.round}&mitigation_score_pct=40.0`, {
         method: "POST"
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status} — сесію не знайдено або раунд не переведено`);
       this.state.round += 1;
       alert(`Раунд успішно переведено до Раунду ${this.state.round}!`);
       this.renderScreen("facilitator");
