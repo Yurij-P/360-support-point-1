@@ -46,23 +46,32 @@ class ClarityRegistryClient:
         self._key = api_key or os.getenv("CLARITY_API_KEY")
         self._fetch = fetch or _http_get_json
 
-    def _call(self, method: str, **params: str) -> dict[str, Any]:
+    def _call(self, path: str, **params: str) -> dict[str, Any]:
+        """Path-based Clarity call, e.g. `edr.info/14360570` or `edr.search`."""
         if not self._key:
             raise RuntimeError("CLARITY_API_KEY is not set; cannot query Clarity Project API.")
         query = urllib.parse.urlencode({"key": self._key, **params})
-        return self._fetch(f"{_BASE}/{method}?{query}")
+        data = self._fetch(f"{_BASE}/{path}?{query}")
+        if isinstance(data, dict) and data.get("error"):
+            raise RuntimeError(f"Clarity API error: {data['error']}")
+        return data
 
-    def find_entities(self, query: str) -> list[dict[str, Any]]:
-        """edr.info search for communal enterprises of a community (best-effort)."""
-        data = self._call("edr.info", q=query)
+    @staticmethod
+    def _items(data: dict[str, Any]) -> list[dict[str, Any]]:
         items = data.get("data") or data.get("items") or data.get("result") or []
         return items if isinstance(items, list) else [items]
 
-    def entity_vehicles(self, code: str) -> list[dict[str, Any]]:
-        """vehicles.list for a legal entity by EDRPOU code (best-effort)."""
-        data = self._call("vehicles.list", code=code)
-        items = data.get("data") or data.get("items") or data.get("result") or []
-        return items if isinstance(items, list) else [items]
+    def search_entities(self, query: str) -> list[dict[str, Any]]:
+        """edr.search — find communal enterprises of a community (best-effort)."""
+        return self._items(self._call("edr.search", q=query))
+
+    def entity_info(self, edrpou: str) -> dict[str, Any]:
+        """edr.info/{edrpou} — legal entity by EDRPOU/RNOKPP code."""
+        return self._call(f"edr.info/{urllib.parse.quote(edrpou)}")
+
+    def entity_vehicles(self, edrpou: str) -> list[dict[str, Any]]:
+        """vehicles.list/{code} — vehicles owned by a legal entity (real fleet)."""
+        return self._items(self._call(f"vehicles.list/{urllib.parse.quote(edrpou)}"))
 
 
 def vehicles_to_endowment(vehicles: list[dict[str, Any]]) -> dict[str, Decimal]:
