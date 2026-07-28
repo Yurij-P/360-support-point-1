@@ -12,24 +12,24 @@ def test_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CLARITY_API_KEY", raising=False)
     client = ClarityRegistryClient(fetch=lambda url: {"data": []})
     with pytest.raises(RuntimeError):
-        client.find_entities("КП Водоканал")
+        client.search_entities("КП Водоканал")
 
 
-def test_find_entities_parses_and_passes_key() -> None:
+def test_search_entities_uses_edr_search_and_key() -> None:
     seen: dict[str, str] = {}
 
     def fetch(url: str) -> dict[str, object]:
         seen["url"] = url
-        return {"data": [{"code": "12345678", "name": "КП Водоканал"}]}
+        return {"data": [{"code": "12345678", "name": "КП Водоканал"}], "quota": {}}
 
     client = ClarityRegistryClient(api_key="test-key", fetch=fetch)
-    items = client.find_entities("Водоканал")
+    items = client.search_entities("Водоканал")
     assert items[0]["code"] == "12345678"
+    assert "edr.search" in seen["url"]
     assert "key=test-key" in seen["url"]
-    assert "edr.info" in seen["url"]
 
 
-def test_entity_vehicles_uses_vehicles_list() -> None:
+def test_entity_vehicles_uses_path_based_method() -> None:
     seen: dict[str, str] = {}
 
     def fetch(url: str) -> dict[str, object]:
@@ -39,8 +39,13 @@ def test_entity_vehicles_uses_vehicles_list() -> None:
     client = ClarityRegistryClient(api_key="k", fetch=fetch)
     vehicles = client.entity_vehicles("12345678")
     assert len(vehicles) == 1
-    assert "vehicles.list" in seen["url"]
-    assert "code=12345678" in seen["url"]
+    assert "vehicles.list/12345678" in seen["url"]
+
+
+def test_api_error_raises() -> None:
+    client = ClarityRegistryClient(api_key="k", fetch=lambda url: {"error": {"code": 401}})
+    with pytest.raises(RuntimeError):
+        client.entity_info("12345678")
 
 
 def test_vehicles_to_endowment_classifies() -> None:
