@@ -52,8 +52,13 @@ class ClarityRegistryClient:
             raise RuntimeError("CLARITY_API_KEY is not set; cannot query Clarity Project API.")
         query = urllib.parse.urlencode({"key": self._key, **params})
         data = self._fetch(f"{_BASE}/{path}?{query}")
-        if isinstance(data, dict) and data.get("error"):
-            raise RuntimeError(f"Clarity API error: {data['error']}")
+        if isinstance(data, dict):
+            if data.get("error"):
+                raise RuntimeError(f"Clarity API error: {data['error']}")
+            # Errors also arrive top-level, e.g. {"code": 403, "text": "This key is inactive"}.
+            code = data.get("code")
+            if isinstance(code, int) and code >= 400:
+                raise RuntimeError(f"Clarity API error {code}: {data.get('text', '')}")
         return data
 
     @staticmethod
