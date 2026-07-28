@@ -76,8 +76,19 @@ After each stage: `pytest`, `ruff`, `mypy` green before merge.
 3. **Stage order kept** — type foundation → leaf domains → core+ORM → session →
    cleanup.
 
-Stage 1 (this ADR's `core/domain/community_id.py`: `CommunityId` alias +
-KATOTTG validate/normalize helpers) is implemented; no behaviour change yet.
+## Implementation status
+
+Delivered: **stages 1–5 complete**.
+- Stage 1 — `core/domain/community_id.py` (`CommunityId`, `is_katottg_code`).
+- Stages 2+3 — `community_id` migrated UUID → `CommunityId` platform-wide
+  (Community.id, all references, repos, registries, API params).
+- Stage 4 — session `community_id` binds the passport directly when it is a
+  KATOTTG code; the transitional `katottg_community_code` bridge removed.
+- Stage 5 — cleanup: no legacy community-identity UUID paths remain (map/profile
+  ids stay UUID by design); test data aligned to string ids.
+
+Remaining (optional tightening, not blocking): enforce `is_katottg_code` on
+`Community.id` (currently a permissive auto str default).
 
 ## Owner
 
