@@ -1,6 +1,8 @@
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import get_simulation_repo
 from tps360.community.services import CommunityCatalogService
@@ -13,11 +15,88 @@ from tps360.simulation.domain import (
     SimulationRoundClock,
 )
 from tps360.simulation.services import ScenarioCatalogService
+from tps360.simulation.services.card_supply import initial_hand
+from tps360.simulation.services.crisis_demand import estimate_demand, resource_gap
+from tps360.simulation.services.participant_engagement import build_coverage_plan
+from tps360.simulation.services.resource_estimator import estimate_role_resources
 
 router = APIRouter(prefix="/simulations", tags=["simulations"])
 service = SimulationService()
 community_catalog = CommunityCatalogService()
 scenario_service = ScenarioCatalogService()
+
+
+class CrisisPlanRequest(BaseModel):
+    community_id: str = Field(min_length=1)  # KATOTTG code
+    hazard_type: str = Field(min_length=1)
+    roster: list[str] = Field(default_factory=list)
+    hazard_radius_km: float = Field(default=1.0, gt=0.0)
+    severity: float = Field(default=1.0, gt=0.0)
+    affected_population: int | None = Field(default=None, ge=0)
+
+
+class CoverageResponse(BaseModel):
+    engaged: list[str]
+    idle: list[str]
+    secondary_conditions: dict[str, str]
+    coverage_pct: float
+
+
+class CrisisPlanResponse(BaseModel):
+    community_id: str
+    community_name: str
+    hazard_type: str
+    coverage: CoverageResponse
+    endowment: dict[str, dict[str, Decimal]]
+    demand: dict[str, Decimal]
+    gap: dict[str, Decimal]
+    card_hands: dict[str, list[str]]
+
+
+@router.post("/crisis-plan", response_model=CrisisPlanResponse)
+def build_crisis_plan(req: CrisisPlanRequest) -> CrisisPlanResponse:
+    """Tie the resource+crisis algorithm together for a community and roster:
+    endowment (estimator) -> demand -> gap, participant coverage and card hands.
+    """
+    try:
+        passport = community_catalog.get_passport(req.community_id)
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    affected = (
+        req.affected_population
+        if req.affected_population is not None
+        else passport.total_population
+    )
+    roster = list(dict.fromkeys(req.roster))
+
+    plan = build_coverage_plan(req.hazard_type, roster)
+    endowment = {role: estimate_role_resources(role, passport) for role in roster}
+
+    pooled: dict[str, Decimal] = {}
+    for res_map in endowment.values():
+        for key, qty in res_map.items():
+            pooled[key] = pooled.get(key, Decimal("0")) + qty
+
+    demand = estimate_demand(req.hazard_type, affected, req.hazard_radius_km, req.severity)
+    gap = resource_gap(demand, pooled)
+    card_hands = {role: initial_hand(role, req.hazard_type) for role in roster}
+
+    return CrisisPlanResponse(
+        community_id=passport.community_id,
+        community_name=passport.name,
+        hazard_type=req.hazard_type,
+        coverage=CoverageResponse(
+            engaged=list(plan.engaged),
+            idle=list(plan.idle),
+            secondary_conditions=plan.secondary_conditions,
+            coverage_pct=plan.coverage_pct,
+        ),
+        endowment=endowment,
+        demand=demand,
+        gap=gap,
+        card_hands=card_hands,
+    )
 
 
 
