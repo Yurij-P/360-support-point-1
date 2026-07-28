@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import get_session_repo
 from tps360.community.services import CommunityCatalogService
-from tps360.core.domain.community_id import CommunityId
+from tps360.core.domain.community_id import CommunityId, is_katottg_code
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.db.repositories import SQLSessionRepository
 from tps360.simulation.domain.decision_payload import validate_decision_payload
@@ -59,9 +59,6 @@ class CreateSessionRequest(BaseModel):
     facilitator_name: str = Field(min_length=1)
     player_capacity: int = Field(ge=1)
     role_profiles: list[RoleProfile] = Field(default_factory=list)
-    # Optional KATOTTG code: when set, binds the community passport so role
-    # resources are estimated from it (TPS360-RES-001 §5.1).
-    katottg_community_code: str | None = None
 
 
 class JoinSessionRequest(BaseModel):
@@ -163,16 +160,18 @@ def create(
     facilitator_token = token_urlsafe(32)
     join_token = token_urlsafe(32)
 
+    # When community_id is a KATOTTG code, bind that community's passport so role
+    # resources are estimated from it (ADR-0016 stage 4; TPS360-RES-001 §5.1).
     passport = None
-    if request.katottg_community_code:
+    if is_katottg_code(request.community_id):
         try:
-            passport = community_catalog.get_passport(request.katottg_community_code)
+            passport = community_catalog.get_passport(request.community_id)
         except NotFoundError as exc:
             raise HTTPException(404, str(exc)) from exc
 
     session = session_repo.add(
         FacilitatedSession(
-            **request.model_dump(exclude={"katottg_community_code"}),
+            **request.model_dump(),
             facilitator_token_digest=FacilitatedSession.digest_facilitator_token(
                 facilitator_token
             ),
