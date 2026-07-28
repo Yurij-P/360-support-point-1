@@ -21,7 +21,7 @@ client = TestClient(app)
 
 def test_profile_generation():
     service = PreparednessProfileService()
-    community_id = uuid4()
+    community_id = str(uuid4())
 
     # 1. Create a mock assessment
     assessment = PreparednessAssessment(
@@ -126,7 +126,7 @@ def test_profile_generation():
 
 def test_public_profile_redaction():
     service = PreparednessProfileService()
-    community_id = uuid4()
+    community_id = str(uuid4())
 
     profile = CommunityPreparednessProfile(
         community_id=community_id,
@@ -152,7 +152,7 @@ def test_public_profile_redaction():
 
 
 def test_api_endpoints():
-    community_id = uuid4()
+    community_id = str(uuid4())
     community = Community(
         id=community_id,
         name="Test Community",

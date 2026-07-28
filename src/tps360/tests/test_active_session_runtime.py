@@ -34,7 +34,7 @@ def decision_payload(
 def make_active_session() -> tuple[FacilitatedSession, UUID, UUID]:
     role_id = uuid4()
     session = FacilitatedSession(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         facilitator_name="Facilitator",
         player_capacity=1,
         facilitator_token_digest=FacilitatedSession.digest_facilitator_token(
@@ -107,7 +107,7 @@ def test_facilitator_sends_inject_only_during_active_session() -> None:
 
 def test_injects_require_active_session() -> None:
     session = FacilitatedSession(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         facilitator_name="Facilitator",
         player_capacity=1,
         facilitator_token_digest=FacilitatedSession.digest_facilitator_token("token"),

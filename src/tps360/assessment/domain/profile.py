@@ -4,11 +4,12 @@ from uuid import UUID
 
 from pydantic import Field
 
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.models import Entity
 
 
 class CommunityPreparednessProfile(Entity):
-    community_id: UUID
+    community_id: CommunityId
     assessment_id: UUID | None = None
     strengths: list[str] = Field(default_factory=list)
     gaps: list[str] = Field(default_factory=list)

@@ -9,7 +9,7 @@ ROLE_ID = uuid4()
 
 def make_session(capacity: int = 2) -> FacilitatedSession:
     return FacilitatedSession(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         facilitator_name="Р¤Р°СЃРёР»С–С‚Р°С‚РѕСЂ",
         player_capacity=capacity,
         facilitator_token_digest=FacilitatedSession.digest_facilitator_token(

@@ -18,7 +18,7 @@ def test_preparedness_total_score_uses_dimensions() -> None:
 
 def test_risk_evidence_requires_non_empty_references() -> None:
     risk = Risk(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         hazard=Hazard(
             name="H",
             category=HazardCategory.CYBER,

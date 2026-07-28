@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from tps360.core.domain.community_id import CommunityId
+
 from ..domain.enums import MapStatus
 from ..domain.models import CommunityMap
 
@@ -17,7 +19,7 @@ class CommunityMapRepository:
     def get(self, i: UUID) -> CommunityMap:
         return self.items[i]
 
-    def list_by_community(self, c: UUID) -> list[CommunityMap]:
+    def list_by_community(self, c: CommunityId) -> list[CommunityMap]:
         return [m for m in self.items.values() if m.community_id == c]
 
     def save(self, m: CommunityMap) -> CommunityMap:
@@ -28,5 +30,5 @@ class CommunityMapRepository:
         self.items[m.id] = m
         return m
 
-    def get_active_by_community(self, c: UUID) -> CommunityMap | None:
+    def get_active_by_community(self, c: CommunityId) -> CommunityMap | None:
         return next((m for m in self.list_by_community(c) if m.status is MapStatus.ACTIVE), None)

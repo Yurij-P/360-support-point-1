@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.exceptions import DomainRuleViolation
 
 
@@ -10,7 +11,7 @@ class SimulationContext:
     """Immutable identifiers and versions that make a simulation run reproducible."""
 
     id: UUID
-    community_id: UUID
+    community_id: CommunityId
     community_profile_id: UUID
     community_profile_version: str
     community_map_id: UUID

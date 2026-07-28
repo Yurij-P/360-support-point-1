@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import get_session_repo
 from tps360.community.services import CommunityCatalogService
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.db.repositories import SQLSessionRepository
 from tps360.simulation.domain.decision_payload import validate_decision_payload
@@ -54,7 +55,7 @@ aar_telemetry_service = AARTelemetryService()
 
 
 class CreateSessionRequest(BaseModel):
-    community_id: UUID
+    community_id: CommunityId
     facilitator_name: str = Field(min_length=1)
     player_capacity: int = Field(ge=1)
     role_profiles: list[RoleProfile] = Field(default_factory=list)
@@ -118,7 +119,7 @@ class AIResourceEstimateResponse(BaseModel):
 
 class SessionResponse(BaseModel):
     id: UUID
-    community_id: UUID
+    community_id: CommunityId
     facilitator_name: str
     player_capacity: int
     status: SessionStatus

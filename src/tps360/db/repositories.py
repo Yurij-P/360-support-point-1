@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.models import Community, PreparednessAssessment, Simulation
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.db.orm_models import (
@@ -126,7 +127,7 @@ class SQLCommunityRepository:
         self.db.flush()
         return item
 
-    def get(self, item_id: UUID) -> Community:
+    def get(self, item_id: CommunityId) -> Community:
         row = self.db.get(CommunityRow, str(item_id))
         if row is None:
             raise NotFoundError("Community not found")

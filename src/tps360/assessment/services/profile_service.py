@@ -1,13 +1,12 @@
-from uuid import UUID
-
 from tps360.assessment.domain.profile import CommunityPreparednessProfile
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.models import ImprovementPlan, PreparednessAssessment, Risk
 
 
 class PreparednessProfileService:
     def generate_profile(
         self,
-        community_id: UUID,
+        community_id: CommunityId,
         assessment: PreparednessAssessment | None,
         risks: list[Risk],
         improvement_plan: ImprovementPlan | None,

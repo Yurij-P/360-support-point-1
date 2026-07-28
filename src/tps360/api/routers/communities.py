@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
@@ -9,6 +7,7 @@ from tps360.community.services.catalog_service import (
     CommunityCatalogItem,
     CommunityCatalogService,
 )
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.models import Community
 from tps360.core.exceptions import DomainRuleViolation, EntityNotFound, NotFoundError
 from tps360.db.repositories import SQLCommunityRepository
@@ -66,7 +65,7 @@ def create(
 
 @router.get("/{community_id}")
 def get(
-    community_id: UUID, community_repo: SQLCommunityRepository = Depends(get_community_repo)
+    community_id: CommunityId, community_repo: SQLCommunityRepository = Depends(get_community_repo)
 ) -> Community:
     try:
         return community_repo.get(community_id)
