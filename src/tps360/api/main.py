@@ -17,6 +17,7 @@ from .routers import (
     assessments,
     communities,
     directives,
+    escalations,
     events,
     preparedness_profiles,
     risks,
@@ -112,5 +113,6 @@ for router in (
     directives.router,
     events.router,
     roles.router,
+    escalations.router,
 ):
     app.include_router(router)

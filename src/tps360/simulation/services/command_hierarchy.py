@@ -100,3 +100,36 @@ def can_issue_directive(issuer_role_id: str, assignee_role_id: str) -> bool:
         return issuer_cat is not None and issuer_cat == _category_of(assignee_role_id)
 
     return False
+
+
+_TIER_RANK = {
+    CommandTier.MEMBER: 0,
+    CommandTier.FUNCTIONAL_LEAD: 1,
+    CommandTier.COMMAND_STAFF: 2,
+    CommandTier.COMMANDER: 3,
+}
+
+
+def can_escalate(requester_role_id: str, target_role_id: str) -> bool:
+    """Return whether requester may raise an escalation/request UP to target (ADR-0015).
+
+    Members and any subordinate may escalate upward; the facilitator/moderator is
+    always a valid escalation target. A member may escalate to its own-category
+    functional lead or to any command tier, never sideways or downward.
+    """
+    if target_role_id in FACILITATOR_ROLE_IDS:
+        return True
+
+    requester_tier = tier_of(requester_role_id)
+    target_tier = tier_of(target_role_id)
+    if requester_tier is None or target_tier is None:
+        return False
+    if _TIER_RANK[target_tier] <= _TIER_RANK[requester_tier]:
+        return False
+
+    # A member reaching a functional lead must stay within its own category.
+    if requester_tier is CommandTier.MEMBER and target_tier is CommandTier.FUNCTIONAL_LEAD:
+        req_cat = _category_of(requester_role_id)
+        return req_cat is not None and req_cat == _category_of(target_role_id)
+
+    return True
