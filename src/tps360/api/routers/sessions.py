@@ -614,7 +614,7 @@ def get_participant_experience(participant_id: str) -> ParticipantExperienceReco
     rec = aar_telemetry_service.get_participant_experience(participant_id)
     if not rec:
         return aar_telemetry_service.record_participant_experience(
-            participant_id=participant_id, community_id="verkhovyna"
+            participant_id=participant_id, community_id="unspecified"
         )
     return rec
 
