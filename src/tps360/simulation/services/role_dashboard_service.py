@@ -5,8 +5,10 @@ from decimal import Decimal
 from typing import Any
 from uuid import uuid4
 
+from tps360.community.domain.passport_read_model import CommunityPassportReadModel
 from tps360.core.exceptions import DomainRuleViolation
 from tps360.simulation.domain.task_directive import TaskDirective
+from tps360.simulation.services.resource_estimator import estimate_role_resources
 
 # Default initial resource balances per role.
 #
@@ -128,6 +130,15 @@ class RoleDashboardService:
         self._pending_cards: dict[str, list[LegoDecisionCard]] = {}
         self._transfers: dict[str, list[ResourceTransferDirective]] = {}
         self._psychological_injects: dict[str, list[PsychologicalFrictionInject]] = {}
+        # Optional per-session passport: when present, role resources are estimated
+        # from it (TPS360-RES-001 §5.1) instead of the static placeholder seeds.
+        self._session_passports: dict[str, CommunityPassportReadModel] = {}
+
+    def set_session_passport(
+        self, session_id: str, passport: CommunityPassportReadModel
+    ) -> None:
+        """Bind a community passport to a session so endowment is estimated from it."""
+        self._session_passports[session_id] = passport
 
     def _ensure_role_initialized(self, session_id: str, role_id: str) -> None:
         if session_id not in self._session_resources:
@@ -137,15 +148,19 @@ class RoleDashboardService:
             self._psychological_injects[session_id] = []
 
         if role_id not in self._session_resources[session_id]:
-            defaults = ROLE_INITIAL_RESOURCES.get(
-                role_id,
-                {
-                    "vehicles": Decimal("5"),
-                    "personnel": Decimal("20"),
-                    "fuel_liters": Decimal("1000"),
-                    "backup_generators": Decimal("2"),
-                },
-            )
+            passport = self._session_passports.get(session_id)
+            if passport is not None:
+                defaults = estimate_role_resources(role_id, passport)
+            else:
+                defaults = ROLE_INITIAL_RESOURCES.get(
+                    role_id,
+                    {
+                        "vehicles": Decimal("5"),
+                        "personnel": Decimal("20"),
+                        "fuel_liters": Decimal("1000"),
+                        "backup_generators": Decimal("2"),
+                    },
+                )
             initial = {k: Decimal(str(v)) for k, v in defaults.items()}
             available = {k: Decimal(str(v)) for k, v in defaults.items()}
             reserved = {res_k: Decimal("0") for res_k in defaults.keys()}
