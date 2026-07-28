@@ -42,6 +42,10 @@ from tps360.simulation.services import (
     RoundTelemetrySnapshot,
     SessionLobbyService,
 )
+from tps360.simulation.services.card_supply import initial_hand
+from tps360.simulation.services.crisis_demand import estimate_demand, resource_gap
+from tps360.simulation.services.participant_engagement import build_coverage_plan
+from tps360.simulation.services.resource_estimator import estimate_role_resources
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 T = TypeVar("T")
@@ -661,6 +665,60 @@ def get_crisis(
     session_repo: SQLSessionRepository = Depends(get_session_repo),
 ) -> CrisisDefinition | None:
     return item(session_id, session_repo).crisis_definition
+
+
+@router.get("/{session_id}/crisis-plan")
+def get_session_crisis_plan(
+    session_id: UUID,
+    hazard_radius_km: float = Query(default=1.0, gt=0.0),
+    severity: float = Query(default=1.0, gt=0.0),
+    session_repo: SQLSessionRepository = Depends(get_session_repo),
+) -> dict[str, Any]:
+    """Live crisis plan for a session: reads its KATOTTG community (passport),
+    defined crisis and lobby roster, and returns endowment/demand/gap, participant
+    coverage and per-role LEGO hands. Ties the resource+crisis algorithm to a
+    running session."""
+    session = item(session_id, session_repo)
+
+    if not is_katottg_code(session.community_id):
+        raise HTTPException(
+            400, "Session community_id is not a KATOTTG code; select a catalog community."
+        )
+    try:
+        passport = community_catalog.get_passport(session.community_id)
+    except NotFoundError as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+    if session.crisis_definition is None:
+        raise HTTPException(409, "Crisis is not defined for this session yet.")
+    hazard_type = str(session.crisis_definition.primary_hazard.value)
+
+    roster = [p.role_id for p in lobby_service.get_lobby_status(str(session_id)).participants if p.role_id]
+
+    plan = build_coverage_plan(hazard_type, roster)
+    endowment = {role: estimate_role_resources(role, passport) for role in dict.fromkeys(roster)}
+    pooled: dict[str, Any] = {}
+    for res_map in endowment.values():
+        for key, qty in res_map.items():
+            pooled[key] = pooled.get(key, 0) + qty
+    demand = estimate_demand(hazard_type, passport.total_population, hazard_radius_km, severity)
+
+    return {
+        "session_id": str(session_id),
+        "community_id": passport.community_id,
+        "community_name": passport.name,
+        "hazard_type": hazard_type,
+        "coverage": {
+            "engaged": list(plan.engaged),
+            "idle": list(plan.idle),
+            "secondary_conditions": plan.secondary_conditions,
+            "coverage_pct": plan.coverage_pct,
+        },
+        "endowment": endowment,
+        "demand": demand,
+        "gap": resource_gap(demand, pooled),
+        "card_hands": {role: initial_hand(role, hazard_type) for role in dict.fromkeys(roster)},
+    }
 
 
 @router.post("/{session_id}/crisis/define", response_model=CrisisDefinition)
