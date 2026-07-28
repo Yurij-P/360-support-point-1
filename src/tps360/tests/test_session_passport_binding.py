@@ -16,10 +16,9 @@ def test_create_session_with_katottg_binds_estimated_resources() -> None:
     resp = client.post(
         "/sessions",
         json={
-            "community_id": str(uuid4()),
+            "community_id": code,
             "facilitator_name": "Фасилітатор",
             "player_capacity": 5,
-            "katottg_community_code": code,
         },
     )
     assert resp.status_code == 200
@@ -38,10 +37,23 @@ def test_create_session_unknown_katottg_404() -> None:
     resp = client.post(
         "/sessions",
         json={
-            "community_id": str(uuid4()),
+            "community_id": "ua00000000000000000",
             "facilitator_name": "F",
             "player_capacity": 5,
-            "katottg_community_code": "ua00000000000000000",
         },
     )
     assert resp.status_code == 404
+
+
+def test_create_session_non_katottg_community_id_skips_binding() -> None:
+    # A non-KATOTTG community_id (e.g. legacy UUID string) must not 404; it just
+    # falls back to static seeds (no passport bound).
+    resp = client.post(
+        "/sessions",
+        json={
+            "community_id": str(uuid4()),
+            "facilitator_name": "F",
+            "player_capacity": 5,
+        },
+    )
+    assert resp.status_code == 200
