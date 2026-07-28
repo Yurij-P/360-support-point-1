@@ -29,7 +29,7 @@ SETTLEMENT_ID = UUID("66666666-6666-6666-6666-666666666666")
 def build_context(**overrides: object) -> SimulationContext:
     values: dict[str, object] = {
         "id": UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-        "community_id": UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+        "community_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
         "community_profile_id": UUID("cccccccc-cccc-cccc-cccc-cccccccccccc"),
         "community_profile_version": "1.0.0",
         "community_map_id": UUID("dddddddd-dddd-dddd-dddd-dddddddddddd"),
