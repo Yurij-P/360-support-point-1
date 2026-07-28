@@ -30,6 +30,33 @@ def test_create_and_get_directive_api() -> None:
     assert get_resp.json()["id"] == directive_id
 
 
+def test_create_directive_rejects_unauthorized_issuer() -> None:
+    # A rank-and-file member may not issue a directive (ADR-0015).
+    payload = {
+        "session_id": "session_api_authz",
+        "issuer_role_id": "vol-fire-member",
+        "assignee_role_id": "emerg-dsns",
+        "title": "Illegal order",
+        "description": "Member trying to task a functional lead",
+        "target_round": 2,
+    }
+    resp = client.post("/directives", json=payload)
+    assert resp.status_code == 403
+
+
+def test_create_directive_allows_lead_to_own_member() -> None:
+    payload = {
+        "session_id": "session_api_authz_ok",
+        "issuer_role_id": "vol-fire-commander",
+        "assignee_role_id": "vol-fire-member",
+        "title": "Deploy to sector 3",
+        "description": "Commander tasks own team member",
+        "target_round": 2,
+    }
+    resp = client.post("/directives", json=payload)
+    assert resp.status_code == 200
+
+
 def test_directive_api_transition_and_reporting() -> None:
     payload = {
         "session_id": "session_api_2",

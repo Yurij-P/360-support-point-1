@@ -11,6 +11,7 @@ from tps360.simulation.domain.task_directive import (
     DirectiveStatus,
     TaskDirective,
 )
+from tps360.simulation.services.command_hierarchy import can_issue_directive
 
 router = APIRouter(prefix="/directives", tags=["directives"])
 
@@ -74,6 +75,14 @@ def create_directive(
     req: CreateDirectiveRequest,
     directive_repo: SQLDirectiveRepository = Depends(get_directive_repo),
 ) -> DirectiveResponse:
+    if not can_issue_directive(req.issuer_role_id, req.assignee_role_id):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"Role '{req.issuer_role_id}' may not issue a directive to "
+                f"'{req.assignee_role_id}' under the command hierarchy (ADR-0015)."
+            ),
+        )
     directive_id = str(uuid4())
     try:
         directive = TaskDirective(
