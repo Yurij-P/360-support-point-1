@@ -1232,11 +1232,11 @@ class TPS360WebApp {
 
         const chosenRole = select.value;
         const roleTitles = {
-          emerg-dsns: "1. 🚒 Представник ДСНС",
-          emerg-ems: "2. 🚑 Представник екстреної медичної допомоги",
+          "emerg-dsns": "1. 🚒 Представник ДСНС",
+          "emerg-ems": "2. 🚑 Представник екстреної медичної допомоги",
           director_waterworks: "3. ⚡ Директор Водоканалу / Комунальник",
           head_of_community: "4. 🏫 Голова громади / Староста",
-          emerg-police: "5. 🛡️ Представник поліції",
+          "emerg-police": "5. 🛡️ Представник поліції",
           chief_sanitary_inspector: "6. 🔬 Санітарний інспектор",
           head_of_social_protection: "7. 🤝 Керівник Соціального захисту"
         };
