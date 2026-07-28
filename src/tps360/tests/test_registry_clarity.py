@@ -48,6 +48,15 @@ def test_api_error_raises() -> None:
         client.entity_info("12345678")
 
 
+def test_top_level_error_code_raises() -> None:
+    # Inactive key returns {"code": 403, "text": "This key is inactive: ..."} top-level.
+    client = ClarityRegistryClient(
+        api_key="dead", fetch=lambda url: {"code": 403, "text": "This key is inactive"}
+    )
+    with pytest.raises(RuntimeError, match="403"):
+        client.entity_info("12345678")
+
+
 def test_vehicles_to_endowment_classifies() -> None:
     vehicles = [
         {"model": "Трактор МТЗ-82"},
