@@ -18,7 +18,7 @@ client = TestClient(app)
 
 def _make_session(**kwargs: object) -> FacilitatedSession:
     return FacilitatedSession(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         facilitator_name="Test",
         player_capacity=5,
         facilitator_token_digest=FacilitatedSession.digest_facilitator_token("tok"),

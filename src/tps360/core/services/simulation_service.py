@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.enums import LifecycleStatus
 from tps360.core.domain.models import Decision, Inject, Simulation
 from tps360.core.exceptions import DomainRuleViolation
 
 
 class SimulationService:
-    def create_simulation(self, scenario_id: UUID, community_id: UUID) -> Simulation:
+    def create_simulation(self, scenario_id: UUID, community_id: CommunityId) -> Simulation:
         return Simulation(scenario_id=scenario_id, community_id=community_id)
 
     def start_simulation(self, simulation: Simulation) -> Simulation:

@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
+from tps360.core.domain.community_id import CommunityId
+
 from ..value_objects import (
     BoundingBox,
     Coordinates,
@@ -95,7 +97,7 @@ class MapLayer:
 
 @dataclass
 class CommunityMap:
-    community_id: UUID
+    community_id: CommunityId
     name: str
     boundary: PolygonGeometry | None = None
     center: Coordinates | None = None

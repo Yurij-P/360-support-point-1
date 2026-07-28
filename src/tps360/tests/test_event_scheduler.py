@@ -107,7 +107,7 @@ def build_simulation() -> Simulation:
         clock=SimulationClock(start_time=START, current_time=START),
         context=SimulationContext(
             id=uuid4(),
-            community_id=uuid4(),
+            community_id=str(uuid4()),
             community_profile_id=uuid4(),
             community_profile_version="1.0.0",
             community_map_id=uuid4(),

@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.crisis_taxonomy import CrisisCategory, HazardType, ImpactType
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.simulation.domain.decision_payload import validate_decision_payload
@@ -106,7 +107,7 @@ class CrisisDefinition(BaseModel):
 
 class FacilitatedSession(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    community_id: UUID
+    community_id: CommunityId
     facilitator_name: str = Field(min_length=1)
     player_capacity: int = Field(ge=1)
     status: SessionStatus = SessionStatus.LOBBY

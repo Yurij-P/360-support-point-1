@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from tps360.assessment.domain.profile import CommunityPreparednessProfile
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.exceptions import NotFoundError
 
 
@@ -19,7 +20,7 @@ class PreparednessProfileRepository:
             raise NotFoundError("Profile not found")
         return self.items[profile_id]
 
-    def get_by_community(self, community_id: UUID) -> CommunityPreparednessProfile | None:
+    def get_by_community(self, community_id: CommunityId) -> CommunityPreparednessProfile | None:
         return next((p for p in self.items.values() if p.community_id == community_id), None)
 
     def save(self, p: CommunityPreparednessProfile) -> CommunityPreparednessProfile:

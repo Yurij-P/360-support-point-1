@@ -93,7 +93,7 @@ def simulation(events: tuple[ScheduledEvent, ...] = ()) -> Simulation:
         threat=Threat(uuid4(), "Power loss", ThreatType.TECHNOLOGICAL, ThreatSeverity.HIGH, ThreatTargetType.CRITICAL_INFRASTRUCTURE, "Power loss."),
         timeline=Timeline(), current_time=START, status=SimulationStatus.DRAFT,
         clock=SimulationClock(START, START),
-        context=SimulationContext(id=uuid4(), community_id=uuid4(), community_profile_id=uuid4(), community_profile_version="1", community_map_id=uuid4(), community_map_version=1, scenario_id=SCENARIO_ID, scenario_version=1, primary_threat_id=uuid4(), available_resource_ids=(RESOURCE_ID,), participating_organization_ids=(uuid4(),), data_quality_score=80, created_at=START, checksum="checksum"),
+        context=SimulationContext(id=uuid4(), community_id=str(uuid4()), community_profile_id=uuid4(), community_profile_version="1", community_map_id=uuid4(), community_map_version=1, scenario_id=SCENARIO_ID, scenario_version=1, primary_threat_id=uuid4(), available_resource_ids=(RESOURCE_ID,), participating_organization_ids=(uuid4(),), data_quality_score=80, created_at=START, checksum="checksum"),
     )
     result.prepare(); result.load_scenario(definition(events)); result.validate_scenario(("coordinator",)); result.activate_scenario(); result.start(); result.load_decision_engine()
     return result

@@ -1,8 +1,7 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends
 
 from tps360.api.dependencies import get_assessment_repo
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.models import PreparednessAssessment
 from tps360.core.services import PreparednessService
 from tps360.db.repositories import SQLAssessmentRepository
@@ -12,7 +11,7 @@ router = APIRouter(prefix="/communities/{community_id}/assessments", tags=["asse
 
 @router.post("")
 def create(
-    community_id: UUID,
+    community_id: CommunityId,
     item: PreparednessAssessment,
     assessment_repo: SQLAssessmentRepository = Depends(get_assessment_repo),
 ) -> PreparednessAssessment:

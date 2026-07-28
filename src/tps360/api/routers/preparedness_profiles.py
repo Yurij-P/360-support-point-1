@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -7,6 +6,7 @@ from tps360.api import dependencies
 from tps360.api.dependencies import get_assessment_repo, get_community_repo
 from tps360.assessment.domain.profile import CommunityPreparednessProfile
 from tps360.assessment.services.profile_service import PreparednessProfileService
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.exceptions import NotFoundError
 from tps360.db.repositories import SQLAssessmentRepository, SQLCommunityRepository
 
@@ -18,7 +18,7 @@ service = PreparednessProfileService()
 
 @router.get("")
 def get_profile(
-    community_id: UUID,
+    community_id: CommunityId,
     public: bool = False,
     community_repo: SQLCommunityRepository = Depends(get_community_repo),
     assessment_repo: SQLAssessmentRepository = Depends(get_assessment_repo),
@@ -49,7 +49,7 @@ def get_profile(
 
 @router.post("/agree")
 def agree_profile(
-    community_id: UUID,
+    community_id: CommunityId,
     community_repo: SQLCommunityRepository = Depends(get_community_repo),
     assessment_repo: SQLAssessmentRepository = Depends(get_assessment_repo),
 ) -> CommunityPreparednessProfile:

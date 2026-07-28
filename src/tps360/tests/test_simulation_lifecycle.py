@@ -29,7 +29,7 @@ START = datetime(2026, 7, 24, 9, 0)
 def build_context() -> SimulationContext:
     return SimulationContext(
         id=uuid4(),
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         community_profile_id=uuid4(),
         community_profile_version="1.0.0",
         community_map_id=uuid4(),

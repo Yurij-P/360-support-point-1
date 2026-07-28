@@ -1,9 +1,8 @@
-from uuid import UUID
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from tps360.assessment.repositories import PreparednessProfileRepository
+from tps360.core.domain.community_id import CommunityId
 from tps360.core.domain.models import ImprovementPlan, Risk
 from tps360.db.repositories import (
     SQLAssessmentRepository,
@@ -36,5 +35,5 @@ def get_directive_repo(db: Session = Depends(get_db)) -> SQLDirectiveRepository:
 
 
 preparedness_profiles = PreparednessProfileRepository()
-risks_registry: dict[UUID, list[Risk]] = {}
-improvement_plans_registry: dict[UUID, ImprovementPlan] = {}
+risks_registry: dict[CommunityId, list[Risk]] = {}
+improvement_plans_registry: dict[CommunityId, ImprovementPlan] = {}

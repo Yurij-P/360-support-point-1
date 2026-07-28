@@ -69,7 +69,7 @@ def build_definition(**overrides: object) -> ScenarioDefinition:
 def build_context() -> SimulationContext:
     return SimulationContext(
         id=uuid4(),
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         community_profile_id=uuid4(),
         community_profile_version="1.0.0",
         community_map_id=uuid4(),

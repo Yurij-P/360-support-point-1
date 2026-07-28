@@ -55,7 +55,7 @@ def test_cpmm(score, level):
 
 def test_risk_calculation_is_explicit():
     risk = Risk(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         hazard=Hazard(
             name="H",
             category=HazardCategory.NATURAL,
@@ -76,7 +76,7 @@ def test_risk_calculation_is_explicit():
 
 def test_simulation_lifecycle_and_decision():
     svc = SimulationService()
-    sim = svc.create_simulation(uuid4(), uuid4())
+    sim = svc.create_simulation(uuid4(), str(uuid4()))
     svc.start_simulation(sim)
     assert sim.status is LifecycleStatus.ACTIVE
     svc.record_decision(
@@ -92,7 +92,7 @@ def test_simulation_lifecycle_and_decision():
 
 def test_inject_delivery_requires_active():
     svc = SimulationService()
-    sim = svc.create_simulation(uuid4(), uuid4())
+    sim = svc.create_simulation(uuid4(), str(uuid4()))
     inject = Inject(
         scenario_id=sim.scenario_id,
         sequence=1,
@@ -116,7 +116,7 @@ def test_evaluation_and_improvement():
     )
     assert EvaluationService().calculate_simulation_score(ev) == 70
     plan = ImprovementPlan(
-        community_id=uuid4(),
+        community_id=str(uuid4()),
         source_simulation_id=ev.simulation_id,
         actions=[ImprovementService().create_improvement_action("a", 1, date(2020, 1, 1))],
     )

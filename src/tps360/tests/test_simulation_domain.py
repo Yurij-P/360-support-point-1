@@ -63,7 +63,7 @@ def build_clock(**overrides: object) -> SimulationClock:
 def build_context() -> SimulationContext:
     return SimulationContext(
         id=UUID("66666666-6666-6666-6666-666666666666"),
-        community_id=UUID("77777777-7777-7777-7777-777777777777"),
+        community_id="77777777-7777-7777-7777-777777777777",
         community_profile_id=UUID("88888888-8888-8888-8888-888888888888"),
         community_profile_version="1.0.0",
         community_map_id=UUID("99999999-9999-9999-9999-999999999999"),

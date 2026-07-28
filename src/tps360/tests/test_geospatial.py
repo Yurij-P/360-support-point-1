@@ -39,7 +39,7 @@ def attribution():
 
 def cmap():
     return CommunityMap(
-        community_id=uuid4(), name="Map", boundary=polygon(), source_attribution=attribution()
+        community_id=str(uuid4()), name="Map", boundary=polygon(), source_attribution=attribution()
     )
 
 
@@ -133,7 +133,7 @@ def test_layer_duplicate_feature():
 
 
 def test_map_activation_rules():
-    m = CommunityMap(community_id=uuid4(), name="x")
+    m = CommunityMap(community_id=str(uuid4()), name="x")
     with pytest.raises(ValueError):
         m.activate()
 

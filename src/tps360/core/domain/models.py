@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
+from .community_id import CommunityId
 from .enums import CapabilityDomain, HazardCategory, LifecycleStatus, MaturityLevel
 
 
@@ -43,6 +44,9 @@ class Resource(Entity):
 
 
 class Community(Entity):
+    # Community identity migrates to a KATOTTG string (ADR-0016); keep an
+    # auto str default so existing constructions without an id still work.
+    id: CommunityId = Field(default_factory=lambda: str(uuid4()))  # type: ignore[assignment]
     name: str
     code: str = Field(min_length=1)
     oblast: str
@@ -86,7 +90,7 @@ class Capability(Entity):
 
 
 class Risk(Entity):
-    community_id: UUID
+    community_id: CommunityId
     hazard: Hazard
     vulnerabilities: list[Vulnerability] = Field(default_factory=list)
     probability_score: float = Field(ge=0, le=100)
@@ -99,7 +103,7 @@ class Risk(Entity):
 
 
 class PreparednessAssessment(Entity):
-    community_id: UUID
+    community_id: CommunityId
     assessment_date: date
     dimensions: dict[str, float] = Field(default_factory=dict)
     evidence: list[str] = Field(default_factory=list)
@@ -181,7 +185,7 @@ class ImprovementAction(BaseModel):
 
 
 class ImprovementPlan(Entity):
-    community_id: UUID
+    community_id: CommunityId
     source_assessment_id: UUID | None = None
     source_simulation_id: UUID | None = None
     actions: list[ImprovementAction] = Field(default_factory=list)
@@ -200,7 +204,7 @@ class ImprovementPlan(Entity):
 
 class Simulation(Entity):
     scenario_id: UUID
-    community_id: UUID
+    community_id: CommunityId
     status: LifecycleStatus = LifecycleStatus.DRAFT
     started_at: datetime | None = None
     completed_at: datetime | None = None
