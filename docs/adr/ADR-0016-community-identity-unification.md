@@ -1,6 +1,6 @@
 # ADR-0016: Platform-wide Community Identity Unification (UUID → KATOTTG)
 
-**Status:** Proposed — pending ratification
+**Status:** Accepted
 **Date:** 2026-07-28
 
 ## Context
@@ -68,14 +68,16 @@ After each stage: `pytest`, `ruff`, `mypy` green before merge.
    `ADR-0014` deliberately removed.
 3. **Big-bang single-PR migration.** Too risky; breaks the green baseline.
 
-## Open questions for ratification
+## Ratified (2026-07-28)
 
-1. Are external/legacy UUID community callers in play, or is a clean break fine
-   pre-pilot?
-2. Do we need a data migration for any persisted UUID community rows, or is the
-   store effectively empty/dev-only so far?
-3. Stage order acceptable, or migrate session (stage 4) earlier to unblock live
-   passport binding sooner?
+1. **Clean break pre-pilot** — no external UUID community callers to preserve.
+2. **No data migration** — the store is dev-only / effectively empty of persisted
+   community rows.
+3. **Stage order kept** — type foundation → leaf domains → core+ORM → session →
+   cleanup.
+
+Stage 1 (this ADR's `core/domain/community_id.py`: `CommunityId` alias +
+KATOTTG validate/normalize helpers) is implemented; no behaviour change yet.
 
 ## Owner
 
