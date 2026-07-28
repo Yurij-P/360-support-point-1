@@ -57,6 +57,17 @@ def test_top_level_error_code_raises() -> None:
         client.entity_info("12345678")
 
 
+def test_http_error_is_wrapped() -> None:
+    import urllib.error
+
+    def raising_fetch(url: str) -> dict[str, object]:
+        raise urllib.error.HTTPError(url, 402, "Payment Required", None, None)  # type: ignore[arg-type]
+
+    client = ClarityRegistryClient(api_key="k", fetch=raising_fetch)
+    with pytest.raises(RuntimeError, match="402"):
+        client.entity_info("12345678")
+
+
 def test_vehicles_to_endowment_classifies() -> None:
     vehicles = [
         {"model": "Трактор МТЗ-82"},
