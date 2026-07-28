@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from tps360.api.dependencies import get_session_repo
+from tps360.community.services import CommunityCatalogService
 from tps360.core.exceptions import DomainRuleViolation, NotFoundError
 from tps360.db.repositories import SQLSessionRepository
 from tps360.simulation.domain.decision_payload import validate_decision_payload
@@ -46,6 +47,7 @@ T = TypeVar("T")
 lobby_service = SessionLobbyService()
 role_dashboard_service = RoleDashboardService()
 facilitator_console_service = FacilitatorConsoleService()
+community_catalog = CommunityCatalogService()
 aar_telemetry_service = AARTelemetryService()
 
 
@@ -56,6 +58,9 @@ class CreateSessionRequest(BaseModel):
     facilitator_name: str = Field(min_length=1)
     player_capacity: int = Field(ge=1)
     role_profiles: list[RoleProfile] = Field(default_factory=list)
+    # Optional KATOTTG code: when set, binds the community passport so role
+    # resources are estimated from it (TPS360-RES-001 §5.1).
+    katottg_community_code: str | None = None
 
 
 class JoinSessionRequest(BaseModel):
@@ -156,9 +161,17 @@ def create(
 ) -> CreateSessionResponse:
     facilitator_token = token_urlsafe(32)
     join_token = token_urlsafe(32)
+
+    passport = None
+    if request.katottg_community_code:
+        try:
+            passport = community_catalog.get_passport(request.katottg_community_code)
+        except NotFoundError as exc:
+            raise HTTPException(404, str(exc)) from exc
+
     session = session_repo.add(
         FacilitatedSession(
-            **request.model_dump(),
+            **request.model_dump(exclude={"katottg_community_code"}),
             facilitator_token_digest=FacilitatedSession.digest_facilitator_token(
                 facilitator_token
             ),
@@ -167,6 +180,10 @@ def create(
     )
     # Initialize lobby room for pre-start standby waiting
     lobby_service.create_room(session_id=str(session.id), capacity=request.player_capacity)
+
+    # Bind the community passport so role dashboards estimate resources from it.
+    if passport is not None:
+        role_dashboard_service.set_session_passport(str(session.id), passport)
 
     return CreateSessionResponse(
         **session.model_dump(),
