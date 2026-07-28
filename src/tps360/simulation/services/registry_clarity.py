@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections.abc import Callable
@@ -51,7 +52,11 @@ class ClarityRegistryClient:
         if not self._key:
             raise RuntimeError("CLARITY_API_KEY is not set; cannot query Clarity Project API.")
         query = urllib.parse.urlencode({"key": self._key, **params})
-        data = self._fetch(f"{_BASE}/{path}?{query}")
+        try:
+            data = self._fetch(f"{_BASE}/{path}?{query}")
+        except urllib.error.HTTPError as exc:
+            # e.g. 402 Payment Required (unfunded key), 403, 5xx.
+            raise RuntimeError(f"Clarity API HTTP {exc.code}: {exc.reason}") from exc
         if isinstance(data, dict):
             if data.get("error"):
                 raise RuntimeError(f"Clarity API error: {data['error']}")
